@@ -5,6 +5,7 @@ This project is an implementation of Conway's Game of Life written in Typescript
 
 ## Goals
 - Provide a succinct example of my programming skill in TypeScript vis-a-vis a known programming problem.
+- Demonstrate my understanding of [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation).
 - Provide myself an opportunity to learn HTML5 Canvas.
 
 ## Current State
