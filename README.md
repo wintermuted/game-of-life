@@ -17,4 +17,6 @@ This project is an implementation of Conway's Game of Life written in Typescript
 
 ## Technology
 
+- The game is implemented using Typescript.
+- Unit tests are written with Jest.
 - This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
