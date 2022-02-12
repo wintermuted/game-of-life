@@ -6,6 +6,7 @@ interface Props {
   generationSpeed: number;
   resetBoard: () => void;
   runGame: () => void;
+  stopGame: () => void;
 }
 
 function GridControls({ 
@@ -13,7 +14,8 @@ function GridControls({
   updateGenerationSpeed, 
   generationSpeed,
   resetBoard,
-  runGame 
+  runGame,
+  stopGame 
 }: Props) {
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -24,6 +26,7 @@ function GridControls({
     <div className="GridControls">
       <form onSubmit={(e) => e.preventDefault()}>
       <button onClick={runGame}>Start</button>
+      <button onClick={stopGame}>Stop</button>
       <button onClick={nextGeneration}>Next</button>
       <button onClick={resetBoard}>Reset</button>
       <button>Clear</button>

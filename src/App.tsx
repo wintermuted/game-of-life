@@ -4,7 +4,7 @@ import GridControls from "./components/GridControls";
 import Game from './game/Grid';
 
 let game: Game = {} as Game;
-let timeout: NodeJS.Timeout = {} as NodeJS.Timeout;
+let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
 
 function App() {
   const [boardNeedsInitiaization, setBoardInitialization] = useState(true);
@@ -26,10 +26,14 @@ function App() {
   });
 
   function runGame() {
-    timeout = setInterval(() => {
+    intervalID = setInterval(() => {
       game.next();
       setGeneration(game.getGenerations())
     }, generationSpeed)
+  }
+
+  function stopGame() {
+    clearInterval(intervalID)
   }
 
   function nextGeneration(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -58,6 +62,7 @@ function App() {
         generationSpeed={generationSpeed} 
         resetBoard={resetBoard}
         runGame={runGame}
+        stopGame={stopGame}
       />
     </div>
   );
