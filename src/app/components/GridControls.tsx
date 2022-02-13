@@ -36,9 +36,9 @@ function GridControls({
       <input 
         type="range"
         name="generationSpeed"
-        min="500" 
-        max="10000" 
-        step="100" 
+        min="1" 
+        max="10" 
+        step="1" 
         value={generationSpeed}
         onChange={onChange} 
       />

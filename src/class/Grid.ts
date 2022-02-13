@@ -1,4 +1,5 @@
-import { calculateNextGeneration, LifeGrid } from "./game";
+import { calculateNextGeneration } from "../core/game";
+import { LifeGrid } from "../interfaces";
 
 class Game {
   grid: LifeGrid;

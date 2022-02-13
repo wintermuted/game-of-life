@@ -1,4 +1,4 @@
-import gameOfLife from "../../game";
+import gameOfLife from "../game";
 
 describe('oscillators', () => {
   describe('blinker', () => {
