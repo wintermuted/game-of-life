@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import Grid from "./app/components/Grid";
-import GridControls from "./app/components/GridControls";
-import { getGenerationSpeed } from './app/util';
-import Game from './class/Grid';
+import Grid from "./components/Grid";
+import GridControls from "./components/GridControls";
+import { getGenerationSpeed } from './util';
+import Game from '../class/Grid';
 
 let game: Game = {} as Game;
 let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
