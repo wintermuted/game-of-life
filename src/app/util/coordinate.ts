@@ -40,3 +40,11 @@ export function getCenterPointSquares(columnIndex: number, rowIndex: number) {
   const seQuad = columnIndex === 15 && rowIndex === 15;
   return { nwQuad, swQuad, neQuad, seQuad };
 }
+
+export function getCellFillColor(isAlive: boolean, rowIndex: number, columnIndex: number) {
+  const { nwQuad, swQuad, neQuad, seQuad } = getCenterPointSquares(columnIndex, rowIndex);
+  const centerCells = nwQuad || swQuad || neQuad || seQuad;
+  const defaultCells = centerCells ? "#888" : "#CCC";
+  const color = isAlive ? "green" : defaultCells;
+  return color;
+}

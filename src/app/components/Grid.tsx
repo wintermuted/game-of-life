@@ -12,12 +12,13 @@ function Grid({ game, onMouseOver }: Props) {
     return null;
   }
 
-  const gridJSON = JSON.stringify(game.getStatus && game.getStatus());
+  const gameStatus = game.getStatus ? game.getStatus(): {};
+  const gridJSON = JSON.stringify(gameStatus);
 
   return (
     <div className="Grid">
       { gridJSON }
-      <GridSquares game={game} onMouseOver={onMouseOver} />
+      <GridSquares grid={gameStatus} onMouseOver={onMouseOver} />
     </div>
   );
 }

@@ -1,36 +1,30 @@
 import { forEach, range } from 'lodash';
 import { ReactElement } from "react";
-import Game from '../../class/Game';
 import { LifeGrid } from '../../interfaces';
-import { getCenterPointSquares, translateGrid } from '../util/coordinate';
+import { getCellFillColor, translateGrid } from '../util/coordinate';
 
-function getCellFillColor(translatedGrid: LifeGrid, rowIndex: number, columnIndex: number) {
-  const alive = translatedGrid[`${rowIndex},${columnIndex}`];
-  const { nwQuad, swQuad, neQuad, seQuad } = getCenterPointSquares(columnIndex, rowIndex);
-  const centerCells = nwQuad || swQuad || neQuad || seQuad;
-  const defaultCells = centerCells ? "#888" : "#CCC";
-  const isAlive = alive;
-  const color = isAlive ? "green" : defaultCells;
-  return color;
+function getCoordinate(rowIndex: number) {
+  return rowIndex + (15 * rowIndex);
 }
+
 interface Props {
-  game: Game;
+  grid: LifeGrid;
   onMouseOver: (e: React.MouseEvent) => void;
 }
 
-function GridSquares({ onMouseOver, game }: Props) {
+function GridSquares({ onMouseOver, grid }: Props) {
   const gridWidth = 30;
   const gridRange = range(gridWidth);
   const innerDom: ReactElement[] = [];
-  const translatedGrid = translateGrid(game && game.getStatus && game.getStatus()); 
+  const translatedGrid = translateGrid(grid); 
 
   forEach(gridRange, (columnVal, columnIndex) => {
     forEach(gridRange, (rowVal, rowIndex) => {
       const key = `panel_key_${rowIndex}_${columnIndex}`;
-      const x = rowIndex + (15 * rowIndex)
-      const y = columnIndex + (15 * columnIndex);
-
-      const color = getCellFillColor(translatedGrid, rowIndex, columnIndex);
+      const x = getCoordinate(rowIndex)
+      const y = getCoordinate(columnIndex);
+      const alive = translatedGrid[`${rowIndex},${columnIndex}`];
+      const color = getCellFillColor(alive, rowIndex, columnIndex);
 
       const rect = (
         <rect
@@ -61,3 +55,4 @@ function GridSquares({ onMouseOver, game }: Props) {
 }
 
 export default GridSquares;
+
