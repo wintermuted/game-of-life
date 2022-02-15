@@ -1,20 +1,23 @@
-import Game from "../../class/Grid";
+import Game from "../../class/Game";
+import './Grid.scss';
+import GridSquares from './GridSquares';
 
 interface Props {
   game: Game;
+  onMouseOver: (e: React.MouseEvent) => void;
 }
 
-function Grid({ game }: Props) {
+function Grid({ game, onMouseOver }: Props) {
   if (!game) {
     return null;
   }
 
-  const gameJSON = game.getStatus && game.getStatus();
-  const gridJSON = JSON.stringify(gameJSON);
+  const gridJSON = JSON.stringify(game.getStatus && game.getStatus());
 
   return (
     <div className="Grid">
       { gridJSON }
+      <GridSquares game={game} onMouseOver={onMouseOver} />
     </div>
   );
 }

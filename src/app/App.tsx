@@ -2,10 +2,34 @@ import { useEffect, useState } from 'react';
 import Grid from "./components/Grid";
 import GridControls from "./components/GridControls";
 import { getGenerationSpeed } from './util';
-import Game from '../class/Grid';
+import Game from '../class/Game';
 
 let game: Game = {} as Game;
 let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
+
+const blinker = { 
+  "0,0": true,
+  "1,0": true,
+  "2,0": true,
+};
+
+const glider = { 
+  "0,0": true,
+  "1,0": true,
+  "2,0": true,
+  "2,1": true,
+  "1,2": true,
+};
+
+const rPentomino = { 
+  "1,0": true,
+  "0,1": true,
+  "1,1": true,
+  "1,2": true,
+  "2,2": true,
+};
+
+const baseGame = rPentomino;
 
 function App() {
   const [boardNeedsInitiaization, setBoardInitialization] = useState(true);
@@ -16,11 +40,6 @@ function App() {
   useEffect(() => {
     if (boardNeedsInitiaization) {
       console.info('Board needs Initialization')
-      const baseGame = { 
-        "0,0": true,
-        "1,0": true,
-        "2,0": true,
-      };
       game = new Game(baseGame)
       setBoardInitialization(false);
       setGeneration(0);
@@ -42,6 +61,10 @@ function App() {
   function stopGame() {
     clearInterval(intervalID)
     setIsGameRunning(false);
+  }
+
+  function onMouseOver(e: React.MouseEvent) {
+    console.log(e.target);
   }
 
   function nextGeneration(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -68,7 +91,7 @@ function App() {
     <div className="App">
       <h1>Game of Life</h1>
       {generation}
-      <Grid game={game} />
+      <Grid game={game} onMouseOver={onMouseOver} />
       <GridControls 
         nextGeneration={nextGeneration} 
         updateGenerationSpeed={updateGenerationSpeed}
