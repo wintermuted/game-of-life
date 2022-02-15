@@ -3,26 +3,27 @@ import { ReactElement } from "react";
 import { LifeGrid } from '../../interfaces';
 import { getCellFillColor, translateGrid } from '../util/coordinate';
 
-function getCoordinate(rowIndex: number) {
-  return rowIndex + (15 * rowIndex);
+function getCoordinate(rowIndex: number, cellSize: number) {
+  return rowIndex + (cellSize * rowIndex);
 }
 
 interface Props {
   grid: LifeGrid;
+  gridSize: number; // should only be even numbers
+  cellSize: number;
   onMouseOver: (e: React.MouseEvent) => void;
 }
 
-function GridSquares({ onMouseOver, grid }: Props) {
-  const gridWidth = 30;
-  const gridRange = range(gridWidth);
+function GridSquares({ onMouseOver, grid, gridSize, cellSize }: Props) {
+  const gridRange = range(gridSize);
   const innerDom: ReactElement[] = [];
   const translatedGrid = translateGrid(grid); 
 
   forEach(gridRange, (columnVal, columnIndex) => {
     forEach(gridRange, (rowVal, rowIndex) => {
       const key = `panel_key_${rowIndex}_${columnIndex}`;
-      const x = getCoordinate(rowIndex)
-      const y = getCoordinate(columnIndex);
+      const x = getCoordinate(rowIndex, cellSize)
+      const y = getCoordinate(columnIndex, cellSize);
       const alive = translatedGrid[`${rowIndex},${columnIndex}`];
       const color = getCellFillColor(alive, rowIndex, columnIndex);
 
@@ -32,8 +33,8 @@ function GridSquares({ onMouseOver, grid }: Props) {
           className={key}
           x={x}
           y={y}
-          width={15}
-          height={15}
+          width={cellSize}
+          height={cellSize}
           fill={color}
           stroke="#777"
           strokeWidth="1"

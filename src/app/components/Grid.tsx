@@ -18,7 +18,7 @@ function Grid({ game, onMouseOver }: Props) {
   return (
     <div className="Grid">
       { gridJSON }
-      <GridSquares grid={gameStatus} onMouseOver={onMouseOver} />
+      <GridSquares grid={gameStatus} onMouseOver={onMouseOver} gridSize={30} cellSize={15} />
     </div>
   );
 }
