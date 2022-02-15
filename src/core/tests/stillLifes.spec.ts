@@ -1,131 +1,58 @@
+import { beehive, block, tub } from "../../data/stillLifes";
 import gameOfLife from "../game";
 
 describe('still lifes', () => {
   describe('block', () => {
-    const base = {
-      "0,0": true,
-      "0,1": true,
-      "1,0": true,
-      "1,1": true
-    };
-
-    const gen1 = gameOfLife(base);
+    const gen1 = gameOfLife(block);
     const gen2 = gameOfLife(gen1);
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual({
-        "0,0": true,
-        "0,1": true,
-        "1,0": true,
-        "1,1": true,
-      })
+      expect(gen1).toStrictEqual(block)
     })
 
     test('gen2', () => {  
-      expect(gen2).toStrictEqual({
-        "0,0": true,
-        "0,1": true,
-        "1,0": true,
-        "1,1": true,
-      })
+      expect(gen2).toStrictEqual(block)
     })
 
     test('gen3', () => {  
-      expect(gen3).toStrictEqual({
-        "0,0": true,
-        "0,1": true,
-        "1,0": true,
-        "1,1": true,
-      })
+      expect(gen3).toStrictEqual(block)
     })
   });
 
   describe('beehive', () => {
-    const base = {
-      "0,1": true,
-      "1,0": true,
-      "1,2": true,
-      "2,0": true,
-      "2,2": true,
-      "3,1": true
-    };
-
-    const gen1 = gameOfLife(base);
+    const gen1 = gameOfLife(beehive);
     const gen2 = gameOfLife(gen1);
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual({
-        "0,1": true,
-        "1,0": true,
-        "1,2": true,
-        "2,0": true,
-        "2,2": true,
-        "3,1": true
-      })
+      expect(gen1).toStrictEqual(beehive)
     })
 
     test('gen2', () => {
-      expect(gen2).toStrictEqual({
-        "0,1": true,
-        "1,0": true,
-        "1,2": true,
-        "2,0": true,
-        "2,2": true,
-        "3,1": true
-      })
+      expect(gen2).toStrictEqual(beehive)
     })
 
     test('gen3', () => {
-      expect(gen3).toStrictEqual({
-        "0,1": true,
-        "1,0": true,
-        "1,2": true,
-        "2,0": true,
-        "2,2": true,
-        "3,1": true
-      })
+      expect(gen3).toStrictEqual(beehive)
     })
   });
 
   describe('tub', () => {
-    const base = {
-      "0,1": true,
-      "1,0": true,
-      "1,2": true,
-      "2,1": true
-    };
-
-    const gen1 = gameOfLife(base);
+    const gen1 = gameOfLife(tub);
     const gen2 = gameOfLife(gen1);
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual({
-        "0,1": true,
-        "1,0": true,
-        "1,2": true,
-        "2,1": true
-      })
+      expect(gen1).toStrictEqual(tub)
     })
 
     test('gen2', () => {
-      expect(gen2).toStrictEqual({
-        "0,1": true,
-        "1,0": true,
-        "1,2": true,
-        "2,1": true
-      })
+      expect(gen2).toStrictEqual(tub)
     })
 
     test('gen3', () => {
-      expect(gen3).toStrictEqual({
-        "0,1": true,
-        "1,0": true,
-        "1,2": true,
-        "2,1": true
-      })
+      expect(gen3).toStrictEqual(tub)
     })
   })
 })

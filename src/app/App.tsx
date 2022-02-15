@@ -3,33 +3,13 @@ import Grid from "./components/Grid";
 import GridControls from "./components/GridControls";
 import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
+import { rPentomino } from '../data/methuselahs';
+import { beacon } from '../data/oscillators';
 
 let game: Game = {} as Game;
 let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
 
-const blinker = { 
-  "0,0": true,
-  "1,0": true,
-  "2,0": true,
-};
-
-const glider = { 
-  "0,0": true,
-  "1,0": true,
-  "2,0": true,
-  "2,1": true,
-  "1,2": true,
-};
-
-const rPentomino = { 
-  "1,0": true,
-  "0,1": true,
-  "1,1": true,
-  "1,2": true,
-  "2,2": true,
-};
-
-const baseGame = rPentomino;
+const baseGame = beacon;
 
 function App() {
   const [boardNeedsInitiaization, setBoardInitialization] = useState(true);
@@ -54,11 +34,13 @@ function App() {
   }
 
   function runGame() {
+    console.info("Starting game.");
     runGameInterval();
     setIsGameRunning(true);
   }
 
   function stopGame() {
+    console.info("Starting game.");
     clearInterval(intervalID)
     setIsGameRunning(false);
   }
@@ -74,6 +56,8 @@ function App() {
   }
 
   function updateGenerationSpeed(value: number) {
+    console.info('Generation Speed updated', value)
+
     setGenerationSpeed(value)
 
     if (isGameRunning) {
