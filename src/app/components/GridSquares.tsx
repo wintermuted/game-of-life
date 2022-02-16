@@ -17,7 +17,7 @@ interface Props {
 function GridSquares({ onMouseOver, grid, gridSize, cellSize }: Props) {
   const gridRange = range(gridSize);
   const innerDom: ReactElement[] = [];
-  const translatedGrid = translateGrid(grid); 
+  const translatedGrid = translateGrid(grid, gridSize); 
 
   forEach(gridRange, (columnVal, columnIndex) => {
     forEach(gridRange, (rowVal, rowIndex) => {
@@ -25,7 +25,7 @@ function GridSquares({ onMouseOver, grid, gridSize, cellSize }: Props) {
       const x = getCoordinate(rowIndex, cellSize)
       const y = getCoordinate(columnIndex, cellSize);
       const alive = translatedGrid[`${rowIndex},${columnIndex}`];
-      const color = getCellFillColor(alive, rowIndex, columnIndex);
+      const color = getCellFillColor(alive, rowIndex, columnIndex, gridSize);
 
       const rect = (
         <rect

@@ -1,31 +1,31 @@
 import { toNumber, forEach } from "lodash";
 import { LifeGrid } from "../../interfaces";
 
-export function handleXCoord(x: string) {
+export function handleXCoord(x: string, gridSize: number) {
   const xNumber = toNumber(x);
 
   if (xNumber >= 0) {
-    return xNumber + 15;
+    return xNumber + (gridSize / 2);
   } else if (xNumber < 0) {
-    return 15 + xNumber;
+    return (gridSize / 2) + xNumber;
   } else {
     return xNumber;
   }
 }
 
-export function handleYCoord(y: string) {
+export function handleYCoord(y: string, gridSize: number) {
   const yNumber = toNumber(y);
 
-  return 14 - yNumber;
+  return (gridSize / 2) - 1 - yNumber;
 }
 
-export function translateGrid (grid: LifeGrid): LifeGrid {
+export function translateGrid (grid: LifeGrid, gridSize: number): LifeGrid {
   const translatedGrid: LifeGrid = {} as LifeGrid;
 
   forEach(grid, (entry, key) => {
       const [x, y] = key.split(",")
-      const xOffset = handleXCoord(x);
-      const yOffset = handleYCoord(y);
+      const xOffset = handleXCoord(x, gridSize);
+      const yOffset = handleYCoord(y, gridSize);
       const newKey = `${xOffset},${yOffset}`;
       translatedGrid[newKey] = true;
   });
@@ -33,16 +33,19 @@ export function translateGrid (grid: LifeGrid): LifeGrid {
   return translatedGrid;
 }
 
-export function getCenterPointSquares(columnIndex: number, rowIndex: number) {
-  const nwQuad = columnIndex === 14 && rowIndex === 14;
-  const swQuad = columnIndex === 15 && rowIndex === 14;
-  const neQuad = columnIndex === 14 && rowIndex === 15;
-  const seQuad = columnIndex === 15 && rowIndex === 15;
+export function getCenterPointSquares(columnIndex: number, rowIndex: number, gridSize: number) {
+  const halfGridSize = (gridSize / 2);
+  const halfGridSizeMinusOne = halfGridSize - 1;
+
+  const nwQuad = columnIndex === halfGridSizeMinusOne && rowIndex === halfGridSizeMinusOne;
+  const swQuad = columnIndex === halfGridSize && rowIndex === halfGridSizeMinusOne;
+  const neQuad = columnIndex === halfGridSizeMinusOne && rowIndex === halfGridSize;
+  const seQuad = columnIndex === halfGridSize && rowIndex === halfGridSize;
   return { nwQuad, swQuad, neQuad, seQuad };
 }
 
-export function getCellFillColor(isAlive: boolean, rowIndex: number, columnIndex: number) {
-  const { nwQuad, swQuad, neQuad, seQuad } = getCenterPointSquares(columnIndex, rowIndex);
+export function getCellFillColor(isAlive: boolean, rowIndex: number, columnIndex: number, gridSize: number) {
+  const { nwQuad, swQuad, neQuad, seQuad } = getCenterPointSquares(columnIndex, rowIndex, gridSize);
   const centerCells = nwQuad || swQuad || neQuad || seQuad;
   const defaultCells = centerCells ? "#888" : "#CCC";
   const color = isAlive ? "green" : defaultCells;

@@ -73,11 +73,11 @@ function App() {
   }
 
   const gameStatus = game.getStatus ? game.getStatus(): {};
-  const gridJSON = JSON.stringify(gameStatus, null, 2);
+  // const gridJSON = JSON.stringify(gameStatus, null, 2);
 
   return (
     <div className="App">
-      <h1>Game of Life</h1>
+      {/* <h1>Game of Life</h1> */}
       <Grid game={game} onMouseOver={onMouseOver} />
       <GridControls 
         nextGeneration={nextGeneration} 
@@ -92,9 +92,9 @@ function App() {
       <p>
       <span><strong>Generations:</strong> {generation}</span>
       </p>
-      <pre>
+      {/* <pre>
         { gridJSON }
-      </pre>
+      </pre> */}
     </div>
   );
 }
