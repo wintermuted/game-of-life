@@ -1,7 +1,7 @@
 Conway's Game of Life
 -----
 
-This project is an implementation of Conway's Game of Life written in Typescript.
+This project is an implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) written in [Typescript](https://www.typescriptlang.org/).
 
 ## Goals
 - Provide a succinct example of my programming skill in TypeScript vis-a-vis a known programming problem.
