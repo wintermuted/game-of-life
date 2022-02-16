@@ -25,12 +25,16 @@ function GridControls({
   return (
     <div className="GridControls">
       <form onSubmit={(e) => e.preventDefault()}>
+
+      <h1>Game Controls</h1>
       <button onClick={runGame}>Start</button>
       <button onClick={stopGame}>Stop</button>
       <button onClick={nextGeneration}>Next</button>
       <button onClick={resetBoard}>Reset</button>
       <button>Clear</button>
       <br />
+
+      <h1>Game Variables</h1>
 
       <label>Generation Speed: {generationSpeed}</label>
       <input 

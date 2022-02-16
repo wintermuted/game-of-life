@@ -1,5 +1,5 @@
 import Game from "../../class/Game";
-import './Grid.scss';
+import '../styles/Grid.scss';
 import GridSquares from './GridSquares';
 
 interface Props {
@@ -13,11 +13,10 @@ function Grid({ game, onMouseOver }: Props) {
   }
 
   const gameStatus = game.getStatus ? game.getStatus(): {};
-  const gridJSON = JSON.stringify(gameStatus);
+  const gridJSON = JSON.stringify(gameStatus, null, 2);
 
   return (
     <div className="Grid">
-      { gridJSON }
       <GridSquares grid={gameStatus} onMouseOver={onMouseOver} gridSize={30} cellSize={15} />
     </div>
   );

@@ -5,16 +5,17 @@ import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
 import { beacon } from '../data/oscillators';
+import './styles/App.scss'
 
 let game: Game = {} as Game;
 let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
 
-const baseGame = beacon;
+const baseGame = rPentomino;
 
 function App() {
   const [boardNeedsInitiaization, setBoardInitialization] = useState(true);
   const [generation, setGeneration] = useState(0);
-  const [generationSpeed, setGenerationSpeed] = useState(1);
+  const [generationSpeed, setGenerationSpeed] = useState(3);
   const [isGameRunning, setIsGameRunning] = useState(false);
 
   useEffect(() => {
@@ -71,10 +72,12 @@ function App() {
     setBoardInitialization(true);
   }
 
+  const gameStatus = game.getStatus ? game.getStatus(): {};
+  const gridJSON = JSON.stringify(gameStatus, null, 2);
+
   return (
     <div className="App">
       <h1>Game of Life</h1>
-      {generation}
       <Grid game={game} onMouseOver={onMouseOver} />
       <GridControls 
         nextGeneration={nextGeneration} 
@@ -84,6 +87,14 @@ function App() {
         runGame={runGame}
         stopGame={stopGame}
       />
+      <h1>Diagnostics</h1>
+      <h2>Cell Data</h2>
+      <p>
+      <span><strong>Generations:</strong> {generation}</span>
+      </p>
+      <pre>
+        { gridJSON }
+      </pre>
     </div>
   );
 }
