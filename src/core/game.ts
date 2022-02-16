@@ -1,4 +1,5 @@
 import { forEach } from 'lodash';
+import { LifeGrid } from '../interfaces';
 import { getLiveNeighborCount, getNeighborCoordinates } from './coordinates';
 
 // Any live cell with fewer than two live neighbours dies, as if by underpopulation.
@@ -31,11 +32,6 @@ export function calculateNextGeneration(grid: LifeGrid): LifeGrid {
   });
 
   return nextGrid;
-}
-
-// The Life Grid state is represented as a Hasg
-export interface LifeGrid {
-  [coordinate: string]: boolean;
 }
 
 function gameOfLife (grid: LifeGrid): LifeGrid {

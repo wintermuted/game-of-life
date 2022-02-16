@@ -1,4 +1,4 @@
-import Game from "./Grid";
+import Game from "./Game";
 
 test('next', () => {
   const base = {

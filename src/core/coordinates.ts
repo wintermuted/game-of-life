@@ -1,5 +1,5 @@
 import { keys, intersection, without, forEach } from 'lodash';
-import { LifeGrid } from "./game";
+import { LifeGrid } from '../interfaces';
 
 export function getLiveNeighborCount(coordinate: string, grid: LifeGrid): number {  
   const neighborCoords = getNeighborCoordinates(coordinate)
@@ -13,7 +13,7 @@ export function getLiveNeighborCount(coordinate: string, grid: LifeGrid): number
 export function getDeadNeighborCoordinates(coordinate: string, grid: LifeGrid) {
   const neighborCoords = getNeighborCoordinates(coordinate)
   const neighborKeys = keys(neighborCoords);
-  const deadCells = [];
+  const deadCells: string[] =[];
 
   forEach(neighborKeys, (value) => {
     const isAlive = !!grid[value];
