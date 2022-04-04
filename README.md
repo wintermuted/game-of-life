@@ -13,10 +13,11 @@ This project is an implementation of [Conway's Game of Life](https://en.wikipedi
 ## Current State
 - The rules of the Game of Life have been implemented.  
   - A Dictionary is used as the primary datastructure.
+  - The implementation of the core logic can be found [here](https://github.com/wintermuted/game-of-life/blob/master/src/core/game.ts).
   - A class [`Grid`](https://github.com/wintermuted/game-of-life/blob/master/src/game/Grid.ts) can be used to start a game and step through it.
 - The game rules are backed with unit tests.
 - The game has been tested with common Still Life & Oscillator patterns.
-- There is currently no UI to use the game.
+- A rudimentary UI built with React has been added, however it is poorly optimized.  I rewrite is necessary for it to be performant with larger grids.
 
 ## Technology
 
