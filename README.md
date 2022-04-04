@@ -1,6 +1,8 @@
 Conway's Game of Life
 -----
 
+[![Node.js CI](https://github.com/wintermuted/game-of-life/actions/workflows/run-tests.yml/badge.svg?branch=master)](https://github.com/wintermuted/game-of-life/actions/workflows/run-tests.yml)
+
 This project is an implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) written in [Typescript](https://www.typescriptlang.org/).
 
 ## Goals
