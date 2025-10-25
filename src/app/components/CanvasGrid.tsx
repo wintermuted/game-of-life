@@ -2,6 +2,13 @@ import { useEffect, useRef } from "react";
 import { LifeGrid } from '../../interfaces';
 import { getCellFillColor, translateGrid } from '../util/coordinate';
 
+const CELL_STROKE_COLOR = '#777';
+const CELL_STROKE_WIDTH = 1;
+
+function getCoordinate(rowIndex: number, cellSize: number) {
+  return rowIndex + (cellSize * rowIndex);
+}
+
 interface Props {
   grid: LifeGrid;
   gridSize: number; // should only be even numbers
@@ -29,8 +36,8 @@ function CanvasGrid({ onMouseOver, grid, gridSize, cellSize }: Props) {
     // Draw all cells
     for (let columnIndex = 0; columnIndex < gridSize; columnIndex++) {
       for (let rowIndex = 0; rowIndex < gridSize; rowIndex++) {
-        const x = rowIndex + (cellSize * rowIndex);
-        const y = columnIndex + (cellSize * columnIndex);
+        const x = getCoordinate(rowIndex, cellSize);
+        const y = getCoordinate(columnIndex, cellSize);
         const alive = translatedGrid[`${rowIndex},${columnIndex}`];
         const color = getCellFillColor(alive, rowIndex, columnIndex, gridSize);
 
@@ -39,8 +46,8 @@ function CanvasGrid({ onMouseOver, grid, gridSize, cellSize }: Props) {
         ctx.fillRect(x, y, cellSize, cellSize);
 
         // Draw the stroke
-        ctx.strokeStyle = '#777';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = CELL_STROKE_COLOR;
+        ctx.lineWidth = CELL_STROKE_WIDTH;
         ctx.strokeRect(x, y, cellSize, cellSize);
       }
     }
