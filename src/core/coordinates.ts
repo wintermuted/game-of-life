@@ -1,4 +1,4 @@
-import { keys, intersection, without, forEach } from 'lodash';
+import { keys, intersection, forEach } from 'lodash';
 import { LifeGrid } from '../interfaces';
 
 export function getLiveNeighborCount(coordinate: string, grid: LifeGrid): number {  

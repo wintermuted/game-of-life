@@ -4,7 +4,6 @@ import GridControls from "./components/GridControls";
 import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
-import { beacon } from '../data/oscillators';
 import './styles/App.scss'
 
 let game: Game = {} as Game;
@@ -25,7 +24,7 @@ function App() {
       setBoardInitialization(false);
       setGeneration(0);
     }
-  });
+  }, [boardNeedsInitiaization]);
 
   function runGameInterval() {
     intervalID = setInterval(() => {
