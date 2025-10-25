@@ -1,6 +1,6 @@
 import Game from "../../class/Game";
 import '../styles/Grid.scss';
-import GridSquares from './GridSquares';
+import CanvasGrid from './CanvasGrid';
 
 interface Props {
   game: Game;
@@ -16,7 +16,7 @@ function Grid({ game, onMouseOver }: Props) {
 
   return (
     <div className="Grid">
-      <GridSquares 
+      <CanvasGrid 
         grid={gameStatus} 
         onMouseOver={onMouseOver} 
         gridSize={100} 
