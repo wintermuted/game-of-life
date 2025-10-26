@@ -24,3 +24,16 @@ This project is an implementation of [Conway's Game of Life](https://en.wikipedi
 - The game is implemented using Typescript.
 - Unit tests are written with Jest.
 - This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+## Deployment
+
+This project is automatically deployed to GitHub Pages using GitHub Actions:
+
+- **Production Deployment**: Automatically deployed to GitHub Pages when changes are merged to the `main` or `master` branch.
+  - 🌐 **Live Site**: https://wintermuted.github.io/game-of-life/
+- **PR Previews**: Each pull request receives a preview deployment which is automatically cleaned up when the PR is closed. The preview URL is posted as a comment on the PR.
+
+The deployment workflows are located in `.github/workflows/`:
+- `deploy-pages.yml` - Main production deployment
+- `deploy-pr-preview.yml` - PR preview deployments
+- `cleanup-pr-preview.yml` - PR preview cleanup
