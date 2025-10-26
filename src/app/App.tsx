@@ -12,19 +12,19 @@ let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
 const baseGame = rPentomino;
 
 function App() {
-  const [boardNeedsInitiaization, setBoardInitialization] = useState(true);
+  const [boardNeedsInitialization, setBoardInitialization] = useState(true);
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(3);
   const [isGameRunning, setIsGameRunning] = useState(false);
 
   useEffect(() => {
-    if (boardNeedsInitiaization) {
+    if (boardNeedsInitialization) {
       console.info('Board needs Initialization')
       game = new Game(baseGame)
       setBoardInitialization(false);
       setGeneration(0);
     }
-  }, [boardNeedsInitiaization]);
+  }, [boardNeedsInitialization]);
 
   function runGameInterval() {
     intervalID = setInterval(() => {
@@ -76,24 +76,28 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Game of Life</h1>
-      <Grid game={game} onMouseOver={onMouseOver} />
-      <GridControls 
-        nextGeneration={nextGeneration} 
-        updateGenerationSpeed={updateGenerationSpeed}
-        generationSpeed={generationSpeed} 
-        resetBoard={resetBoard}
-        toggleGame={toggleGame}
-        isGameRunning={isGameRunning}
-      />
-      <h1>Diagnostics</h1>
-      <h2>Cell Data</h2>
-      <p>
-      <span><strong>Generations:</strong> {generation}</span>
-      </p>
-      <pre>
-        { gridJSON }
-      </pre>
+      <div className="left-column">
+        <h1>Game of Life</h1>
+        <Grid game={game} onMouseOver={onMouseOver} />
+      </div>
+      <div className="right-column">
+        <GridControls 
+          nextGeneration={nextGeneration} 
+          updateGenerationSpeed={updateGenerationSpeed}
+          generationSpeed={generationSpeed} 
+          resetBoard={resetBoard}
+          toggleGame={toggleGame}
+          isGameRunning={isGameRunning}
+        />
+        <h1>Diagnostics</h1>
+        <h2>Cell Data</h2>
+        <p>
+          <span><strong>Generations:</strong> {generation}</span>
+        </p>
+        <pre>
+          { gridJSON }
+        </pre>
+      </div>
     </div>
   );
 }
