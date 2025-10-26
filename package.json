@@ -43,6 +43,8 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.178",
-    "sass": "^1.49.7"
+    "puppeteer": "^23.11.1",
+    "sass": "^1.49.7",
+    "wait-on": "^8.0.1"
   }
 }
