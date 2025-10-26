@@ -17,7 +17,7 @@ if grep -q "## Screenshot" "$README_FILE"; then
       print ""
       # Skip existing screenshot content until next section or non-empty line
       while (getline > 0) {
-        if ($0 ~ /^##[^#]/ || ($0 !~ /^!\[App Screenshot\]/ && $0 !~ /^$/ && NF > 0)) {
+        if ($0 ~ /^## [^#]/ || ($0 !~ /^!\[App Screenshot\]/ && $0 !~ /^$/ && NF > 0)) {
           print $0
           break
         }
