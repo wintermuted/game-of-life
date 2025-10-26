@@ -1,10 +1,13 @@
+import { useState } from 'react';
+import '../styles/GridControls.scss';
+
 interface Props {
   nextGeneration: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   updateGenerationSpeed: (value: number) => void;
   generationSpeed: number;
   resetBoard: () => void;
-  runGame: () => void;
-  stopGame: () => void;
+  toggleGame: () => void;
+  isGameRunning: boolean;
 }
 
 function GridControls({ 
@@ -12,12 +15,22 @@ function GridControls({
   updateGenerationSpeed, 
   generationSpeed,
   resetBoard,
-  runGame,
-  stopGame 
+  toggleGame,
+  isGameRunning 
 }: Props) {
+  const [showResetModal, setShowResetModal] = useState(false);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     updateGenerationSpeed(parseInt(e.target.value, 10))
+  }
+
+  function confirmReset() {
+    resetBoard();
+    setShowResetModal(false);
+  }
+
+  function cancelReset() {
+    setShowResetModal(false);
   }
 
   return (
@@ -25,12 +38,11 @@ function GridControls({
       <form onSubmit={(e) => e.preventDefault()}>
 
       <h1>Game Controls</h1>
-      <button onClick={runGame}>Start</button>
-      <button onClick={stopGame}>Stop</button>
-      <button onClick={nextGeneration}>Next</button>
-      <button onClick={resetBoard}>Reset</button>
-      <button>Clear</button>
-      <br />
+      <div className="button-group">
+        <button className="btn-primary" onClick={toggleGame}>{isGameRunning ? 'Pause' : 'Start'}</button>
+        <button className="btn-secondary" onClick={nextGeneration}>Next</button>
+        <button className="btn-danger" onClick={() => setShowResetModal(true)} disabled={isGameRunning}>Reset</button>
+      </div>
 
       <h1>Game Variables</h1>
 
@@ -45,6 +57,19 @@ function GridControls({
         onChange={onChange} 
       />
       </form>
+      
+      {showResetModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Confirm Reset</h2>
+            <p>Are you sure you want to reset the game? This will clear the current state and start over.</p>
+            <div className="modal-buttons">
+              <button onClick={confirmReset}>Yes, Reset</button>
+              <button onClick={cancelReset}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

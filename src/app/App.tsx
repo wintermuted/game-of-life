@@ -33,16 +33,16 @@ function App() {
     }, getGenerationSpeed(generationSpeed))
   }
 
-  function runGame() {
-    console.info("Starting game.");
-    runGameInterval();
-    setIsGameRunning(true);
-  }
-
-  function stopGame() {
-    console.info("Stopping game.");
-    clearInterval(intervalID)
-    setIsGameRunning(false);
+  function toggleGame() {
+    if (isGameRunning) {
+      console.info("Pausing game.");
+      clearInterval(intervalID);
+      setIsGameRunning(false);
+    } else {
+      console.info("Starting game.");
+      runGameInterval();
+      setIsGameRunning(true);
+    }
   }
 
   function onMouseOver(e: React.MouseEvent) {
@@ -86,8 +86,8 @@ function App() {
           updateGenerationSpeed={updateGenerationSpeed}
           generationSpeed={generationSpeed} 
           resetBoard={resetBoard}
-          runGame={runGame}
-          stopGame={stopGame}
+          toggleGame={toggleGame}
+          isGameRunning={isGameRunning}
         />
         <h1>Diagnostics</h1>
         <h2>Cell Data</h2>
