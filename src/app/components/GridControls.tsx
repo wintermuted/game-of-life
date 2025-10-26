@@ -28,7 +28,9 @@ function GridControls({
   const [showResetModal, setShowResetModal] = useState(false);
 
   function onChange(_event: Event, value: number | number[]) {
-    updateGenerationSpeed(value as number)
+    if (typeof value === 'number') {
+      updateGenerationSpeed(value);
+    }
   }
 
   function confirmReset() {
