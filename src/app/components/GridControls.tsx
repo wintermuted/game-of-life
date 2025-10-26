@@ -1,9 +1,9 @@
-import { Button, Slider, Typography, Box, Stack } from '@mui/material';
+import { useState } from 'react';
+import { Button, Slider, Typography, Box, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import StopIcon from '@mui/icons-material/Stop';
+import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import ClearIcon from '@mui/icons-material/Clear';
 
 import { useState } from 'react';
 import '../styles/GridControls.scss';
@@ -46,9 +46,24 @@ function GridControls({
 
       <Typography variant="h5" gutterBottom>Game Controls</Typography>
       <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-        <Button variant="contained" color="success" startIcon={<PlayArrowIcon />} onClick={toggleGame}>{isGameRunning ? 'Stop' : 'Start'}</Button>
+        <Button 
+          variant="contained" 
+          color={isGameRunning ? "warning" : "success"} 
+          startIcon={isGameRunning ? <PauseIcon /> : <PlayArrowIcon />} 
+          onClick={toggleGame}
+        >
+          {isGameRunning ? 'Pause' : 'Start'}
+        </Button>
         <Button variant="contained" startIcon={<SkipNextIcon />} onClick={nextGeneration}>Next</Button>
-        <Button variant="outlined" startIcon={<RestartAltIcon />} onClick={() => setShowResetModal(true)} disabled={isGameRunning}>Reset</Button>
+        <Button 
+          variant="outlined" 
+          color="error"
+          startIcon={<RestartAltIcon />} 
+          onClick={() => setShowResetModal(true)}
+          disabled={isGameRunning}
+        >
+          Reset
+        </Button>
       </Stack>
 
       <Typography variant="h5" gutterBottom>Game Variables</Typography>
@@ -66,6 +81,21 @@ function GridControls({
         sx={{ width: '100%', maxWidth: 300 }}
       />
       </form>
+      
+      <Dialog open={showResetModal} onClose={cancelReset}>
+        <DialogTitle>Confirm Reset</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to reset the game? This will clear the current state and start over.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelReset}>Cancel</Button>
+          <Button onClick={confirmReset} color="error" variant="contained">
+            Yes, Reset
+          </Button>
+        </DialogActions>
+      </Dialog>
       
       {showResetModal && (
         <div className="modal-overlay">
