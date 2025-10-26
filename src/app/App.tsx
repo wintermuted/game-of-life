@@ -12,19 +12,19 @@ let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
 const baseGame = rPentomino;
 
 function App() {
-  const [boardNeedsInitiaization, setBoardInitialization] = useState(true);
+  const [boardNeedsInitialization, setBoardInitialization] = useState(true);
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(3);
   const [isGameRunning, setIsGameRunning] = useState(false);
 
   useEffect(() => {
-    if (boardNeedsInitiaization) {
+    if (boardNeedsInitialization) {
       console.info('Board needs Initialization')
       game = new Game(baseGame)
       setBoardInitialization(false);
       setGeneration(0);
     }
-  }, [boardNeedsInitiaization]);
+  }, [boardNeedsInitialization]);
 
   function runGameInterval() {
     intervalID = setInterval(() => {
@@ -40,7 +40,7 @@ function App() {
   }
 
   function stopGame() {
-    console.info("Starting game.");
+    console.info("Stopping game.");
     clearInterval(intervalID)
     setIsGameRunning(false);
   }
