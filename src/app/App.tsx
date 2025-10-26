@@ -76,24 +76,28 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Game of Life</h1>
-      <Grid game={game} onMouseOver={onMouseOver} />
-      <GridControls 
-        nextGeneration={nextGeneration} 
-        updateGenerationSpeed={updateGenerationSpeed}
-        generationSpeed={generationSpeed} 
-        resetBoard={resetBoard}
-        runGame={runGame}
-        stopGame={stopGame}
-      />
-      <h1>Diagnostics</h1>
-      <h2>Cell Data</h2>
-      <p>
-      <span><strong>Generations:</strong> {generation}</span>
-      </p>
-      <pre>
-        { gridJSON }
-      </pre>
+      <div className="left-column">
+        <GridControls 
+          nextGeneration={nextGeneration} 
+          updateGenerationSpeed={updateGenerationSpeed}
+          generationSpeed={generationSpeed} 
+          resetBoard={resetBoard}
+          runGame={runGame}
+          stopGame={stopGame}
+        />
+        <h1>Diagnostics</h1>
+        <h2>Cell Data</h2>
+        <p>
+          <span><strong>Generations:</strong> {generation}</span>
+        </p>
+        <pre>
+          { gridJSON }
+        </pre>
+      </div>
+      <div className="right-column">
+        <h1>Game of Life</h1>
+        <Grid game={game} onMouseOver={onMouseOver} />
+      </div>
     </div>
   );
 }
