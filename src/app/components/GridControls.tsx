@@ -1,3 +1,10 @@
+import { Button, Slider, Typography, Box, Stack } from '@mui/material';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import StopIcon from '@mui/icons-material/Stop';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import ClearIcon from '@mui/icons-material/Clear';
+
 import { useState } from 'react';
 import '../styles/GridControls.scss';
 
@@ -20,8 +27,8 @@ function GridControls({
 }: Props) {
   const [showResetModal, setShowResetModal] = useState(false);
 
-  function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    updateGenerationSpeed(parseInt(e.target.value, 10))
+  function onChange(_event: Event, value: number | number[]) {
+    updateGenerationSpeed(value as number)
   }
 
   function confirmReset() {
@@ -34,27 +41,29 @@ function GridControls({
   }
 
   return (
-    <div className="GridControls">
+    <Box className="GridControls" sx={{ p: 2 }}>
       <form onSubmit={(e) => e.preventDefault()}>
 
-      <h1>Game Controls</h1>
-      <div className="button-group">
-        <button className="btn-primary" onClick={toggleGame}>{isGameRunning ? 'Pause' : 'Start'}</button>
-        <button className="btn-secondary" onClick={nextGeneration}>Next</button>
-        <button className="btn-danger" onClick={() => setShowResetModal(true)} disabled={isGameRunning}>Reset</button>
-      </div>
+      <Typography variant="h5" gutterBottom>Game Controls</Typography>
+      <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+        <Button variant="contained" color="success" startIcon={<PlayArrowIcon />} onClick={toggleGame}>{isGameRunning ? 'Stop' : 'Start'}</Button>
+        <Button variant="contained" startIcon={<SkipNextIcon />} onClick={nextGeneration}>Next</Button>
+        <Button variant="outlined" startIcon={<RestartAltIcon />} onClick={() => setShowResetModal(true)} disabled={isGameRunning}>Reset</Button>
+      </Stack>
 
-      <h1>Game Variables</h1>
+      <Typography variant="h5" gutterBottom>Game Variables</Typography>
 
-      <label>Generation Speed: {generationSpeed}</label>
-      <input 
-        type="range"
+      <Typography gutterBottom>Generation Speed: {generationSpeed}</Typography>
+      <Slider
         name="generationSpeed"
-        min="1" 
-        max="10" 
-        step="1" 
+        min={1}
+        max={10}
+        step={1}
         value={generationSpeed}
-        onChange={onChange} 
+        onChange={onChange}
+        marks
+        valueLabelDisplay="auto"
+        sx={{ width: '100%', maxWidth: 300 }}
       />
       </form>
       
@@ -70,7 +79,7 @@ function GridControls({
           </div>
         </div>
       )}
-    </div>
+    </Box>
   );
 }
 

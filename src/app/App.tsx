@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Container, Typography, Box, Paper } from '@mui/material';
 import Grid from "./components/Grid";
 import GridControls from "./components/GridControls";
 import { getGenerationSpeed } from './util';
@@ -75,30 +76,38 @@ function App() {
   const gridJSON = JSON.stringify(gameStatus, null, 2);
 
   return (
-    <div className="App">
-      <div className="left-column">
-        <h1>Game of Life</h1>
-        <Grid game={game} onMouseOver={onMouseOver} />
-      </div>
-      <div className="right-column">
-        <GridControls 
-          nextGeneration={nextGeneration} 
-          updateGenerationSpeed={updateGenerationSpeed}
-          generationSpeed={generationSpeed} 
-          resetBoard={resetBoard}
-          toggleGame={toggleGame}
-          isGameRunning={isGameRunning}
-        />
-        <h1>Diagnostics</h1>
-        <h2>Cell Data</h2>
-        <p>
-          <span><strong>Generations:</strong> {generation}</span>
-        </p>
-        <pre>
-          { gridJSON }
-        </pre>
-      </div>
-    </div>
+    <Container maxWidth="xl" className="App">
+      <Box display="flex" gap={3} sx={{ py: 3 }}>
+        <Box className="left-column">
+          <Typography variant="h3" component="h1" gutterBottom>
+            Game of Life
+          </Typography>
+          <Grid game={game} onMouseOver={onMouseOver} />
+        </Box>
+        <Box className="right-column">
+          <Paper elevation={3}>
+            <GridControls 
+              nextGeneration={nextGeneration} 
+              updateGenerationSpeed={updateGenerationSpeed}
+              generationSpeed={generationSpeed} 
+              resetBoard={resetBoard}
+              toggleGame={toggleGame}
+              isGameRunning={isGameRunning}
+            />
+          </Paper>
+          <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
+            <Typography variant="h5" gutterBottom>Diagnostics</Typography>
+            <Typography variant="h6" gutterBottom>Cell Data</Typography>
+            <Typography variant="body1">
+              <strong>Generations:</strong> {generation}
+            </Typography>
+            <Box component="pre" sx={{ overflow: 'auto', maxHeight: 400 }}>
+              { gridJSON }
+            </Box>
+          </Paper>
+        </Box>
+      </Box>
+    </Container>
   );
 }
 
