@@ -7,6 +7,8 @@ import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
 import './styles/App.scss'
 
+// Game of Life with MUI
+
 let game: Game = {} as Game;
 let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
 
