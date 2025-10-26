@@ -29,9 +29,6 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
-    - name: Install Puppeteer
-      run: npm install puppeteer
-    
     - name: Build the app
       run: npm run build
     
@@ -44,9 +41,9 @@ jobs:
         serve -s build -l 3000 &
         SERVER_PID=$!
         
-        # Wait for server to be ready
+        # Wait for server to be ready using wait-on
         echo "Waiting for server to start..."
-        sleep 5
+        npx wait-on http://localhost:3000 --timeout 30000
         
         # Capture screenshot using Puppeteer
         node scripts/capture-screenshot.js
