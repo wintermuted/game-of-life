@@ -77,6 +77,10 @@ function App() {
   return (
     <div className="App">
       <div className="left-column">
+        <h1>Game of Life</h1>
+        <Grid game={game} onMouseOver={onMouseOver} />
+      </div>
+      <div className="right-column">
         <GridControls 
           nextGeneration={nextGeneration} 
           updateGenerationSpeed={updateGenerationSpeed}
@@ -93,10 +97,6 @@ function App() {
         <pre>
           { gridJSON }
         </pre>
-      </div>
-      <div className="right-column">
-        <h1>Game of Life</h1>
-        <Grid game={game} onMouseOver={onMouseOver} />
       </div>
     </div>
   );
