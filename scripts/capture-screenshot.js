@@ -15,7 +15,7 @@ async function captureScreenshot() {
   await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
   
   // Wait a bit for the game to render
-  await page.waitForTimeout(2000);
+  await new Promise(resolve => setTimeout(resolve, 2000));
   
   // Create screenshots directory if it doesn't exist
   const screenshotsDir = path.join(process.cwd(), 'screenshots');
