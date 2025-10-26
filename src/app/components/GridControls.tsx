@@ -24,12 +24,6 @@ function GridControls({
     updateGenerationSpeed(parseInt(e.target.value, 10))
   }
 
-  function handleResetClick() {
-    if (!isGameRunning) {
-      setShowResetModal(true);
-    }
-  }
-
   function confirmReset() {
     resetBoard();
     setShowResetModal(false);
@@ -46,7 +40,7 @@ function GridControls({
       <h1>Game Controls</h1>
       <button onClick={toggleGame}>{isGameRunning ? 'Pause' : 'Start'}</button>
       <button onClick={nextGeneration}>Next</button>
-      <button onClick={handleResetClick} disabled={isGameRunning}>Reset</button>
+      <button onClick={() => setShowResetModal(true)} disabled={isGameRunning}>Reset</button>
       <button>Clear</button>
       <br />
 
