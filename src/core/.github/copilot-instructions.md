@@ -61,7 +61,7 @@ NW  N  NE
 SW  S  SE
 ```
 
-## Critical Functions
+## Key Functions
 
 ### `calculateNextGeneration(grid: LifeGrid): LifeGrid`
 **Purpose:** Apply Conway's rules to get the next generation

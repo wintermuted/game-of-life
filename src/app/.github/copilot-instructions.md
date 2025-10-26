@@ -24,6 +24,7 @@ app/
 - Use React hooks (`useState`, `useEffect`)
 - Game state is managed in `App.tsx`
 - Game instance is stored at module level (not in state)
+  - **Note:** This pattern works but could be improved with `useRef` to avoid issues with React strict mode and hot reloading
 - State triggers are: generation count, speed, running status
 
 ### Separation of Concerns
@@ -110,7 +111,7 @@ useEffect(() => {
 ### File Organization
 - One SCSS file per component in `styles/`
 - Import in corresponding component
-- Use BEM-like naming conventions
+- Use BEM-like naming conventions (e.g., `.grid__cell--active` for Block__Element--Modifier)
 
 ### Current Styles
 - `App.scss` - Layout (two-column design)
