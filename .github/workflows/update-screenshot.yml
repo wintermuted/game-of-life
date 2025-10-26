@@ -1,0 +1,63 @@
+name: Update README Screenshot
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  update-screenshot:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Puppeteer
+      run: npm install puppeteer
+    
+    - name: Build the app
+      run: npm run build
+    
+    - name: Start server and capture screenshot
+      run: |
+        # Install serve to run the built app
+        npm install -g serve
+        
+        # Start the server in the background
+        serve -s build -l 3000 &
+        SERVER_PID=$!
+        
+        # Wait for server to be ready
+        echo "Waiting for server to start..."
+        sleep 5
+        
+        # Capture screenshot using Puppeteer
+        node scripts/capture-screenshot.js
+        
+        # Kill the server
+        kill $SERVER_PID
+    
+    - name: Update README with screenshot
+      run: ./scripts/update-readme.sh
+    
+    - name: Commit and push if changed
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add screenshots/app-screenshot.png README.md
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update README screenshot [skip ci]"
+          git push
+        fi
