@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import GridControls from './GridControls';
 
 describe('GridControls', () => {
@@ -18,6 +18,10 @@ describe('GridControls', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it('shows Start button when game is not running', () => {
@@ -64,7 +68,7 @@ describe('GridControls', () => {
     expect(screen.queryByText('Confirm Reset')).not.toBeInTheDocument();
   });
 
-  it('calls resetBoard when Yes, Reset is clicked in modal', () => {
+  it('calls resetBoard when Yes, Reset is clicked in modal', async () => {
     render(<GridControls {...defaultProps} isGameRunning={false} />);
     const resetButton = screen.getByText('Reset');
     fireEvent.click(resetButton);
@@ -73,10 +77,12 @@ describe('GridControls', () => {
     fireEvent.click(confirmButton);
     
     expect(mockResetBoard).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText('Confirm Reset')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText('Confirm Reset')).not.toBeInTheDocument();
+    });
   });
 
-  it('closes modal without resetting when Cancel is clicked', () => {
+  it('closes modal without resetting when Cancel is clicked', async () => {
     render(<GridControls {...defaultProps} isGameRunning={false} />);
     const resetButton = screen.getByText('Reset');
     fireEvent.click(resetButton);
@@ -85,7 +91,9 @@ describe('GridControls', () => {
     fireEvent.click(cancelButton);
     
     expect(mockResetBoard).not.toHaveBeenCalled();
-    expect(screen.queryByText('Confirm Reset')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText('Confirm Reset')).not.toBeInTheDocument();
+    });
   });
 
   it('calls nextGeneration when Next button is clicked', () => {

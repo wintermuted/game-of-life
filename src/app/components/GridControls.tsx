@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import '../styles/GridControls.scss';
+import { Button, Slider, Typography, Box, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 interface Props {
   nextGeneration: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
@@ -20,8 +24,10 @@ function GridControls({
 }: Props) {
   const [showResetModal, setShowResetModal] = useState(false);
 
-  function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    updateGenerationSpeed(parseInt(e.target.value, 10))
+  function onChange(_event: Event, value: number | number[]) {
+    if (typeof value === 'number') {
+      updateGenerationSpeed(value);
+    }
   }
 
   function confirmReset() {
@@ -34,43 +40,62 @@ function GridControls({
   }
 
   return (
-    <div className="GridControls">
+    <Box className="GridControls" sx={{ p: 2 }}>
       <form onSubmit={(e) => e.preventDefault()}>
 
-      <h1>Game Controls</h1>
-      <div className="button-group">
-        <button className="btn-primary" onClick={toggleGame}>{isGameRunning ? 'Pause' : 'Start'}</button>
-        <button className="btn-secondary" onClick={nextGeneration}>Next</button>
-        <button className="btn-danger" onClick={() => setShowResetModal(true)} disabled={isGameRunning}>Reset</button>
-      </div>
+      <Typography variant="h5" gutterBottom>Game Controls</Typography>
+      <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+        <Button 
+          variant="contained" 
+          color={isGameRunning ? "warning" : "success"} 
+          startIcon={isGameRunning ? <PauseIcon /> : <PlayArrowIcon />} 
+          onClick={toggleGame}
+        >
+          {isGameRunning ? 'Pause' : 'Start'}
+        </Button>
+        <Button variant="contained" startIcon={<SkipNextIcon />} onClick={nextGeneration}>Next</Button>
+        <Button 
+          variant="outlined" 
+          color="error"
+          startIcon={<RestartAltIcon />} 
+          onClick={() => setShowResetModal(true)}
+          disabled={isGameRunning}
+        >
+          Reset
+        </Button>
+      </Stack>
 
-      <h1>Game Variables</h1>
+      <Typography variant="h5" gutterBottom>Game Variables</Typography>
 
-      <label>Generation Speed: {generationSpeed}</label>
-      <input 
-        type="range"
+      <Typography gutterBottom>Generation Speed: {generationSpeed}</Typography>
+      <Slider
         name="generationSpeed"
-        min="1" 
-        max="10" 
-        step="1" 
+        min={1}
+        max={10}
+        step={1}
         value={generationSpeed}
-        onChange={onChange} 
+        onChange={onChange}
+        marks
+        valueLabelDisplay="auto"
+        sx={{ width: '100%', maxWidth: 300 }}
       />
       </form>
       
-      {showResetModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Confirm Reset</h2>
-            <p>Are you sure you want to reset the game? This will clear the current state and start over.</p>
-            <div className="modal-buttons">
-              <button onClick={confirmReset}>Yes, Reset</button>
-              <button onClick={cancelReset}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <Dialog open={showResetModal} onClose={cancelReset}>
+        <DialogTitle>Confirm Reset</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to reset the game? This will clear the current state and start over.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelReset}>Cancel</Button>
+          <Button onClick={confirmReset} color="error" variant="contained">
+            Yes, Reset
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }
 
