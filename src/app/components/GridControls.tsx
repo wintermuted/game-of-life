@@ -5,9 +5,6 @@ import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
-import { useState } from 'react';
-import '../styles/GridControls.scss';
-
 interface Props {
   nextGeneration: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   updateGenerationSpeed: (value: number) => void;
@@ -98,19 +95,6 @@ function GridControls({
           </Button>
         </DialogActions>
       </Dialog>
-      
-      {showResetModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Confirm Reset</h2>
-            <p>Are you sure you want to reset the game? This will clear the current state and start over.</p>
-            <div className="modal-buttons">
-              <button onClick={confirmReset}>Yes, Reset</button>
-              <button onClick={cancelReset}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
     </Box>
   );
 }
