@@ -1,8 +1,15 @@
 name: Update README Screenshot
 
+# This workflow automatically captures a screenshot of the Game of Life app
+# and updates the README with it whenever changes are pushed to the master branch.
+# The workflow uses [skip ci] in the commit message to prevent infinite loops.
+
 on:
   push:
     branches: [ master ]
+
+permissions:
+  contents: write
 
 jobs:
   update-screenshot:
