@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 interface Props {
   nextGeneration: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   updateGenerationSpeed: (value: number) => void;
