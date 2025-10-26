@@ -24,6 +24,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Configure build for PR preview
+        run: |
+          # Remove homepage field to allow PUBLIC_URL to take precedence
+          node -e "const pkg=require('./package.json'); delete pkg.homepage; require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2));"
+
       - name: Build
         run: npm run build
         env:
