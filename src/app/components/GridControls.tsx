@@ -38,11 +38,11 @@ function GridControls({
       <form onSubmit={(e) => e.preventDefault()}>
 
       <h1>Game Controls</h1>
-      <button onClick={toggleGame}>{isGameRunning ? 'Pause' : 'Start'}</button>
-      <button onClick={nextGeneration}>Next</button>
-      <button onClick={() => setShowResetModal(true)} disabled={isGameRunning}>Reset</button>
-      <button>Clear</button>
-      <br />
+      <div className="button-group">
+        <button className="btn-primary" onClick={toggleGame}>{isGameRunning ? 'Pause' : 'Start'}</button>
+        <button className="btn-secondary" onClick={nextGeneration}>Next</button>
+        <button className="btn-danger" onClick={() => setShowResetModal(true)} disabled={isGameRunning}>Reset</button>
+      </div>
 
       <h1>Game Variables</h1>
 

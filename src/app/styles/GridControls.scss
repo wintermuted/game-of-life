@@ -1,7 +1,60 @@
 .GridControls {
-  button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  .button-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  button {
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-primary {
+    background-color: #1976d2;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #1565c0;
+    }
+  }
+
+  .btn-secondary {
+    background-color: #757575;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #616161;
+    }
+  }
+
+  .btn-danger {
+    background-color: #d32f2f;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #c62828;
+    }
   }
 }
 
