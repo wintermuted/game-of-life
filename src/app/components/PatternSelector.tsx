@@ -37,7 +37,7 @@ function PatternSelector({ onSelectPattern, disabled = false }: Props) {
       }}>
         {patterns.map((pattern, index) => (
           <ListItem 
-            key={index} 
+            key={pattern.name} 
             disablePadding
             divider={index < patterns.length - 1}
           >

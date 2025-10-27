@@ -39,7 +39,10 @@ function PatternPreview({ grid, size = 60 }: Props) {
     // Calculate cell size to fit the pattern with padding
     const padding = 4;
     const availableSize = size - (2 * padding);
-    const cellSize = Math.floor(availableSize / Math.max(patternWidth, patternHeight));
+    const maxDimension = Math.max(patternWidth, patternHeight);
+    const calculatedCellSize = Math.floor(availableSize / maxDimension);
+    // Ensure minimum cell size of 2 pixels for visibility
+    const cellSize = Math.max(2, calculatedCellSize);
 
     // Center the pattern
     const offsetX = padding + (availableSize - (patternWidth * cellSize)) / 2;
@@ -51,7 +54,9 @@ function PatternPreview({ grid, size = 60 }: Props) {
       const drawY = offsetY + ((y - minY) * cellSize);
 
       ctx.fillStyle = '#1976d2'; // Material UI primary color
-      ctx.fillRect(drawX, drawY, cellSize - 1, cellSize - 1);
+      // Ensure at least 1px cell size is drawn
+      const renderSize = Math.max(1, cellSize - 1);
+      ctx.fillRect(drawX, drawY, renderSize, renderSize);
     });
   }, [grid, size]);
 
