@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Container, Typography, Box, Paper, AppBar, Toolbar, IconButton, IconButton } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
@@ -87,15 +86,6 @@ function App() {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Conway's Game of Life
           </Typography>
@@ -114,15 +104,7 @@ function App() {
       <Container maxWidth="xl" className="App">
         <Box display="flex" gap={3} sx={{ py: 3 }}>
           <Box className="left-column">
-            <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
-            <Typography variant="h3" component="h1">
-                Game of Life
-              </Typography>
-              <IconButton onClick={toggleTheme} color="inherit" aria-label="toggle dark mode">
-              {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
-          </Box>
-          <Grid game={game} onMouseOver={onMouseOver} />
+            <Grid game={game} onMouseOver={onMouseOver} />
           </Box>
           <Box className="right-column">
             <Paper elevation={3}>
