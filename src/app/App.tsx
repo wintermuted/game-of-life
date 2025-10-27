@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Paper, AppBar, Toolbar, IconButton, IconButton, Tooltip } from '@mui/material';
+import { Container, Typography, Box, Paper, AppBar, Toolbar, IconButton, Tooltip } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
@@ -9,7 +9,6 @@ import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
 import { useThemeMode } from './ThemeContext';
-import './styles/App.scss'
 
 // Game of Life with MUI
 
@@ -89,6 +88,11 @@ function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Conway's Game of Life
           </Typography>
+          <Tooltip title="Toggle dark mode">
+            <IconButton onClick={toggleTheme} color="inherit" aria-label="toggle dark mode">
+              {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+          </Tooltip>
           <Tooltip title="View source on GitHub">
             <IconButton
               color="inherit"
