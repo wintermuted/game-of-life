@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Paper, IconButton } from '@mui/material';
+import { Container, Typography, Box, Paper, AppBar, Toolbar, IconButton, Tooltip } from '@mui/material';
+import GitHubIcon from '@mui/icons-material/GitHub';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Grid from "./components/Grid";
@@ -8,7 +9,6 @@ import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
 import { useThemeMode } from './ThemeContext';
-import './styles/App.scss'
 
 // Game of Life with MUI
 
@@ -82,43 +82,61 @@ function App() {
   const gridJSON = JSON.stringify(gameStatus, null, 2);
 
   return (
-    <Container maxWidth="xl" className="App">
-      <Box display="flex" gap={3} sx={{ py: 3 }}>
-        <Box className="left-column">
-          <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
-            <Typography variant="h3" component="h1">
-              Game of Life
-            </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Conway's Game of Life
+          </Typography>
+          <Tooltip title="Toggle dark mode">
             <IconButton onClick={toggleTheme} color="inherit" aria-label="toggle dark mode">
               {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
             </IconButton>
+          </Tooltip>
+          <Tooltip title="View source on GitHub">
+            <IconButton
+              color="inherit"
+              aria-label="github"
+              component="a"
+              href="https://github.com/wintermuted/game-of-life"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GitHubIcon />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
+      </AppBar>
+      <Container maxWidth="xl" className="App">
+        <Box display="flex" gap={3} sx={{ py: 3 }}>
+          <Box className="left-column">
+            <Grid game={game} onMouseOver={onMouseOver} />
           </Box>
-          <Grid game={game} onMouseOver={onMouseOver} />
+          <Box className="right-column">
+            <Paper elevation={3}>
+              <GridControls 
+                nextGeneration={nextGeneration} 
+                updateGenerationSpeed={updateGenerationSpeed}
+                generationSpeed={generationSpeed} 
+                resetBoard={resetBoard}
+                toggleGame={toggleGame}
+                isGameRunning={isGameRunning}
+              />
+            </Paper>
+            <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
+              <Typography variant="h5" gutterBottom>Diagnostics</Typography>
+              <Typography variant="h6" gutterBottom>Cell Data</Typography>
+              <Typography variant="body1">
+                <strong>Generations:</strong> {generation}
+              </Typography>
+              <Box component="pre" sx={{ overflow: 'auto', maxHeight: 400 }}>
+                { gridJSON }
+              </Box>
+            </Paper>
+          </Box>
         </Box>
-        <Box className="right-column">
-          <Paper elevation={3}>
-            <GridControls 
-              nextGeneration={nextGeneration} 
-              updateGenerationSpeed={updateGenerationSpeed}
-              generationSpeed={generationSpeed} 
-              resetBoard={resetBoard}
-              toggleGame={toggleGame}
-              isGameRunning={isGameRunning}
-            />
-          </Paper>
-          <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
-            <Typography variant="h5" gutterBottom>Diagnostics</Typography>
-            <Typography variant="h6" gutterBottom>Cell Data</Typography>
-            <Typography variant="body1">
-              <strong>Generations:</strong> {generation}
-            </Typography>
-            <Box component="pre" sx={{ overflow: 'auto', maxHeight: 400 }}>
-              { gridJSON }
-            </Box>
-          </Paper>
-        </Box>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 }
 
