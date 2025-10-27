@@ -45,11 +45,7 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
   }
 
   return (
-    <Box sx={{ mt: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Custom Pattern
-      </Typography>
-      
+    <Box>
       <TextField
         multiline
         rows={4}
