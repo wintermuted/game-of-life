@@ -5,10 +5,12 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Grid from "./components/Grid";
 import GridControls from "./components/GridControls";
+import CustomPatternInput from "./components/CustomPatternInput";
 import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
 import { useThemeMode } from './ThemeContext';
+import { LifeGrid } from '../interfaces';
 
 // Game of Life with MUI
 
@@ -22,16 +24,17 @@ function App() {
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(3);
   const [isGameRunning, setIsGameRunning] = useState(false);
+  const [currentPattern, setCurrentPattern] = useState<LifeGrid>(baseGame);
   const { mode, toggleTheme } = useThemeMode();
 
   useEffect(() => {
     if (boardNeedsInitialization) {
       console.info('Board needs Initialization')
-      game = new Game(baseGame)
+      game = new Game(currentPattern)
       setBoardInitialization(false);
       setGeneration(0);
     }
-  }, [boardNeedsInitialization]);
+  }, [boardNeedsInitialization, currentPattern]);
 
   function runGameInterval() {
     intervalID = setInterval(() => {
@@ -78,6 +81,12 @@ function App() {
     setBoardInitialization(true);
   }
 
+  function loadCustomPattern(grid: LifeGrid) {
+    console.info("Loading custom pattern", grid);
+    setCurrentPattern(grid);
+    setBoardInitialization(true);
+  }
+
   const gameStatus = game.getStatus ? game.getStatus(): {};
   const gridJSON = JSON.stringify(gameStatus, null, 2);
 
@@ -121,6 +130,10 @@ function App() {
                 resetBoard={resetBoard}
                 toggleGame={toggleGame}
                 isGameRunning={isGameRunning}
+              />
+              <CustomPatternInput 
+                onLoadPattern={loadCustomPattern}
+                disabled={isGameRunning}
               />
             </Paper>
             <Paper elevation={3} sx={{ mt: 3, p: 2 }}>

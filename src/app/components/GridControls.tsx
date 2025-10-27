@@ -40,7 +40,7 @@ function GridControls({
   }
 
   return (
-    <Box className="GridControls" sx={{ p: 2 }}>
+    <Box className="GridControls" sx={{ p: 2, pb: 0 }}>
       <form onSubmit={(e) => e.preventDefault()}>
 
       <Typography variant="h5" gutterBottom>Game Controls</Typography>
@@ -77,7 +77,7 @@ function GridControls({
         onChange={onChange}
         marks
         valueLabelDisplay="auto"
-        sx={{ width: '100%', maxWidth: 300 }}
+        sx={{ width: '100%', maxWidth: 300, mb: 3 }}
       />
       </form>
       
