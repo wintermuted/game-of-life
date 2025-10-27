@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Paper } from '@mui/material';
+import { Container, Typography, Box, Paper, IconButton } from '@mui/material';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Grid from "./components/Grid";
 import GridControls from "./components/GridControls";
 import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
+import { useThemeMode } from './ThemeContext';
 import './styles/App.scss'
 
 // Game of Life with MUI
@@ -19,6 +22,7 @@ function App() {
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(3);
   const [isGameRunning, setIsGameRunning] = useState(false);
+  const { mode, toggleTheme } = useThemeMode();
 
   useEffect(() => {
     if (boardNeedsInitialization) {
@@ -81,9 +85,14 @@ function App() {
     <Container maxWidth="xl" className="App">
       <Box display="flex" gap={3} sx={{ py: 3 }}>
         <Box className="left-column">
-          <Typography variant="h3" component="h1" gutterBottom>
-            Game of Life
-          </Typography>
+          <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
+            <Typography variant="h3" component="h1">
+              Game of Life
+            </Typography>
+            <IconButton onClick={toggleTheme} color="inherit" aria-label="toggle dark mode">
+              {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+          </Box>
           <Grid game={game} onMouseOver={onMouseOver} />
         </Box>
         <Box className="right-column">
