@@ -6,6 +6,7 @@ describe('GridControls', () => {
   const mockUpdateGenerationSpeed = jest.fn();
   const mockResetBoard = jest.fn();
   const mockToggleGame = jest.fn();
+  const mockCopyCurrentURL = jest.fn();
 
   const defaultProps = {
     nextGeneration: mockNextGeneration,
@@ -14,6 +15,7 @@ describe('GridControls', () => {
     resetBoard: mockResetBoard,
     toggleGame: mockToggleGame,
     isGameRunning: false,
+    copyCurrentURL: mockCopyCurrentURL,
   };
 
   beforeEach(() => {
@@ -108,5 +110,12 @@ describe('GridControls', () => {
     const slider = screen.getByRole('slider');
     fireEvent.change(slider, { target: { value: '5' } });
     expect(mockUpdateGenerationSpeed).toHaveBeenCalledWith(5);
+  });
+
+  it('calls copyCurrentURL when Copy URL button is clicked', () => {
+    render(<GridControls {...defaultProps} />);
+    const copyButton = screen.getByText('Copy URL');
+    fireEvent.click(copyButton);
+    expect(mockCopyCurrentURL).toHaveBeenCalledTimes(1);
   });
 });
