@@ -4,6 +4,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 interface Props {
   nextGeneration: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
@@ -12,6 +13,7 @@ interface Props {
   resetBoard: () => void;
   toggleGame: () => void;
   isGameRunning: boolean;
+  copyCurrentURL: () => void;
 }
 
 function GridControls({ 
@@ -20,7 +22,8 @@ function GridControls({
   generationSpeed,
   resetBoard,
   toggleGame,
-  isGameRunning 
+  isGameRunning,
+  copyCurrentURL
 }: Props) {
   const [showResetModal, setShowResetModal] = useState(false);
 
@@ -62,6 +65,17 @@ function GridControls({
           disabled={isGameRunning}
         >
           Reset
+        </Button>
+      </Stack>
+
+      <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+        <Button 
+          variant="outlined" 
+          startIcon={<ContentCopyIcon />} 
+          onClick={copyCurrentURL}
+          fullWidth
+        >
+          Copy URL
         </Button>
       </Stack>
 

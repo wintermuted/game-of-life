@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Paper, AppBar, Toolbar, IconButton, Tooltip } from '@mui/material';
+import { Container, Typography, Box, Paper, AppBar, Toolbar, IconButton, Tooltip, Snackbar, Alert } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
@@ -11,6 +11,7 @@ import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
 import { useThemeMode } from './ThemeContext';
 import { LifeGrid } from '../interfaces';
+import { getGridFromURL, updateURLWithGrid } from './util/urlState';
 
 // Game of Life with MUI
 
@@ -24,7 +25,13 @@ function App() {
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(3);
   const [isGameRunning, setIsGameRunning] = useState(false);
-  const [currentPattern, setCurrentPattern] = useState<LifeGrid>(baseGame);
+  const [currentPattern, setCurrentPattern] = useState<LifeGrid>(() => {
+    // Check URL for pattern on initial load
+    const urlPattern = getGridFromURL();
+    return urlPattern || baseGame;
+  });
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const { mode, toggleTheme } = useThemeMode();
 
   useEffect(() => {
@@ -48,6 +55,12 @@ function App() {
       console.info("Pausing game.");
       clearInterval(intervalID);
       setIsGameRunning(false);
+      
+      // Update URL when game is paused
+      const currentGrid = game.getStatus();
+      updateURLWithGrid(currentGrid);
+      setSnackbarMessage('URL updated with current pattern');
+      setSnackbarOpen(true);
     } else {
       console.info("Starting game.");
       runGameInterval();
@@ -85,6 +98,25 @@ function App() {
     console.info("Loading custom pattern", grid);
     setCurrentPattern(grid);
     setBoardInitialization(true);
+    
+    // Update URL when pattern is selected
+    updateURLWithGrid(grid);
+  }
+
+  function handleSnackbarClose() {
+    setSnackbarOpen(false);
+  }
+
+  function copyCurrentURL() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      setSnackbarMessage('URL copied to clipboard');
+      setSnackbarOpen(true);
+    }).catch((err) => {
+      console.error('Failed to copy URL:', err);
+      setSnackbarMessage('Failed to copy URL');
+      setSnackbarOpen(true);
+    });
   }
 
   const gameStatus = game.getStatus ? game.getStatus(): {};
@@ -130,6 +162,7 @@ function App() {
                 resetBoard={resetBoard}
                 toggleGame={toggleGame}
                 isGameRunning={isGameRunning}
+                copyCurrentURL={copyCurrentURL}
               />
               <PatternInput 
                 onLoadPattern={loadCustomPattern}
@@ -149,6 +182,16 @@ function App() {
           </Box>
         </Box>
       </Container>
+      <Snackbar 
+        open={snackbarOpen} 
+        autoHideDuration={3000} 
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
