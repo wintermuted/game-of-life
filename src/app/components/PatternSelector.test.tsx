@@ -16,9 +16,6 @@ describe('PatternSelector', () => {
     const mockHandler = jest.fn();
     render(<PatternSelector onSelectPattern={mockHandler} />);
     
-    // Check that the title is rendered
-    expect(screen.getByText('Starter Patterns')).toBeInTheDocument();
-    
     // Check that all pattern names are rendered
     patterns.forEach(pattern => {
       expect(screen.getByText(pattern.name)).toBeInTheDocument();

@@ -1,6 +1,5 @@
 import { 
   Box, 
-  Typography, 
   List, 
   ListItem, 
   ListItemButton,
@@ -24,10 +23,7 @@ function PatternSelector({ onSelectPattern, disabled = false }: Props) {
   }
 
   return (
-    <Box sx={{ mt: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        Starter Patterns
-      </Typography>
+    <Box>
       <List sx={{ 
         maxHeight: 400, 
         overflow: 'auto',
