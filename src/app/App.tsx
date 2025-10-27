@@ -6,6 +6,7 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Grid from "./components/Grid";
 import GridControls from "./components/GridControls";
 import CustomPatternInput from "./components/CustomPatternInput";
+import PatternSelector from "./components/PatternSelector";
 import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
@@ -133,6 +134,10 @@ function App() {
               />
               <CustomPatternInput 
                 onLoadPattern={loadCustomPattern}
+                disabled={isGameRunning}
+              />
+              <PatternSelector 
+                onSelectPattern={loadCustomPattern}
                 disabled={isGameRunning}
               />
             </Paper>

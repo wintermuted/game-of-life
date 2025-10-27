@@ -1,0 +1,70 @@
+import { 
+  Box, 
+  Typography, 
+  List, 
+  ListItem, 
+  ListItemButton,
+  ListItemText,
+  Chip
+} from '@mui/material';
+import { patterns, Pattern } from '../../data/patterns';
+import PatternPreview from './PatternPreview';
+import { LifeGrid } from '../../interfaces';
+
+interface Props {
+  onSelectPattern: (grid: LifeGrid) => void;
+  disabled?: boolean;
+}
+
+function PatternSelector({ onSelectPattern, disabled = false }: Props) {
+  function handlePatternClick(pattern: Pattern) {
+    if (!disabled) {
+      onSelectPattern(pattern.grid);
+    }
+  }
+
+  return (
+    <Box sx={{ mt: 3 }}>
+      <Typography variant="h5" gutterBottom>
+        Starter Patterns
+      </Typography>
+      <List sx={{ 
+        maxHeight: 400, 
+        overflow: 'auto',
+        border: '1px solid',
+        borderColor: 'divider',
+        borderRadius: 1
+      }}>
+        {patterns.map((pattern, index) => (
+          <ListItem 
+            key={index} 
+            disablePadding
+            divider={index < patterns.length - 1}
+          >
+            <ListItemButton 
+              onClick={() => handlePatternClick(pattern)}
+              disabled={disabled}
+              sx={{ py: 1.5 }}
+            >
+              <Box sx={{ mr: 2 }}>
+                <PatternPreview grid={pattern.grid} size={60} />
+              </Box>
+              <ListItemText 
+                primary={pattern.name}
+                secondary={
+                  <Chip 
+                    label={pattern.category} 
+                    size="small" 
+                    sx={{ mt: 0.5 }}
+                  />
+                }
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+}
+
+export default PatternSelector;
