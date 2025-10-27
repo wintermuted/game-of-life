@@ -21,10 +21,17 @@ interface ThemeProviderWrapperProps {
 }
 
 export function ThemeProviderWrapper({ children }: ThemeProviderWrapperProps) {
-  const [mode, setMode] = useState<ThemeMode>('light');
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    const savedMode = localStorage.getItem('themeMode');
+    return (savedMode === 'dark' || savedMode === 'light') ? savedMode : 'light';
+  });
 
   const toggleTheme = () => {
-    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+    setMode((prevMode) => {
+      const newMode = prevMode === 'light' ? 'dark' : 'light';
+      localStorage.setItem('themeMode', newMode);
+      return newMode;
+    });
   };
 
   const theme = useMemo(
