@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Paper, AppBar, Toolbar, IconButton, IconButton } from '@mui/material';
+import { Container, Typography, Box, Paper, AppBar, Toolbar, IconButton, IconButton, Tooltip } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
@@ -89,16 +89,18 @@ function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Conway's Game of Life
           </Typography>
-          <IconButton
-            color="inherit"
-            aria-label="github"
-            component="a"
-            href="https://github.com/wintermuted/game-of-life"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <GitHubIcon />
-          </IconButton>
+          <Tooltip title="View source on GitHub">
+            <IconButton
+              color="inherit"
+              aria-label="github"
+              component="a"
+              href="https://github.com/wintermuted/game-of-life"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GitHubIcon />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
       <Container maxWidth="xl" className="App">
