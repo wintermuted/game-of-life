@@ -61,12 +61,27 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
         variant="outlined"
         sx={{ mb: 1 }}
         helperText={
-          <span 
-            onClick={() => setShowHelp(!showHelp)} 
-            style={{ cursor: 'pointer', textDecoration: 'underline' }}
+          <Box
+            component="span"
+            role="button"
+            tabIndex={0}
+            onClick={() => setShowHelp(!showHelp)}
+            onKeyDown={(e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setShowHelp(!showHelp);
+              }
+            }}
+            sx={{ 
+              cursor: 'pointer', 
+              textDecoration: 'underline',
+              '&:hover': {
+                opacity: 0.7
+              }
+            }}
           >
             {showHelp ? 'Hide examples' : 'Show examples'}
-          </span>
+          </Box>
         }
       />
 
@@ -77,21 +92,21 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
           </Typography>
           <Typography variant="body2" component="div">
             <strong>1. JSON:</strong>
-            <pre style={{ fontSize: '0.75rem', margin: '4px 0' }}>
+            <Box component="pre" sx={{ fontSize: '0.75rem', m: '4px 0' }}>
               {`{ "1,0": true, "0,1": true, "1,1": true }`}
-            </pre>
+            </Box>
           </Typography>
           <Typography variant="body2" component="div">
             <strong>2. Space-separated:</strong>
-            <pre style={{ fontSize: '0.75rem', margin: '4px 0' }}>
+            <Box component="pre" sx={{ fontSize: '0.75rem', m: '4px 0' }}>
               {`1 0 0 1 1 1`}
-            </pre>
+            </Box>
           </Typography>
           <Typography variant="body2" component="div">
             <strong>3. Line-separated:</strong>
-            <pre style={{ fontSize: '0.75rem', margin: '4px 0' }}>
+            <Box component="pre" sx={{ fontSize: '0.75rem', m: '4px 0' }}>
               {`1 0\n0 1\n1 1`}
-            </pre>
+            </Box>
           </Typography>
         </Box>
       </Collapse>

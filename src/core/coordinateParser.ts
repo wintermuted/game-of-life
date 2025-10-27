@@ -39,7 +39,11 @@ export function parseCoordinates(input: string): LifeGrid {
     }
   }
 
-  // Try parsing as coordinate list (space or newline separated)
+  // Try parsing as coordinate list (space, newline, or comma separated)
+  // Split on whitespace and/or commas to get individual numbers
+  // Examples: "1 0 2 0" → ["1", "0", "2", "0"]
+  //           "1,0,2,0" → ["1", "0", "2", "0"]
+  //           "1,0 2,0" → ["1", "0", "2", "0"]
   const grid: LifeGrid = {};
   const coordinates = trimmedInput.split(/[\s,]+/).filter(s => s.length > 0);
   
