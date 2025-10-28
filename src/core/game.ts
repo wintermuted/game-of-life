@@ -34,6 +34,10 @@ export const DEFAULT_RULES: GameRules = {
   }
 };
 
+// Note: The 'death' rule is informational and describes the default behavior.
+// Death occurs implicitly when survival conditions aren't met.
+// This rule is included for UI completeness but doesn't affect execution.
+
 export function calculateNextGeneration(grid: LifeGrid, rules: GameRules = DEFAULT_RULES): LifeGrid {
   const nextGrid: LifeGrid = {};
 
