@@ -15,7 +15,7 @@ function App() {
   const { mode, toggleTheme } = useThemeMode();
 
   return (
-    <Router>
+    <Router basename="/game-of-life">
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <AppBar position="static">
           <Toolbar>
