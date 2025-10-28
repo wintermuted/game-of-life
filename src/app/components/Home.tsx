@@ -3,11 +3,13 @@ import { Container, Typography, Box, Paper, Snackbar, Alert } from '@mui/materia
 import Grid from "./Grid";
 import GridControls from "./GridControls";
 import PatternInput from "./PatternInput";
+import RulesPanel from "./RulesPanel";
 import { getGenerationSpeed } from '../util';
 import Game from '../../class/Game';
 import { rPentomino } from '../../data/methuselahs';
-import { LifeGrid, GameStats } from '../../interfaces';
+import { LifeGrid, GameStats, GameRules } from '../../interfaces';
 import { getGridFromURL, updateURLWithGrid } from '../util/urlState';
+import { DEFAULT_RULES } from '../../core/game';
 
 // Game of Life with MUI
 
@@ -29,16 +31,17 @@ function Home() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [stats, setStats] = useState<GameStats>({ liveCells: 0, births: 0, deaths: 0 });
+  const [rules, setRules] = useState<GameRules>(DEFAULT_RULES);
 
   useEffect(() => {
     if (boardNeedsInitialization) {
       console.info('Board needs Initialization')
-      game = new Game(currentPattern)
+      game = new Game(currentPattern, rules)
       setBoardInitialization(false);
       setGeneration(0);
       setStats(game.getStats());
     }
-  }, [boardNeedsInitialization, currentPattern]);
+  }, [boardNeedsInitialization, currentPattern, rules]);
 
   function runGameInterval() {
     intervalID = setInterval(() => {
@@ -102,6 +105,14 @@ function Home() {
     updateURLWithGrid(grid);
   }
 
+  function handleRulesChange(newRules: GameRules) {
+    console.info("Rules updated", newRules);
+    setRules(newRules);
+    if (game.setRules) {
+      game.setRules(newRules);
+    }
+  }
+
   function handleSnackbarClose() {
     setSnackbarOpen(false);
   }
@@ -118,7 +129,7 @@ function Home() {
     });
   }
 
-  const gameStatus = game.getStatus ? game.getStatus(): {};
+  const gameStatus = game.getStatus ? game.getStatus() : {};
   const gridJSON = JSON.stringify(gameStatus, null, 2);
 
   return (
@@ -143,6 +154,11 @@ function Home() {
               disabled={isGameRunning}
             />
           </Paper>
+          <RulesPanel 
+            rules={rules}
+            onRulesChange={handleRulesChange}
+            disabled={isGameRunning}
+          />
           <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
             <Typography variant="h5" gutterBottom>Diagnostics</Typography>
             <Typography variant="h6" gutterBottom>Statistics</Typography>
