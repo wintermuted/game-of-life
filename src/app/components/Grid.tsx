@@ -10,6 +10,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 
 interface Props {
   game: Game;
@@ -126,7 +127,7 @@ function Grid({ game, onMouseOver }: Props) {
                 onClick={handleResetZoom} 
                 aria-label="reset zoom"
               >
-                <CenterFocusStrongIcon fontSize="small" />
+                <ZoomOutMapIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Zoom In">
