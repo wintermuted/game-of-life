@@ -10,7 +10,7 @@ import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
 import { useThemeMode } from './ThemeContext';
-import { LifeGrid } from '../interfaces';
+import { LifeGrid, GameStats } from '../interfaces';
 import { getGridFromURL, updateURLWithGrid } from './util/urlState';
 
 // Game of Life with MUI
@@ -32,6 +32,7 @@ function App() {
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [stats, setStats] = useState<GameStats>({ liveCells: 0, births: 0, deaths: 0 });
   const { mode, toggleTheme } = useThemeMode();
 
   useEffect(() => {
@@ -40,6 +41,7 @@ function App() {
       game = new Game(currentPattern)
       setBoardInitialization(false);
       setGeneration(0);
+      setStats(game.getStats());
     }
   }, [boardNeedsInitialization, currentPattern]);
 
@@ -47,6 +49,7 @@ function App() {
     intervalID = setInterval(() => {
       game.next();
       setGeneration(game.getGenerations())
+      setStats(game.getStats());
     }, getGenerationSpeed(generationSpeed))
   }
 
@@ -76,6 +79,7 @@ function App() {
     console.info('Next generation pushed')
     game.next();
     setGeneration(game.getGenerations())
+    setStats(game.getStats());
   }
 
   function updateGenerationSpeed(value: number) {
@@ -171,10 +175,20 @@ function App() {
             </Paper>
             <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
               <Typography variant="h5" gutterBottom>Diagnostics</Typography>
-              <Typography variant="h6" gutterBottom>Cell Data</Typography>
+              <Typography variant="h6" gutterBottom>Statistics</Typography>
               <Typography variant="body1">
                 <strong>Generations:</strong> {generation}
               </Typography>
+              <Typography variant="body1">
+                <strong>Live Cells:</strong> {stats.liveCells}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Total Births:</strong> {stats.births}
+              </Typography>
+              <Typography variant="body1">
+                <strong>Total Deaths:</strong> {stats.deaths}
+              </Typography>
+              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Cell Data</Typography>
               <Box component="pre" sx={{ overflow: 'auto', maxHeight: 400 }}>
                 { gridJSON }
               </Box>

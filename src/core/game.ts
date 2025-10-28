@@ -1,5 +1,5 @@
 import { forEach } from 'lodash';
-import { LifeGrid } from '../interfaces';
+import { LifeGrid, GameStats } from '../interfaces';
 import { getLiveNeighborCount, getNeighborCoordinates } from './coordinates';
 
 // Any live cell with fewer than two live neighbours dies, as if by underpopulation.
@@ -32,6 +32,21 @@ export function calculateNextGeneration(grid: LifeGrid): LifeGrid {
   });
 
   return nextGrid;
+}
+
+export function calculateStats(previousGrid: LifeGrid, nextGrid: LifeGrid): GameStats {
+  const previousCells = Object.keys(previousGrid);
+  const nextCells = Object.keys(nextGrid);
+  
+  const liveCells = nextCells.length;
+  
+  // Births: cells that are in nextGrid but not in previousGrid
+  const births = nextCells.filter(coord => !previousGrid[coord]).length;
+  
+  // Deaths: cells that are in previousGrid but not in nextGrid
+  const deaths = previousCells.filter(coord => !nextGrid[coord]).length;
+  
+  return { liveCells, births, deaths };
 }
 
 function gameOfLife (grid: LifeGrid): LifeGrid {
