@@ -1,31 +1,31 @@
 import { toNumber, forEach } from "lodash";
 import { LifeGrid } from "../../interfaces";
 
-export function handleXCoord(x: string, gridSize: number) {
+export function handleXCoord(x: string, gridSize: number, offsetX: number = 0) {
   const xNumber = toNumber(x);
 
   if (xNumber >= 0) {
-    return xNumber + (gridSize / 2);
+    return xNumber + (gridSize / 2) - offsetX;
   } else if (xNumber < 0) {
-    return (gridSize / 2) + xNumber;
+    return (gridSize / 2) + xNumber - offsetX;
   } else {
     return xNumber;
   }
 }
 
-export function handleYCoord(y: string, gridSize: number) {
+export function handleYCoord(y: string, gridSize: number, offsetY: number = 0) {
   const yNumber = toNumber(y);
 
-  return (gridSize / 2) - 1 - yNumber;
+  return (gridSize / 2) - 1 - yNumber - offsetY;
 }
 
-export function translateGrid (grid: LifeGrid, gridSize: number): LifeGrid {
+export function translateGrid (grid: LifeGrid, gridSize: number, offsetX: number = 0, offsetY: number = 0): LifeGrid {
   const translatedGrid: LifeGrid = {} as LifeGrid;
 
   forEach(grid, (entry, key) => {
       const [x, y] = key.split(",")
-      const xOffset = handleXCoord(x, gridSize);
-      const yOffset = handleYCoord(y, gridSize);
+      const xOffset = handleXCoord(x, gridSize, offsetX);
+      const yOffset = handleYCoord(y, gridSize, offsetY);
       const newKey = `${xOffset},${yOffset}`;
       translatedGrid[newKey] = true;
   });

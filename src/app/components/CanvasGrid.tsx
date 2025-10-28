@@ -15,9 +15,11 @@ interface Props {
   gridSize: number; // should only be even numbers
   cellSize: number;
   onMouseOver: (e: React.MouseEvent) => void;
+  offsetX?: number;
+  offsetY?: number;
 }
 
-function CanvasGrid({ onMouseOver, grid, gridSize, cellSize }: Props) {
+function CanvasGrid({ onMouseOver, grid, gridSize, cellSize, offsetX = 0, offsetY = 0 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Calculate the scale factor to match display height
@@ -40,7 +42,7 @@ function CanvasGrid({ onMouseOver, grid, gridSize, cellSize }: Props) {
     ctx.save();
     ctx.scale(scaleFactor, scaleFactor);
 
-    const translatedGrid = translateGrid(grid, gridSize);
+    const translatedGrid = translateGrid(grid, gridSize, offsetX, offsetY);
 
     // Draw all cells
     for (let columnIndex = 0; columnIndex < gridSize; columnIndex++) {
@@ -62,7 +64,7 @@ function CanvasGrid({ onMouseOver, grid, gridSize, cellSize }: Props) {
     }
     
     ctx.restore();
-  }, [grid, gridSize, cellSize, canvasWidth, canvasHeight, scaleFactor]);
+  }, [grid, gridSize, cellSize, canvasWidth, canvasHeight, scaleFactor, offsetX, offsetY]);
 
   return (
     <div className="CanvasGrid">
