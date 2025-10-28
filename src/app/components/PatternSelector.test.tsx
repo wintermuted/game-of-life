@@ -60,7 +60,7 @@ describe('PatternSelector', () => {
     // Using getAllByText since categories can appear multiple times
     expect(screen.getAllByText('Still Life').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Oscillator').length).toBeGreaterThan(0);
-    expect(screen.getByText('Spaceship')).toBeInTheDocument();
-    expect(screen.getByText('Methuselah')).toBeInTheDocument();
+    expect(screen.getAllByText('Spaceship').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Methuselah').length).toBeGreaterThan(0);
   });
 });
