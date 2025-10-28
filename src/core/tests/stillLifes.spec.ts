@@ -1,4 +1,4 @@
-import { beehive, block, tub } from "../../data/stillLifes";
+import { beehive, block, tub, boat, loaf, pond } from "../../data/stillLifes";
 import gameOfLife from "../game";
 
 describe('still lifes', () => {
@@ -54,5 +54,59 @@ describe('still lifes', () => {
     test('gen3', () => {
       expect(gen3).toStrictEqual(tub)
     })
-  })
+  });
+
+  describe('boat', () => {
+    const gen1 = gameOfLife(boat);
+    const gen2 = gameOfLife(gen1);
+    const gen3 = gameOfLife(gen2);
+
+    test('gen1', () => {
+      expect(gen1).toStrictEqual(boat)
+    })
+
+    test('gen2', () => {
+      expect(gen2).toStrictEqual(boat)
+    })
+
+    test('gen3', () => {
+      expect(gen3).toStrictEqual(boat)
+    })
+  });
+
+  describe('loaf', () => {
+    const gen1 = gameOfLife(loaf);
+    const gen2 = gameOfLife(gen1);
+    const gen3 = gameOfLife(gen2);
+
+    test('gen1', () => {
+      expect(gen1).toStrictEqual(loaf)
+    })
+
+    test('gen2', () => {
+      expect(gen2).toStrictEqual(loaf)
+    })
+
+    test('gen3', () => {
+      expect(gen3).toStrictEqual(loaf)
+    })
+  });
+
+  describe('pond', () => {
+    const gen1 = gameOfLife(pond);
+    const gen2 = gameOfLife(gen1);
+    const gen3 = gameOfLife(gen2);
+
+    test('gen1', () => {
+      expect(gen1).toStrictEqual(pond)
+    })
+
+    test('gen2', () => {
+      expect(gen2).toStrictEqual(pond)
+    })
+
+    test('gen3', () => {
+      expect(gen3).toStrictEqual(pond)
+    })
+  });
 })
