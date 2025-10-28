@@ -4,7 +4,6 @@ import { getCellFillColor, translateGrid } from '../util/coordinate';
 
 const CELL_STROKE_COLOR = '#777';
 const CELL_STROKE_WIDTH = 1;
-const DISPLAY_HEIGHT = 800; // Match CSS height for crisp rendering
 
 function getCoordinate(rowIndex: number, cellSize: number) {
   return rowIndex + (cellSize * rowIndex);
@@ -22,11 +21,10 @@ interface Props {
 function CanvasGrid({ onMouseOver, grid, gridSize, cellSize, offsetX = 0, offsetY = 0 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  // Calculate the scale factor to match display height
-  const baseSize = gridSize * (cellSize + 1); // Original grid size with strokes
-  const scaleFactor = DISPLAY_HEIGHT / baseSize;
-  const canvasWidth = Math.floor(baseSize * scaleFactor);
-  const canvasHeight = DISPLAY_HEIGHT;
+  // Calculate canvas dimensions based on grid size and cell size
+  // Each cell takes cellSize pixels plus 1 pixel for stroke
+  const canvasWidth = gridSize * (cellSize + CELL_STROKE_WIDTH);
+  const canvasHeight = gridSize * (cellSize + CELL_STROKE_WIDTH);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,10 +35,6 @@ function CanvasGrid({ onMouseOver, grid, gridSize, cellSize, offsetX = 0, offset
 
     // Clear the canvas
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-    // Scale the context to render at higher resolution
-    ctx.save();
-    ctx.scale(scaleFactor, scaleFactor);
 
     const translatedGrid = translateGrid(grid, gridSize, offsetX, offsetY);
 
@@ -62,9 +56,7 @@ function CanvasGrid({ onMouseOver, grid, gridSize, cellSize, offsetX = 0, offset
         ctx.strokeRect(x, y, cellSize, cellSize);
       }
     }
-    
-    ctx.restore();
-  }, [grid, gridSize, cellSize, canvasWidth, canvasHeight, scaleFactor, offsetX, offsetY]);
+  }, [grid, gridSize, cellSize, canvasWidth, canvasHeight, offsetX, offsetY]);
 
   return (
     <div className="CanvasGrid">
