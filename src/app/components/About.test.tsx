@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import About from './About';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 
 describe('About', () => {
   test('renders about page title', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <About />
-      </BrowserRouter>
+      </MemoryRouter>
     );
     
     expect(screen.getByText(/About Conway's Game of Life/i)).toBeInTheDocument();
@@ -15,9 +15,9 @@ describe('About', () => {
 
   test('renders game description', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <About />
-      </BrowserRouter>
+      </MemoryRouter>
     );
     
     expect(screen.getByText(/What is Conway's Game of Life?/i)).toBeInTheDocument();
@@ -26,9 +26,9 @@ describe('About', () => {
 
   test('renders project information', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <About />
-      </BrowserRouter>
+      </MemoryRouter>
     );
     
     expect(screen.getByText(/About This Project/i)).toBeInTheDocument();
@@ -37,9 +37,9 @@ describe('About', () => {
 
   test('renders GitHub link', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <About />
-      </BrowserRouter>
+      </MemoryRouter>
     );
     
     const githubLink = screen.getByText(/View Source Code on GitHub/i);
@@ -49,9 +49,9 @@ describe('About', () => {
 
   test('renders Wikipedia link', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <About />
-      </BrowserRouter>
+      </MemoryRouter>
     );
     
     const wikiLink = screen.getByText(/Conway's Game of Life on Wikipedia/i);
@@ -61,9 +61,9 @@ describe('About', () => {
 
   test('renders game rules', () => {
     render(
-      <BrowserRouter>
+      <MemoryRouter>
         <About />
-      </BrowserRouter>
+      </MemoryRouter>
     );
     
     expect(screen.getByText(/Any live cell with 2-3 live neighbors survives/i)).toBeInTheDocument();

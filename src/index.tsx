@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './app/App';
 import reportWebVitals from './reportWebVitals';
@@ -7,9 +8,11 @@ import { ThemeProviderWrapper } from './app/ThemeContext';
 
 ReactDOM.render(
   <React.StrictMode>
-    <ThemeProviderWrapper>
-      <App />
-    </ThemeProviderWrapper>
+    <BrowserRouter basename="/game-of-life">
+      <ThemeProviderWrapper>
+        <App />
+      </ThemeProviderWrapper>
+    </BrowserRouter>
   </React.StrictMode>,
   document.getElementById('root')
 );
