@@ -6,12 +6,14 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Grid from "./components/Grid";
 import GridControls from "./components/GridControls";
 import PatternInput from "./components/PatternInput";
+import RulesPanel from "./components/RulesPanel";
 import { getGenerationSpeed } from './util';
 import Game from '../class/Game';
 import { rPentomino } from '../data/methuselahs';
 import { useThemeMode } from './ThemeContext';
-import { LifeGrid, GameStats } from '../interfaces';
+import { LifeGrid, GameStats, GameRules } from '../interfaces';
 import { getGridFromURL, updateURLWithGrid } from './util/urlState';
+import { DEFAULT_RULES } from '../core/game';
 
 // Game of Life with MUI
 
@@ -33,17 +35,18 @@ function App() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [stats, setStats] = useState<GameStats>({ liveCells: 0, births: 0, deaths: 0 });
+  const [rules, setRules] = useState<GameRules>(DEFAULT_RULES);
   const { mode, toggleTheme } = useThemeMode();
 
   useEffect(() => {
     if (boardNeedsInitialization) {
       console.info('Board needs Initialization')
-      game = new Game(currentPattern)
+      game = new Game(currentPattern, rules)
       setBoardInitialization(false);
       setGeneration(0);
       setStats(game.getStats());
     }
-  }, [boardNeedsInitialization, currentPattern]);
+  }, [boardNeedsInitialization, currentPattern, rules]);
 
   function runGameInterval() {
     intervalID = setInterval(() => {
@@ -105,6 +108,14 @@ function App() {
     
     // Update URL when pattern is selected
     updateURLWithGrid(grid);
+  }
+
+  function handleRulesChange(newRules: GameRules) {
+    console.info("Rules updated", newRules);
+    setRules(newRules);
+    if (game.setRules) {
+      game.setRules(newRules);
+    }
   }
 
   function handleSnackbarClose() {
@@ -173,6 +184,11 @@ function App() {
                 disabled={isGameRunning}
               />
             </Paper>
+            <RulesPanel 
+              rules={rules}
+              onRulesChange={handleRulesChange}
+              disabled={isGameRunning}
+            />
             <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
               <Typography variant="h5" gutterBottom>Diagnostics</Typography>
               <Typography variant="h6" gutterBottom>Statistics</Typography>
