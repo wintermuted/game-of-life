@@ -1,4 +1,4 @@
-import gameOfLife from "./game";
+import gameOfLife, { calculateStats } from "./game";
 
 describe('any live cell with fewer than two live neighbors dies, as if by underpopulation', () => {
   test('zero neighbors', () => {
@@ -196,5 +196,88 @@ describe('Any dead cell with exactly three live neighbours becomes a live cell, 
     })
 
     expect(next["0,0"]).toBeDefined();
+  });
+})
+
+describe('calculateStats', () => {
+  test('calculates stats for all deaths', () => {
+    const previous = {
+      "0,0": true,
+      "0,1": true
+    };
+    
+    const next = {};
+    
+    const stats = calculateStats(previous, next);
+    
+    expect(stats).toStrictEqual({
+      liveCells: 0,
+      births: 0,
+      deaths: 2
+    });
+  });
+
+  test('calculates stats for all births', () => {
+    const previous = {};
+    
+    const next = {
+      "0,0": true,
+      "0,1": true,
+      "1,0": true
+    };
+    
+    const stats = calculateStats(previous, next);
+    
+    expect(stats).toStrictEqual({
+      liveCells: 3,
+      births: 3,
+      deaths: 0
+    });
+  });
+
+  test('calculates stats for mixed births and deaths', () => {
+    const previous = {
+      "0,0": true,
+      "0,1": true,
+      "1,0": true
+    };
+    
+    const next = {
+      "0,0": true,
+      "0,1": true,
+      "1,0": true,
+      "1,1": true
+    };
+    
+    const stats = calculateStats(previous, next);
+    
+    expect(stats).toStrictEqual({
+      liveCells: 4,
+      births: 1,
+      deaths: 0
+    });
+  });
+
+  test('calculates stats when some cells survive and some die', () => {
+    const previous = {
+      "0,0": true,
+      "0,1": true,
+      "1,0": true,
+      "2,0": true
+    };
+    
+    const next = {
+      "0,0": true,
+      "1,0": true,
+      "1,1": true
+    };
+    
+    const stats = calculateStats(previous, next);
+    
+    expect(stats).toStrictEqual({
+      liveCells: 3,
+      births: 1,
+      deaths: 2
+    });
   });
 })
