@@ -8,6 +8,9 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 
 interface Props {
   game: Game;
@@ -15,10 +18,15 @@ interface Props {
 }
 
 const PAN_AMOUNT = 10; // Number of cells to pan
+const DEFAULT_CELL_SIZE = 7;
+const MIN_CELL_SIZE = 2;
+const MAX_CELL_SIZE = 20;
+const ZOOM_STEP = 1;
 
 function Grid({ game, onMouseOver }: Props) {
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
+  const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
 
   if (!game) {
     return null;
@@ -35,6 +43,10 @@ function Grid({ game, onMouseOver }: Props) {
     setOffsetY(0);
   };
 
+  const handleZoomIn = () => setCellSize(prev => Math.min(prev + ZOOM_STEP, MAX_CELL_SIZE));
+  const handleZoomOut = () => setCellSize(prev => Math.max(prev - ZOOM_STEP, MIN_CELL_SIZE));
+  const handleResetZoom = () => setCellSize(DEFAULT_CELL_SIZE);
+
   return (
     <div className="Grid">
       <Box sx={{ position: 'relative' }}>
@@ -42,7 +54,7 @@ function Grid({ game, onMouseOver }: Props) {
           grid={gameStatus} 
           onMouseOver={onMouseOver} 
           gridSize={100} 
-          cellSize={7}
+          cellSize={cellSize}
           offsetX={offsetX}
           offsetY={offsetY}
         />
@@ -59,6 +71,7 @@ function Grid({ game, onMouseOver }: Props) {
             padding: 0.5
           }}
         >
+          {/* Pan Controls */}
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Tooltip title="Pan Up">
               <IconButton size="small" onClick={handlePanUp} aria-label="pan up">
@@ -88,6 +101,46 @@ function Grid({ game, onMouseOver }: Props) {
               <IconButton size="small" onClick={handlePanDown} aria-label="pan down">
                 <ArrowDownwardIcon fontSize="small" />
               </IconButton>
+            </Tooltip>
+          </Box>
+          
+          {/* Divider */}
+          <Box sx={{ height: '1px', backgroundColor: 'rgba(0, 0, 0, 0.12)', my: 0.5 }} />
+          
+          {/* Zoom Controls */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+            <Tooltip title="Zoom Out">
+              <span>
+                <IconButton 
+                  size="small" 
+                  onClick={handleZoomOut} 
+                  aria-label="zoom out"
+                  disabled={cellSize <= MIN_CELL_SIZE}
+                >
+                  <ZoomOutIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title="Reset Zoom">
+              <IconButton 
+                size="small" 
+                onClick={handleResetZoom} 
+                aria-label="reset zoom"
+              >
+                <ZoomOutMapIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Zoom In">
+              <span>
+                <IconButton 
+                  size="small" 
+                  onClick={handleZoomIn} 
+                  aria-label="zoom in"
+                  disabled={cellSize >= MAX_CELL_SIZE}
+                >
+                  <ZoomInIcon fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
           </Box>
         </Box>
