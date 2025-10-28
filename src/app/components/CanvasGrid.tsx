@@ -4,7 +4,7 @@ import { getCellFillColor, translateGrid } from '../util/coordinate';
 
 const CELL_STROKE_COLOR = '#777';
 const CELL_STROKE_WIDTH = 1;
-const DISPLAY_HEIGHT = 800; // Match CSS height for crisp rendering
+const DISPLAY_SIZE = 800; // Fixed canvas size in pixels
 
 function getCoordinate(rowIndex: number, cellSize: number) {
   return rowIndex + (cellSize * rowIndex);
@@ -12,21 +12,23 @@ function getCoordinate(rowIndex: number, cellSize: number) {
 
 interface Props {
   grid: LifeGrid;
-  gridSize: number; // should only be even numbers
+  gridSize: number; // should only be even numbers (not used directly, calculated from cellSize)
   cellSize: number;
   onMouseOver: (e: React.MouseEvent) => void;
   offsetX?: number;
   offsetY?: number;
 }
 
-function CanvasGrid({ onMouseOver, grid, gridSize, cellSize, offsetX = 0, offsetY = 0 }: Props) {
+function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  // Calculate the scale factor to match display height
-  const baseSize = gridSize * (cellSize + 1); // Original grid size with strokes
-  const scaleFactor = DISPLAY_HEIGHT / baseSize;
-  const canvasWidth = Math.floor(baseSize * scaleFactor);
-  const canvasHeight = DISPLAY_HEIGHT;
+  // Calculate how many cells fit in the fixed display size based on cellSize
+  // Smaller cellSize = more cells visible, larger cellSize = fewer cells visible
+  const calculatedGridSize = Math.floor(DISPLAY_SIZE / (cellSize + CELL_STROKE_WIDTH));
+  
+  // Keep canvas size fixed
+  const canvasWidth = DISPLAY_SIZE;
+  const canvasHeight = DISPLAY_SIZE;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,19 +40,15 @@ function CanvasGrid({ onMouseOver, grid, gridSize, cellSize, offsetX = 0, offset
     // Clear the canvas
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // Scale the context to render at higher resolution
-    ctx.save();
-    ctx.scale(scaleFactor, scaleFactor);
+    const translatedGrid = translateGrid(grid, calculatedGridSize, offsetX, offsetY);
 
-    const translatedGrid = translateGrid(grid, gridSize, offsetX, offsetY);
-
-    // Draw all cells
-    for (let columnIndex = 0; columnIndex < gridSize; columnIndex++) {
-      for (let rowIndex = 0; rowIndex < gridSize; rowIndex++) {
+    // Draw all cells based on calculated grid size
+    for (let columnIndex = 0; columnIndex < calculatedGridSize; columnIndex++) {
+      for (let rowIndex = 0; rowIndex < calculatedGridSize; rowIndex++) {
         const x = getCoordinate(rowIndex, cellSize);
         const y = getCoordinate(columnIndex, cellSize);
         const alive = translatedGrid[`${rowIndex},${columnIndex}`];
-        const color = getCellFillColor(alive, rowIndex, columnIndex, gridSize);
+        const color = getCellFillColor(alive, rowIndex, columnIndex, calculatedGridSize);
 
         // Fill the cell
         ctx.fillStyle = color;
@@ -62,9 +60,7 @@ function CanvasGrid({ onMouseOver, grid, gridSize, cellSize, offsetX = 0, offset
         ctx.strokeRect(x, y, cellSize, cellSize);
       }
     }
-    
-    ctx.restore();
-  }, [grid, gridSize, cellSize, canvasWidth, canvasHeight, scaleFactor, offsetX, offsetY]);
+  }, [grid, calculatedGridSize, cellSize, canvasWidth, canvasHeight, offsetX, offsetY]);
 
   return (
     <div className="CanvasGrid">
