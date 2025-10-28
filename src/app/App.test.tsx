@@ -1,6 +1,16 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
 import { ThemeProviderWrapper } from './ThemeContext';
+import { MemoryRouter } from 'react-router-dom';
+
+// Mock canvas getContext to avoid JSDOM canvas errors
+beforeAll(() => {
+  HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
+    clearRect: jest.fn(),
+    fillRect: jest.fn(),
+    fillStyle: '',
+  })) as any;
+});
 
 describe('App Dark Mode Toggle', () => {
   it('renders dark mode toggle button', () => {
@@ -27,5 +37,17 @@ describe('App Dark Mode Toggle', () => {
     
     // Verify the button is still present after toggle
     expect(toggleButton).toBeInTheDocument();
+  });
+
+  it('renders navigation buttons', () => {
+    render(
+      <ThemeProviderWrapper>
+        <App />
+      </ThemeProviderWrapper>
+    );
+    
+    expect(screen.getByLabelText('home')).toBeInTheDocument();
+    expect(screen.getByLabelText('about')).toBeInTheDocument();
+    expect(screen.getByLabelText('github')).toBeInTheDocument();
   });
 });
