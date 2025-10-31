@@ -134,11 +134,11 @@ function Home() {
 
   return (
     <Container maxWidth="xl" className="App">
-      <Box display="flex" gap={3} sx={{ py: 3 }}>
-        <Box className="left-column">
+      <Box display="flex" gap={3} sx={{ py: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+        <Box className="left-column" sx={{ width: { xs: '100%', md: 'auto' } }}>
           <Grid game={game} onMouseOver={onMouseOver} />
         </Box>
-        <Box className="right-column">
+        <Box className="right-column" sx={{ width: { xs: '100%', md: '350px' } }}>
           <Paper elevation={3}>
             <GridControls 
               nextGeneration={nextGeneration} 
