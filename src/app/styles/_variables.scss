@@ -1,3 +1,6 @@
 // Responsive breakpoints
+// Using 767px (max-width) and 768px (min-width) ensures clean separation:
+// - Mobile: 0-767px
+// - Desktop: 768px+
 $breakpoint-mobile: 767px;
 $breakpoint-tablet: 768px;

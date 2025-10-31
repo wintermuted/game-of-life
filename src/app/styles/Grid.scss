@@ -30,6 +30,7 @@
     max-height: 100%;
     
     // Mobile: scale down canvas to fit container
+    // Note: !important is required to override inline width/height attributes set by React
     @media (max-width: $breakpoint-mobile) {
       width: 100% !important;
       height: auto !important;
