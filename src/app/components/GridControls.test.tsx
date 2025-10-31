@@ -1,12 +1,13 @@
+import { vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import GridControls from './GridControls';
 
 describe('GridControls', () => {
-  const mockNextGeneration = jest.fn();
-  const mockUpdateGenerationSpeed = jest.fn();
-  const mockResetBoard = jest.fn();
-  const mockToggleGame = jest.fn();
-  const mockCopyCurrentURL = jest.fn();
+  const mockNextGeneration = vi.fn();
+  const mockUpdateGenerationSpeed = vi.fn();
+  const mockResetBoard = vi.fn();
+  const mockToggleGame = vi.fn();
+  const mockCopyCurrentURL = vi.fn();
 
   const defaultProps = {
     nextGeneration: mockNextGeneration,
@@ -19,7 +20,7 @@ describe('GridControls', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {

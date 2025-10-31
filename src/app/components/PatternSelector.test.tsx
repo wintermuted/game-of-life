@@ -1,19 +1,20 @@
+import { vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PatternSelector from './PatternSelector';
 import { patterns } from '../../data/patterns';
 
 // Mock canvas getContext to avoid JSDOM canvas errors
 beforeAll(() => {
-  HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
-    clearRect: jest.fn(),
-    fillRect: jest.fn(),
+  HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
     fillStyle: '',
   })) as any;
 });
 
 describe('PatternSelector', () => {
   test('renders all patterns', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     render(<PatternSelector onSelectPattern={mockHandler} />);
     
     // Check that all pattern names are rendered
@@ -29,7 +30,7 @@ describe('PatternSelector', () => {
   });
 
   test('calls onSelectPattern when a pattern is clicked', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     render(<PatternSelector onSelectPattern={mockHandler} />);
     
     // Click on the first pattern
@@ -41,7 +42,7 @@ describe('PatternSelector', () => {
   });
 
   test('does not call onSelectPattern when disabled', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     render(<PatternSelector onSelectPattern={mockHandler} disabled={true} />);
     
     // Try to click on a pattern
@@ -53,7 +54,7 @@ describe('PatternSelector', () => {
   });
 
   test('displays pattern categories correctly', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     render(<PatternSelector onSelectPattern={mockHandler} />);
     
     // Check that different categories are displayed

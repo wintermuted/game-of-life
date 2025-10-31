@@ -1,12 +1,13 @@
+import { vi } from 'vitest';
 import { render } from '@testing-library/react';
 import PatternPreview from './PatternPreview';
 import { block } from '../../data/stillLifes';
 
 // Mock canvas getContext to avoid JSDOM canvas errors
 beforeAll(() => {
-  HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
-    clearRect: jest.fn(),
-    fillRect: jest.fn(),
+  HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
     fillStyle: '',
   })) as any;
 });
