@@ -11,10 +11,12 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
+import { ColorPalette } from '../constants/colors';
 
 interface Props {
   game: Game;
   onMouseOver: (e: React.MouseEvent) => void;
+  palette?: ColorPalette;
 }
 
 const PAN_AMOUNT = 10; // Number of cells to pan
@@ -23,7 +25,7 @@ const MIN_CELL_SIZE = 2;
 const MAX_CELL_SIZE = 20;
 const ZOOM_STEP = 1;
 
-function Grid({ game, onMouseOver }: Props) {
+function Grid({ game, onMouseOver, palette }: Props) {
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
@@ -57,6 +59,7 @@ function Grid({ game, onMouseOver }: Props) {
           cellSize={cellSize}
           offsetX={offsetX}
           offsetY={offsetY}
+          palette={palette}
         />
         <Box 
           sx={{ 

@@ -4,12 +4,14 @@ import Grid from "./Grid";
 import GridControls from "./GridControls";
 import PatternInput from "./PatternInput";
 import RulesPanel from "./RulesPanel";
+import ColorPaletteSelector from "./ColorPaletteSelector";
 import { getGenerationSpeed } from '../util';
 import Game from '../../class/Game';
 import { rPentomino } from '../../data/methuselahs';
 import { LifeGrid, GameStats, GameRules } from '../../interfaces';
 import { getGridFromURL, updateURLWithGrid } from '../util/urlState';
 import { DEFAULT_RULES } from '../../core/game';
+import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
 
 // Game of Life with MUI
 
@@ -32,6 +34,8 @@ function Home() {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [stats, setStats] = useState<GameStats>({ liveCells: 0, births: 0, deaths: 0 });
   const [rules, setRules] = useState<GameRules>(DEFAULT_RULES);
+  const [selectedPaletteId, setSelectedPaletteId] = useState(DEFAULT_PALETTE_ID);
+  const selectedPalette = getPaletteById(selectedPaletteId);
 
   useEffect(() => {
     if (boardNeedsInitialization) {
@@ -113,6 +117,11 @@ function Home() {
     }
   }
 
+  function handlePaletteChange(paletteId: string) {
+    console.info("Palette changed", paletteId);
+    setSelectedPaletteId(paletteId);
+  }
+
   function handleSnackbarClose() {
     setSnackbarOpen(false);
   }
@@ -136,7 +145,7 @@ function Home() {
     <Container maxWidth="xl" className="App">
       <Box display="flex" gap={3} sx={{ py: 3, flexDirection: { xs: 'column', md: 'row' } }}>
         <Box className="left-column" sx={{ width: { xs: '100%', md: 'auto' } }}>
-          <Grid game={game} onMouseOver={onMouseOver} />
+          <Grid game={game} onMouseOver={onMouseOver} palette={selectedPalette} />
         </Box>
         <Box className="right-column" sx={{ width: { xs: '100%', md: '350px' } }}>
           <Paper elevation={3}>
@@ -151,6 +160,11 @@ function Home() {
             />
             <PatternInput 
               onLoadPattern={loadCustomPattern}
+              disabled={isGameRunning}
+            />
+            <ColorPaletteSelector
+              selectedPaletteId={selectedPaletteId}
+              onPaletteChange={handlePaletteChange}
               disabled={isGameRunning}
             />
           </Paper>
