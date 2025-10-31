@@ -1,3 +1,5 @@
+@import 'variables';
+
 body {
   background-color: rgb(34, 39, 46);
   color: rgb(173, 186, 199);
@@ -37,7 +39,7 @@ body {
   }
 
   // Mobile: reduce padding for more canvas space
-  @media (max-width: 767px) {
+  @media (max-width: $breakpoint-mobile) {
     padding: 10px;
   }
 }
@@ -68,12 +70,12 @@ body {
   }
 
   // Desktop: add border on left
-  @media (min-width: 768px) {
+  @media (min-width: $breakpoint-tablet) {
     border-left: 1px solid rgba(205, 217, 229, 0.1);
   }
 
   // Mobile: reduce padding and add top border instead
-  @media (max-width: 767px) {
+  @media (max-width: $breakpoint-mobile) {
     padding: 15px;
     border-top: 1px solid rgba(205, 217, 229, 0.1);
   }
