@@ -35,15 +35,18 @@ body {
   h1 {
     margin-top: 0;
   }
+
+  // Mobile: reduce padding for more canvas space
+  @media (max-width: 767px) {
+    padding: 10px;
+  }
 }
 
 .right-column {
-  width: 350px;
   padding: 20px;
   background-color: rgb(34, 39, 46);
   overflow-y: auto;
   flex-shrink: 0;
-  border-left: 1px solid rgba(205, 217, 229, 0.1);
 
   h1 {
     font-size: 24px;
@@ -62,5 +65,16 @@ body {
     overflow-x: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
+  }
+
+  // Desktop: add border on left
+  @media (min-width: 768px) {
+    border-left: 1px solid rgba(205, 217, 229, 0.1);
+  }
+
+  // Mobile: reduce padding and add top border instead
+  @media (max-width: 767px) {
+    padding: 15px;
+    border-top: 1px solid rgba(205, 217, 229, 0.1);
   }
 }

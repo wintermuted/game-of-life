@@ -1,10 +1,37 @@
 
 .Grid {
   border: 1px solid #000;
-  height: 800px;
   width: 100%;
+  max-width: 800px;
+  
+  // Desktop: fixed height
+  @media (min-width: 768px) {
+    height: 800px;
+  }
+  
+  // Mobile: responsive height, maintain square aspect ratio
+  @media (max-width: 767px) {
+    aspect-ratio: 1;
+    max-height: calc(100vw - 20px); // Full width minus padding
+  }
 }
 
-.CanvasGrid canvas {
-  display: block;
+.CanvasGrid {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    
+    // Mobile: scale down canvas to fit container
+    @media (max-width: 767px) {
+      width: 100% !important;
+      height: auto !important;
+    }
+  }
 }
