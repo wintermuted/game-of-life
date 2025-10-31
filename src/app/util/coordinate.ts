@@ -1,5 +1,6 @@
 import { toNumber, forEach } from "lodash";
 import { LifeGrid } from "../../interfaces";
+import { ColorPalette } from "../constants/colors";
 
 export function handleXCoord(x: string, gridSize: number, offsetX: number = 0) {
   const xNumber = toNumber(x);
@@ -44,9 +45,22 @@ export function getCenterPointSquares(columnIndex: number, rowIndex: number, gri
   return { nwQuad, swQuad, neQuad, seQuad };
 }
 
-export function getCellFillColor(isAlive: boolean, rowIndex: number, columnIndex: number, gridSize: number) {
+export function getCellFillColor(
+  isAlive: boolean, 
+  rowIndex: number, 
+  columnIndex: number, 
+  gridSize: number,
+  palette?: ColorPalette
+): string {
   const { nwQuad, swQuad, neQuad, seQuad } = getCenterPointSquares(columnIndex, rowIndex, gridSize);
   const centerCells = nwQuad || swQuad || neQuad || seQuad;
+  
+  if (palette) {
+    const defaultCells = centerCells ? palette.centerCell : palette.deadCell;
+    return isAlive ? palette.liveCell : defaultCells;
+  }
+  
+  // Fallback to original colors if no palette provided
   const defaultCells = centerCells ? "#888" : "#CCC";
   const color = isAlive ? "green" : defaultCells;
   return color;

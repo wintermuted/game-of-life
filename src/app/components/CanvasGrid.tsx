@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { LifeGrid } from '../../interfaces';
 import { getCellFillColor, translateGrid } from '../util/coordinate';
+import { ColorPalette } from '../constants/colors';
 
 const CELL_STROKE_COLOR = '#777';
 const CELL_STROKE_WIDTH = 1;
@@ -17,9 +18,10 @@ interface Props {
   onMouseOver: (e: React.MouseEvent) => void;
   offsetX?: number;
   offsetY?: number;
+  palette?: ColorPalette;
 }
 
-function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0 }: Props) {
+function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, palette }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Calculate how many cells fit in the fixed display size based on cellSize
@@ -48,7 +50,7 @@ function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0 }: P
         const x = getCoordinate(rowIndex, cellSize);
         const y = getCoordinate(columnIndex, cellSize);
         const alive = translatedGrid[`${rowIndex},${columnIndex}`];
-        const color = getCellFillColor(alive, rowIndex, columnIndex, calculatedGridSize);
+        const color = getCellFillColor(alive, rowIndex, columnIndex, calculatedGridSize, palette);
 
         // Fill the cell
         ctx.fillStyle = color;
@@ -60,7 +62,7 @@ function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0 }: P
         ctx.strokeRect(x, y, cellSize, cellSize);
       }
     }
-  }, [grid, calculatedGridSize, cellSize, canvasWidth, canvasHeight, offsetX, offsetY]);
+  }, [grid, calculatedGridSize, cellSize, canvasWidth, canvasHeight, offsetX, offsetY, palette]);
 
   return (
     <div className="CanvasGrid">
