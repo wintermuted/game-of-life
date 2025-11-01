@@ -69,46 +69,46 @@ function Grid({ game, onMouseOver, palette }: Props) {
             display: 'flex',
             flexDirection: 'column',
             gap: 0.5,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
             borderRadius: 1,
-            padding: 0.5
+            padding: 1
           }}
         >
           {/* Pan Controls */}
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Tooltip title="Pan Up">
-              <IconButton size="small" onClick={handlePanUp} aria-label="pan up">
-                <ArrowUpwardIcon fontSize="small" />
+              <IconButton size="small" onClick={handlePanUp} aria-label="pan up" sx={{ color: 'white' }}>
+                <ArrowUpwardIcon />
               </IconButton>
             </Tooltip>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
             <Tooltip title="Pan Left">
-              <IconButton size="small" onClick={handlePanLeft} aria-label="pan left">
-                <ArrowBackIcon fontSize="small" />
+              <IconButton size="small" onClick={handlePanLeft} aria-label="pan left" sx={{ color: 'white' }}>
+                <ArrowBackIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Center View">
-              <IconButton size="small" onClick={handleCenter} aria-label="center view">
-                <CenterFocusStrongIcon fontSize="small" />
+              <IconButton size="small" onClick={handleCenter} aria-label="center view" sx={{ color: 'white' }}>
+                <CenterFocusStrongIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Pan Right">
-              <IconButton size="small" onClick={handlePanRight} aria-label="pan right">
-                <ArrowForwardIcon fontSize="small" />
+              <IconButton size="small" onClick={handlePanRight} aria-label="pan right" sx={{ color: 'white' }}>
+                <ArrowForwardIcon />
               </IconButton>
             </Tooltip>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Tooltip title="Pan Down">
-              <IconButton size="small" onClick={handlePanDown} aria-label="pan down">
-                <ArrowDownwardIcon fontSize="small" />
+              <IconButton size="small" onClick={handlePanDown} aria-label="pan down" sx={{ color: 'white' }}>
+                <ArrowDownwardIcon />
               </IconButton>
             </Tooltip>
           </Box>
           
           {/* Divider */}
-          <Box sx={{ height: '1px', backgroundColor: 'rgba(0, 0, 0, 0.12)', my: 0.5 }} />
+          <Box sx={{ height: '1px', backgroundColor: 'rgba(255, 255, 255, 0.3)', my: 0.5 }} />
           
           {/* Zoom Controls */}
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
@@ -119,8 +119,9 @@ function Grid({ game, onMouseOver, palette }: Props) {
                   onClick={handleZoomOut} 
                   aria-label="zoom out"
                   disabled={cellSize <= MIN_CELL_SIZE}
+                  sx={{ color: 'white', '&.Mui-disabled': { color: 'rgba(255, 255, 255, 0.3)' } }}
                 >
-                  <ZoomOutIcon fontSize="small" />
+                  <ZoomOutIcon />
                 </IconButton>
               </span>
             </Tooltip>
@@ -129,8 +130,9 @@ function Grid({ game, onMouseOver, palette }: Props) {
                 size="small" 
                 onClick={handleResetZoom} 
                 aria-label="reset zoom"
+                sx={{ color: 'white' }}
               >
-                <ZoomOutMapIcon fontSize="small" />
+                <ZoomOutMapIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Zoom In">
@@ -140,8 +142,9 @@ function Grid({ game, onMouseOver, palette }: Props) {
                   onClick={handleZoomIn} 
                   aria-label="zoom in"
                   disabled={cellSize >= MAX_CELL_SIZE}
+                  sx={{ color: 'white', '&.Mui-disabled': { color: 'rgba(255, 255, 255, 0.3)' } }}
                 >
-                  <ZoomInIcon fontSize="small" />
+                  <ZoomInIcon />
                 </IconButton>
               </span>
             </Tooltip>
