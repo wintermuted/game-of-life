@@ -3,42 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "homepage": "https://wintermuted.github.io/game-of-life",
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^5.18.0",
-    "@mui/material": "^5.18.0",
-    "@testing-library/jest-dom": "^5.16.2",
-    "@testing-library/react": "^12.1.2",
-    "@testing-library/user-event": "^13.5.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.1",
-    "web-vitals": "^2.1.4"
-  },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "start": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "dev": "nx run @game-of-life/app:dev",
+    "start": "nx run @game-of-life/app:dev",
+    "build": "nx run-many --target=build --all",
+    "build:app": "nx run @game-of-life/app:build",
+    "preview": "nx run @game-of-life/app:preview",
+    "lint": "nx run @game-of-life/app:lint",
+    "test": "nx run-many --target=test --all",
+    "test:watch": "nx run @game-of-life/app:test:watch",
+    "test:ui": "nx run @game-of-life/app:test:ui"
   },
   "devDependencies": {
+    "@nx/js": "^22.0.2",
+    "@nx/vite": "^22.0.2",
+    "@nx/workspace": "^22.0.2",
     "@types/lodash": "^4.14.178",
     "@types/node": "^18.19.130",
     "@types/react": "^18.3.26",
@@ -52,6 +34,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.24",
     "jsdom": "^24.1.3",
+    "nx": "22.0.2",
     "sass": "^1.49.7",
     "typescript": "~5.0.0",
     "vite": "^5.4.21",
