@@ -33,7 +33,9 @@ function Grid({ game, onMouseOver, palette }: Props) {
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
 
   // Adaptive styling based on theme mode
-  const controlPanelBg = mode === 'dark' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.7)';
+  // Use more opaque backgrounds and add borders for better visibility
+  const controlPanelBg = mode === 'dark' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.85)';
+  const controlPanelBorder = mode === 'dark' ? '1px solid rgba(0, 0, 0, 0.2)' : '1px solid rgba(255, 255, 255, 0.3)';
   const iconColor = mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : 'white';
   const dividerColor = mode === 'dark' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.3)';
   const disabledIconColor = mode === 'dark' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(255, 255, 255, 0.3)';
@@ -78,8 +80,10 @@ function Grid({ game, onMouseOver, palette }: Props) {
             flexDirection: 'column',
             gap: 0.5,
             backgroundColor: controlPanelBg,
+            border: controlPanelBorder,
             borderRadius: 1,
-            padding: 1
+            padding: 1,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
           }}
         >
           {/* Pan Controls */}
