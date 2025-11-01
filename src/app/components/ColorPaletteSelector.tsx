@@ -15,8 +15,8 @@ function ColorPaletteSelector({ selectedPaletteId, onPaletteChange, disabled = f
   };
 
   return (
-    <Box className="ColorPaletteSelector" sx={{ mb: 3 }}>
-      <Typography variant="h6" gutterBottom>Color Palette</Typography>
+    <Box className="ColorPaletteSelector">
+      <Typography variant="h5" gutterBottom>Color Palette</Typography>
       <ToggleButtonGroup
         value={selectedPaletteId}
         exclusive
