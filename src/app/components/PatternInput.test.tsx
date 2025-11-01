@@ -1,19 +1,20 @@
+import { vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import PatternInput from './PatternInput';
 import { patterns } from '../../data/patterns';
 
 // Mock canvas getContext to avoid JSDOM canvas errors
 beforeAll(() => {
-  HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
-    clearRect: jest.fn(),
-    fillRect: jest.fn(),
+  HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
     fillStyle: '',
   })) as any;
 });
 
 describe('PatternInput', () => {
   test('renders with Starter Patterns tab selected by default', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     render(<PatternInput onLoadPattern={mockHandler} />);
     
     // Check that tabs are rendered
@@ -25,7 +26,7 @@ describe('PatternInput', () => {
   });
 
   test('switches to Custom Pattern tab when clicked', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     render(<PatternInput onLoadPattern={mockHandler} />);
     
     // Click on Custom Pattern tab
@@ -37,7 +38,7 @@ describe('PatternInput', () => {
   });
 
   test('switches back to Starter Patterns tab', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     render(<PatternInput onLoadPattern={mockHandler} />);
     
     // Switch to Custom Pattern tab
@@ -51,7 +52,7 @@ describe('PatternInput', () => {
   });
 
   test('disables pattern items when disabled prop is true', () => {
-    const mockHandler = jest.fn();
+    const mockHandler = vi.fn();
     render(<PatternInput onLoadPattern={mockHandler} disabled={true} />);
     
     // Pattern list should still be visible but items should be disabled

@@ -1,10 +1,11 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import RulesPanel from './RulesPanel';
 import { DEFAULT_RULES } from '../../core/game';
 
 describe('RulesPanel', () => {
   test('renders all rules', () => {
-    const mockOnRulesChange = jest.fn();
+    const mockOnRulesChange = vi.fn();
     render(<RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} />);
     
     expect(screen.getByText('Game Rules')).toBeInTheDocument();
@@ -15,7 +16,7 @@ describe('RulesPanel', () => {
   });
 
   test('toggles rule when clicked', () => {
-    const mockOnRulesChange = jest.fn();
+    const mockOnRulesChange = vi.fn();
     render(<RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} />);
     
     const survival2Switch = screen.getByRole('checkbox', { name: /Survival \(2 neighbors\)/i });
@@ -27,7 +28,7 @@ describe('RulesPanel', () => {
   });
 
   test('disables switches when disabled prop is true', () => {
-    const mockOnRulesChange = jest.fn();
+    const mockOnRulesChange = vi.fn();
     render(<RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} disabled={true} />);
     
     const switches = screen.getAllByRole('checkbox');
@@ -37,7 +38,7 @@ describe('RulesPanel', () => {
   });
 
   test('displays rule descriptions', () => {
-    const mockOnRulesChange = jest.fn();
+    const mockOnRulesChange = vi.fn();
     render(<RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} />);
     
     expect(screen.getByText('Live cells with 2 neighbors survive')).toBeInTheDocument();

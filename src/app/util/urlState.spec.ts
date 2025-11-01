@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { encodeGridToBase64, decodeBase64ToGrid, getGridFromURL, updateURLWithGrid } from './urlState';
 import { LifeGrid } from '../../interfaces';
 
@@ -122,7 +123,7 @@ describe('urlState utilities', () => {
 
     beforeEach(() => {
       // Mock window.history.pushState
-      window.history.pushState = jest.fn();
+      window.history.pushState = vi.fn();
       
       // Mock window.location
       delete (window as any).location;

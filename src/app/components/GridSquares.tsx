@@ -19,8 +19,8 @@ function GridSquares({ onMouseOver, grid, gridSize, cellSize }: Props) {
   const innerDom: ReactElement[] = [];
   const translatedGrid = translateGrid(grid, gridSize); 
 
-  forEach(gridRange, (columnVal, columnIndex) => {
-    forEach(gridRange, (rowVal, rowIndex) => {
+  forEach(gridRange, (_columnVal, columnIndex) => {
+    forEach(gridRange, (_rowVal, rowIndex) => {
       const key = `panel_key_${rowIndex}_${columnIndex}`;
       const x = getCoordinate(rowIndex, cellSize)
       const y = getCoordinate(columnIndex, cellSize);

@@ -77,7 +77,7 @@ function Home() {
     console.log(e.target);
   }
 
-  function nextGeneration(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+  function nextGeneration(_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     console.info('Next generation pushed')
     game.next();
     setGeneration(game.getGenerations())

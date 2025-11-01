@@ -23,7 +23,7 @@ export function handleYCoord(y: string, gridSize: number, offsetY: number = 0) {
 export function translateGrid (grid: LifeGrid, gridSize: number, offsetX: number = 0, offsetY: number = 0): LifeGrid {
   const translatedGrid: LifeGrid = {} as LifeGrid;
 
-  forEach(grid, (entry, key) => {
+  forEach(grid, (_entry, key) => {
       const [x, y] = key.split(",")
       const xOffset = handleXCoord(x, gridSize, offsetX);
       const yOffset = handleYCoord(y, gridSize, offsetY);

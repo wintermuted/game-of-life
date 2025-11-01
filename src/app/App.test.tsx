@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App';
@@ -5,10 +6,13 @@ import { ThemeProviderWrapper } from './ThemeContext';
 
 // Mock canvas getContext to avoid JSDOM canvas errors
 beforeAll(() => {
-  HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
-    clearRect: jest.fn(),
-    fillRect: jest.fn(),
+  HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
+    strokeRect: vi.fn(),
     fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 0,
   })) as any;
 });
 

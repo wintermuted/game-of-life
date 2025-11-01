@@ -1,9 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import { vi } from 'vitest';
 import ColorPaletteSelector from './ColorPaletteSelector';
 import { COLOR_PALETTES } from '../constants/colors';
 
 describe('ColorPaletteSelector', () => {
-  const mockOnPaletteChange = jest.fn();
+  const mockOnPaletteChange = vi.fn();
 
   const defaultProps = {
     selectedPaletteId: 'classic',
@@ -11,7 +12,7 @@ describe('ColorPaletteSelector', () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders all color palettes', () => {
