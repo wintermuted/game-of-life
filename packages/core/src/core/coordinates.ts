@@ -37,7 +37,7 @@ export function getNeighborCoordinates(coordinate: string): LifeGrid {
   const west = [x - 1, y].join(",");
   const southWest = [x - 1, y - 1].join(",");
   const northWest = [x - 1, y + 1].join(",");
-  const soutEast = [x + 1, y - 1].join(",");
+  const southEast = [x + 1, y - 1].join(",");
   const northEast = [x + 1, y + 1].join(",");
 
   const neighborCoords = {
@@ -47,7 +47,7 @@ export function getNeighborCoordinates(coordinate: string): LifeGrid {
       [west]: true,
       [southWest]: true,
       [northWest]: true,
-      [soutEast]: true,
+      [southEast]: true,
       [northEast]: true
   };
 
