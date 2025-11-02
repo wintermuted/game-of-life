@@ -77,31 +77,31 @@ function Grid({ game, onMouseOver, palette }: Props) {
           {/* Pan Controls */}
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Tooltip title="Pan Up">
-              <IconButton size="small" onClick={handlePanUp} aria-label="pan up">
+              <IconButton size="small" onClick={handlePanUp} aria-label="pan up" sx={{ color: 'text.primary' }}>
                 <ArrowUpwardIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
             <Tooltip title="Pan Left">
-              <IconButton size="small" onClick={handlePanLeft} aria-label="pan left">
+              <IconButton size="small" onClick={handlePanLeft} aria-label="pan left" sx={{ color: 'text.primary' }}>
                 <ArrowBackIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Center View">
-              <IconButton size="small" onClick={handleCenter} aria-label="center view">
+              <IconButton size="small" onClick={handleCenter} aria-label="center view" sx={{ color: 'text.primary' }}>
                 <CenterFocusStrongIcon fontSize="small" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Pan Right">
-              <IconButton size="small" onClick={handlePanRight} aria-label="pan right">
+              <IconButton size="small" onClick={handlePanRight} aria-label="pan right" sx={{ color: 'text.primary' }}>
                 <ArrowForwardIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Tooltip title="Pan Down">
-              <IconButton size="small" onClick={handlePanDown} aria-label="pan down">
+              <IconButton size="small" onClick={handlePanDown} aria-label="pan down" sx={{ color: 'text.primary' }}>
                 <ArrowDownwardIcon fontSize="small" />
               </IconButton>
             </Tooltip>
@@ -119,6 +119,7 @@ function Grid({ game, onMouseOver, palette }: Props) {
                   onClick={handleZoomOut} 
                   aria-label="zoom out"
                   disabled={cellSize <= MIN_CELL_SIZE}
+                  sx={{ color: 'text.primary' }}
                 >
                   <ZoomOutIcon fontSize="small" />
                 </IconButton>
@@ -129,6 +130,7 @@ function Grid({ game, onMouseOver, palette }: Props) {
                 size="small" 
                 onClick={handleResetZoom} 
                 aria-label="reset zoom"
+                sx={{ color: 'text.primary' }}
               >
                 <ZoomOutMapIcon fontSize="small" />
               </IconButton>
@@ -140,6 +142,7 @@ function Grid({ game, onMouseOver, palette }: Props) {
                   onClick={handleZoomIn} 
                   aria-label="zoom in"
                   disabled={cellSize >= MAX_CELL_SIZE}
+                  sx={{ color: 'text.primary' }}
                 >
                   <ZoomInIcon fontSize="small" />
                 </IconButton>
