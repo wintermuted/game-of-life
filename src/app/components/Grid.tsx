@@ -12,6 +12,7 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
 import { ColorPalette } from '../constants/colors';
+import { useThemeMode } from '../ThemeContext';
 
 interface Props {
   game: Game;
@@ -26,9 +27,18 @@ const MAX_CELL_SIZE = 20;
 const ZOOM_STEP = 1;
 
 function Grid({ game, onMouseOver, palette }: Props) {
+  const { mode } = useThemeMode();
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
+
+  // Adaptive styling based on theme mode
+  // Use more opaque backgrounds and add borders for better visibility
+  const controlPanelBg = mode === 'dark' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.85)';
+  const controlPanelBorder = mode === 'dark' ? '1px solid rgba(0, 0, 0, 0.2)' : '1px solid rgba(255, 255, 255, 0.3)';
+  const iconColor = mode === 'dark' ? 'rgba(0, 0, 0, 0.87)' : 'white';
+  const dividerColor = mode === 'dark' ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.3)';
+  const disabledIconColor = mode === 'dark' ? 'rgba(0, 0, 0, 0.26)' : 'rgba(255, 255, 255, 0.3)';
 
   if (!game) {
     return null;
@@ -69,46 +79,48 @@ function Grid({ game, onMouseOver, palette }: Props) {
             display: 'flex',
             flexDirection: 'column',
             gap: 0.5,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: controlPanelBg,
+            border: controlPanelBorder,
             borderRadius: 1,
-            padding: 0.5
+            padding: 1,
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
           }}
         >
           {/* Pan Controls */}
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Tooltip title="Pan Up">
-              <IconButton size="small" onClick={handlePanUp} aria-label="pan up">
-                <ArrowUpwardIcon fontSize="small" />
+              <IconButton size="small" onClick={handlePanUp} aria-label="pan up" sx={{ color: iconColor }}>
+                <ArrowUpwardIcon />
               </IconButton>
             </Tooltip>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
             <Tooltip title="Pan Left">
-              <IconButton size="small" onClick={handlePanLeft} aria-label="pan left">
-                <ArrowBackIcon fontSize="small" />
+              <IconButton size="small" onClick={handlePanLeft} aria-label="pan left" sx={{ color: iconColor }}>
+                <ArrowBackIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Center View">
-              <IconButton size="small" onClick={handleCenter} aria-label="center view">
-                <CenterFocusStrongIcon fontSize="small" />
+              <IconButton size="small" onClick={handleCenter} aria-label="center view" sx={{ color: iconColor }}>
+                <CenterFocusStrongIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Pan Right">
-              <IconButton size="small" onClick={handlePanRight} aria-label="pan right">
-                <ArrowForwardIcon fontSize="small" />
+              <IconButton size="small" onClick={handlePanRight} aria-label="pan right" sx={{ color: iconColor }}>
+                <ArrowForwardIcon />
               </IconButton>
             </Tooltip>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Tooltip title="Pan Down">
-              <IconButton size="small" onClick={handlePanDown} aria-label="pan down">
-                <ArrowDownwardIcon fontSize="small" />
+              <IconButton size="small" onClick={handlePanDown} aria-label="pan down" sx={{ color: iconColor }}>
+                <ArrowDownwardIcon />
               </IconButton>
             </Tooltip>
           </Box>
           
           {/* Divider */}
-          <Box sx={{ height: '1px', backgroundColor: 'rgba(0, 0, 0, 0.12)', my: 0.5 }} />
+          <Box sx={{ height: '1px', backgroundColor: dividerColor, my: 0.5 }} />
           
           {/* Zoom Controls */}
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
@@ -119,8 +131,9 @@ function Grid({ game, onMouseOver, palette }: Props) {
                   onClick={handleZoomOut} 
                   aria-label="zoom out"
                   disabled={cellSize <= MIN_CELL_SIZE}
+                  sx={{ color: iconColor, '&.Mui-disabled': { color: disabledIconColor } }}
                 >
-                  <ZoomOutIcon fontSize="small" />
+                  <ZoomOutIcon />
                 </IconButton>
               </span>
             </Tooltip>
@@ -129,8 +142,9 @@ function Grid({ game, onMouseOver, palette }: Props) {
                 size="small" 
                 onClick={handleResetZoom} 
                 aria-label="reset zoom"
+                sx={{ color: iconColor }}
               >
-                <ZoomOutMapIcon fontSize="small" />
+                <ZoomOutMapIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Zoom In">
@@ -140,8 +154,9 @@ function Grid({ game, onMouseOver, palette }: Props) {
                   onClick={handleZoomIn} 
                   aria-label="zoom in"
                   disabled={cellSize >= MAX_CELL_SIZE}
+                  sx={{ color: iconColor, '&.Mui-disabled': { color: disabledIconColor } }}
                 >
-                  <ZoomInIcon fontSize="small" />
+                  <ZoomInIcon />
                 </IconButton>
               </span>
             </Tooltip>
