@@ -32,6 +32,7 @@ function LanguageSwitcher() {
     <>
       <Tooltip title={currentLanguage.name}>
         <IconButton
+          id="language-button"
           color="inherit"
           aria-label="change language"
           aria-controls={open ? 'language-menu' : undefined}
