@@ -22,7 +22,16 @@
       // https://username.github.io/repo-name/one/two?a=b&c=d#qwe becomes
       // https://username.github.io/repo-name/?/one/two&a=b~and~c=d#qwe
       // Otherwise, leave pathSegmentsToKeep as 0.
-      var pathSegmentsToKeep = 1;
+      
+      // Dynamically detect if we're in a PR preview subdirectory
+      // PR previews are deployed to /repo-name/pr-NUMBER/
+      var pathname = window.location.pathname;
+      var pathSegmentsToKeep = 1; // Default for main deployment
+      
+      // Check if we're in a PR preview path (contains /pr-<number>/)
+      if (pathname.match(/\/pr-\d+\//)) {
+        pathSegmentsToKeep = 2; // Keep both repo-name and pr-NUMBER
+      }
 
       var l = window.location;
       l.replace(
