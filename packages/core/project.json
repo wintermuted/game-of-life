@@ -7,8 +7,9 @@
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
+      "cache": false,
       "options": {
-        "command": "tsc",
+        "command": "npm run build",
         "cwd": "packages/core"
       }
     },

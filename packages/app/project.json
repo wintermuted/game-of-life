@@ -32,7 +32,8 @@
       "options": {
         "command": "vitest run",
         "cwd": "packages/app"
-      }
+      },
+      "dependsOn": ["^build"]
     },
     "lint": {
       "executor": "nx:run-commands",
