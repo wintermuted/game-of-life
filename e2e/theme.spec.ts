@@ -17,8 +17,12 @@ test.describe('Game of Life - Theme Toggle', () => {
     // Click the theme toggle
     await themeToggle.click();
     
-    // Wait for the theme change
-    await page.waitForTimeout(300);
+    // Wait for the background color to change
+    await page.waitForFunction(
+      (expectedColor) => window.getComputedStyle(document.body).backgroundColor !== expectedColor,
+      initialBgColor,
+      { timeout: 2000 }
+    );
     
     // Get the new theme
     const newBgColor = await page.evaluate(() => {
@@ -30,7 +34,13 @@ test.describe('Game of Life - Theme Toggle', () => {
     
     // Toggle back
     await themeToggle.click();
-    await page.waitForTimeout(300);
+    
+    // Wait for the background color to change back
+    await page.waitForFunction(
+      (expectedColor) => window.getComputedStyle(document.body).backgroundColor !== expectedColor,
+      newBgColor,
+      { timeout: 2000 }
+    );
     
     // Should return to original color
     const finalBgColor = await page.evaluate(() => {

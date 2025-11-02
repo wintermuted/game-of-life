@@ -24,12 +24,9 @@ test.describe('Game of Life - Pattern Selection', () => {
     if (await firstPattern.isVisible()) {
       await firstPattern.click();
       
-      // Wait for pattern to load
-      await page.waitForTimeout(500);
-      
-      // Verify the canvas is still visible (pattern loaded)
+      // Verify the canvas is visible (pattern should be loaded)
       const canvas = page.locator('canvas');
-      await expect(canvas).toBeVisible();
+      await expect(canvas).toBeVisible({ timeout: 2000 });
     }
   });
 });
@@ -38,8 +35,9 @@ test.describe('Game of Life - Game Controls', () => {
   test('should display generation count and increment on step', async ({ page }) => {
     await page.goto('/');
     
-    // Wait for the page to load
-    await page.waitForTimeout(1000);
+    // Wait for the page to be fully loaded
+    const canvas = page.locator('canvas');
+    await expect(canvas).toBeVisible();
     
     // Get initial generation count
     const generationsText = page.getByText(/Generations:/);
@@ -59,21 +57,22 @@ test.describe('Game of Life - Game Controls', () => {
       await stepButtonAlt.click();
     }
     
-    // Wait for update
-    await page.waitForTimeout(300);
-    
-    // Generation count should have incremented
-    const newText = await generationsText.textContent();
-    expect(newText).not.toBe(initialText);
+    // Wait for generation count to change
+    await expect(async () => {
+      const newText = await generationsText.textContent();
+      expect(newText).not.toBe(initialText);
+    }).toPass({ timeout: 2000 });
   });
 
   test('should allow playing and pausing the game', async ({ page }) => {
     await page.goto('/');
     
-    await page.waitForTimeout(1000);
+    // Wait for canvas to be visible
+    await expect(page.locator('canvas')).toBeVisible();
     
     // Get initial generation count
     const generationsElement = page.getByText(/Generations:/);
+    await expect(generationsElement).toBeVisible();
     const initialText = await generationsElement.textContent();
     
     // Find play/pause button - it might be a toggle button
@@ -84,38 +83,52 @@ test.describe('Game of Life - Game Controls', () => {
       // Click to start playing
       await playPauseButton.click();
       
-      // Wait for a few generations
-      await page.waitForTimeout(1500);
+      // Wait for generation count to increase
+      await expect(async () => {
+        const currentText = await generationsElement.textContent();
+        expect(currentText).not.toBe(initialText);
+      }).toPass({ timeout: 3000 });
       
       // Click to pause
       await playPauseButton.click();
       
-      // Verify generation count increased
-      const newText = await generationsElement.textContent();
-      expect(newText).not.toBe(initialText);
+      // Verify we can get the final count
+      const finalText = await generationsElement.textContent();
+      expect(finalText).not.toBe(initialText);
     } else if (await playPauseButtonAlt.isVisible()) {
       await playPauseButtonAlt.click();
-      await page.waitForTimeout(1500);
+      
+      await expect(async () => {
+        const currentText = await generationsElement.textContent();
+        expect(currentText).not.toBe(initialText);
+      }).toPass({ timeout: 3000 });
+      
       await playPauseButtonAlt.click();
       
-      const newText = await generationsElement.textContent();
-      expect(newText).not.toBe(initialText);
+      const finalText = await generationsElement.textContent();
+      expect(finalText).not.toBe(initialText);
     }
   });
 
   test('should reset the game when clear button is clicked', async ({ page }) => {
     await page.goto('/');
     
-    await page.waitForTimeout(1000);
+    // Wait for canvas to be visible
+    await expect(page.locator('canvas')).toBeVisible();
     
     // Advance a few generations
     const stepButton = page.locator('button').filter({ hasText: /step|next/i }).first();
     if (await stepButton.isVisible()) {
       await stepButton.click();
       await stepButton.click();
+      
+      // Wait for generation count to update
+      const generationsText = page.getByText(/Generations:/);
+      await expect(async () => {
+        const text = await generationsText.textContent();
+        expect(text).not.toContain('0');
+      }).toPass({ timeout: 2000 });
     }
-    
-    await page.waitForTimeout(300);
     
     // Now click clear/reset button
     const clearButton = page.locator('button').filter({ hasText: /clear|reset/i }).first();
@@ -127,12 +140,12 @@ test.describe('Game of Life - Game Controls', () => {
       await clearButtonAlt.click();
     }
     
-    await page.waitForTimeout(300);
-    
-    // Generation count should be reset to 0
+    // Wait for generation count to reset
     const generationsText = page.getByText(/Generations:/);
-    const text = await generationsText.textContent();
-    expect(text).toContain('0');
+    await expect(async () => {
+      const text = await generationsText.textContent();
+      expect(text).toContain('0');
+    }).toPass({ timeout: 2000 });
   });
 
   test('should display live cells count', async ({ page }) => {
