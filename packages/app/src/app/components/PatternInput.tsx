@@ -3,6 +3,7 @@ import { Box, Tabs, Tab } from '@mui/material';
 import CustomPatternInput from './CustomPatternInput';
 import PatternSelector from './PatternSelector';
 import { LifeGrid } from '@game-of-life/core';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   onLoadPattern: (grid: LifeGrid) => void;
@@ -11,6 +12,7 @@ interface Props {
 
 function PatternInput({ onLoadPattern, disabled = false }: Props) {
   const [activeTab, setActiveTab] = useState(0);
+  const { t } = useTranslation();
 
   function handleTabChange(_event: React.SyntheticEvent, newValue: number) {
     setActiveTab(newValue);
@@ -19,8 +21,8 @@ function PatternInput({ onLoadPattern, disabled = false }: Props) {
   return (
     <Box sx={{ p: 2, pt: 0 }}>
       <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
-        <Tab label="Starter Patterns" />
-        <Tab label="Custom Pattern" />
+        <Tab label={t('patterns.title')} />
+        <Tab label={t('patterns.custom')} />
       </Tabs>
       
       {activeTab === 0 && (

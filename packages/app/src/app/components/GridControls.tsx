@@ -5,6 +5,7 @@ import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   nextGeneration: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
@@ -26,6 +27,7 @@ function GridControls({
   copyCurrentURL
 }: Props) {
   const [showResetModal, setShowResetModal] = useState(false);
+  const { t } = useTranslation();
 
   function onChange(_event: Event, value: number | number[]) {
     if (typeof value === 'number') {
@@ -46,7 +48,7 @@ function GridControls({
     <Box className="GridControls" sx={{ p: 2, pb: 0 }}>
       <form onSubmit={(e) => e.preventDefault()}>
 
-      <Typography variant="h5" gutterBottom>Game Controls</Typography>
+      <Typography variant="h5" gutterBottom>{t('controls.title')}</Typography>
       <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
         <Button 
           variant="contained" 
@@ -54,9 +56,9 @@ function GridControls({
           startIcon={isGameRunning ? <PauseIcon /> : <PlayArrowIcon />} 
           onClick={toggleGame}
         >
-          {isGameRunning ? 'Pause' : 'Start'}
+          {isGameRunning ? t('controls.pause') : t('controls.start')}
         </Button>
-        <Button variant="contained" startIcon={<SkipNextIcon />} onClick={nextGeneration}>Next</Button>
+        <Button variant="contained" startIcon={<SkipNextIcon />} onClick={nextGeneration}>{t('controls.next')}</Button>
         <Button 
           variant="outlined" 
           color="error"
@@ -64,7 +66,7 @@ function GridControls({
           onClick={() => setShowResetModal(true)}
           disabled={isGameRunning}
         >
-          Reset
+          {t('controls.reset')}
         </Button>
       </Stack>
 
@@ -75,13 +77,13 @@ function GridControls({
           onClick={copyCurrentURL}
           fullWidth
         >
-          Copy URL
+          {t('controls.copyUrl')}
         </Button>
       </Stack>
 
-      <Typography variant="h5" gutterBottom>Game Variables</Typography>
+      <Typography variant="h5" gutterBottom>{t('controls.variables')}</Typography>
 
-      <Typography gutterBottom>Generation Speed: {generationSpeed}</Typography>
+      <Typography gutterBottom>{t('controls.generationSpeed')}: {generationSpeed}</Typography>
       <Slider
         name="generationSpeed"
         min={1}
@@ -96,16 +98,16 @@ function GridControls({
       </form>
       
       <Dialog open={showResetModal} onClose={cancelReset}>
-        <DialogTitle>Confirm Reset</DialogTitle>
+        <DialogTitle>{t('dialogs.confirmReset')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to reset the game? This will clear the current state and start over.
+            {t('dialogs.resetMessage')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={cancelReset}>Cancel</Button>
+          <Button onClick={cancelReset}>{t('dialogs.cancel')}</Button>
           <Button onClick={confirmReset} color="error" variant="contained">
-            Yes, Reset
+            {t('dialogs.yesReset')}
           </Button>
         </DialogActions>
       </Dialog>

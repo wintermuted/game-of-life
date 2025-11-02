@@ -1,5 +1,6 @@
 import { Box, Typography, Stack, ToggleButtonGroup, ToggleButton, Tooltip } from '@mui/material';
 import { COLOR_PALETTES, ColorPalette } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   selectedPaletteId: string;
@@ -8,6 +9,8 @@ interface Props {
 }
 
 function ColorPaletteSelector({ selectedPaletteId, onPaletteChange, disabled = false }: Props) {
+  const { t } = useTranslation();
+  
   const handleChange = (_event: React.MouseEvent<HTMLElement>, newPaletteId: string | null) => {
     if (newPaletteId !== null) {
       onPaletteChange(newPaletteId);
@@ -16,7 +19,7 @@ function ColorPaletteSelector({ selectedPaletteId, onPaletteChange, disabled = f
 
   return (
     <Box className="ColorPaletteSelector" sx={{ mb: 3 }}>
-      <Typography variant="h6" gutterBottom>Color Palette</Typography>
+      <Typography variant="h6" gutterBottom>{t('colors.title')}</Typography>
       <ToggleButtonGroup
         value={selectedPaletteId}
         exclusive
