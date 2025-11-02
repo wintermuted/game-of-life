@@ -1,5 +1,6 @@
 import { Box, Typography, FormGroup, FormControlLabel, Switch, Paper } from '@mui/material';
 import { GameRules } from '@game-of-life/core';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   rules: GameRules;
@@ -8,6 +9,8 @@ interface Props {
 }
 
 function RulesPanel({ rules, onRulesChange, disabled = false }: Props) {
+  const { t } = useTranslation();
+  
   const handleToggle = (ruleId: keyof GameRules) => {
     const updatedRules = {
       ...rules,
@@ -21,9 +24,9 @@ function RulesPanel({ rules, onRulesChange, disabled = false }: Props) {
 
   return (
     <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
-      <Typography variant="h5" gutterBottom>Game Rules</Typography>
+      <Typography variant="h5" gutterBottom>{t('rules.title')}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Toggle rules to customize the simulation behavior
+        {t('rules.description')}
       </Typography>
       <FormGroup>
         {Object.entries(rules).map(([key, rule]) => (

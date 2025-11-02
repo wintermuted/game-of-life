@@ -5,6 +5,7 @@ import './index.css';
 import App from './app/App';
 import reportWebVitals from './reportWebVitals';
 import { ThemeProviderWrapper } from './app/ThemeContext';
+import './i18n/config';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

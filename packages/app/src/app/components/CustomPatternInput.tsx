@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import { parseCoordinates, LifeGrid } from '@game-of-life/core';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   onLoadPattern: (grid: LifeGrid) => void;
@@ -19,6 +20,7 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const { t } = useTranslation();
 
   function handleLoad() {
     setError(null);
@@ -49,7 +51,7 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
         multiline
         rows={4}
         fullWidth
-        placeholder="Paste coordinates here..."
+        placeholder={t('patterns.placeholder')}
         value={input}
         onChange={handleInputChange}
         disabled={disabled}
@@ -75,7 +77,7 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
               }
             }}
           >
-            {showHelp ? 'Hide examples' : 'Show examples'}
+            {showHelp ? t('patterns.hideExamples') : t('patterns.showExamples')}
           </Box>
         }
       />
@@ -83,7 +85,7 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
       <Collapse in={showHelp}>
         <Box sx={{ mb: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
           <Typography variant="body2" gutterBottom>
-            <strong>Supported formats:</strong>
+            <strong>{t('patterns.supportedFormats')}</strong>
           </Typography>
           <Typography variant="body2" component="div">
             <strong>1. JSON:</strong>
@@ -120,7 +122,7 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
         disabled={disabled || !input.trim()}
         fullWidth
       >
-        Load Custom Pattern
+        {t('patterns.loadCustom')}
       </Button>
     </Box>
   );

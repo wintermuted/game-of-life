@@ -9,6 +9,7 @@ import { getGenerationSpeed } from '../util';
 import { Game, rPentomino, LifeGrid, GameStats, GameRules, DEFAULT_RULES } from '@game-of-life/core';
 import { getGridFromURL, updateURLWithGrid } from '../util/urlState';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 // Game of Life with MUI
 
@@ -33,6 +34,7 @@ function Home() {
   const [rules, setRules] = useState<GameRules>(DEFAULT_RULES);
   const [selectedPaletteId, setSelectedPaletteId] = useState(DEFAULT_PALETTE_ID);
   const selectedPalette = getPaletteById(selectedPaletteId);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (boardNeedsInitialization) {
@@ -61,7 +63,7 @@ function Home() {
       // Update URL when game is paused
       const currentGrid = game.getStatus();
       updateURLWithGrid(currentGrid);
-      setSnackbarMessage('URL updated with current pattern');
+      setSnackbarMessage(t('messages.urlUpdated'));
       setSnackbarOpen(true);
     } else {
       console.info("Starting game.");
@@ -126,11 +128,11 @@ function Home() {
   function copyCurrentURL() {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
-      setSnackbarMessage('URL copied to clipboard');
+      setSnackbarMessage(t('messages.urlCopied'));
       setSnackbarOpen(true);
     }).catch((err) => {
       console.error('Failed to copy URL:', err);
-      setSnackbarMessage('Failed to copy URL');
+      setSnackbarMessage(t('messages.urlCopyFailed'));
       setSnackbarOpen(true);
     });
   }
@@ -171,21 +173,21 @@ function Home() {
             disabled={isGameRunning}
           />
           <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
-            <Typography variant="h5" gutterBottom>Diagnostics</Typography>
-            <Typography variant="h6" gutterBottom>Statistics</Typography>
+            <Typography variant="h5" gutterBottom>{t('diagnostics.title')}</Typography>
+            <Typography variant="h6" gutterBottom>{t('diagnostics.statistics')}</Typography>
             <Typography variant="body1">
-              <strong>Generations:</strong> {generation}
+              <strong>{t('diagnostics.generations')}:</strong> {generation}
             </Typography>
             <Typography variant="body1">
-              <strong>Live Cells:</strong> {stats.liveCells}
+              <strong>{t('diagnostics.liveCells')}:</strong> {stats.liveCells}
             </Typography>
             <Typography variant="body1">
-              <strong>Total Births:</strong> {stats.births}
+              <strong>{t('diagnostics.totalBirths')}:</strong> {stats.births}
             </Typography>
             <Typography variant="body1">
-              <strong>Total Deaths:</strong> {stats.deaths}
+              <strong>{t('diagnostics.totalDeaths')}:</strong> {stats.deaths}
             </Typography>
-            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Cell Data</Typography>
+            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>{t('diagnostics.cellData')}</Typography>
             <Box component="pre" sx={{ overflow: 'auto', maxHeight: 400 }}>
               { gridJSON }
             </Box>
