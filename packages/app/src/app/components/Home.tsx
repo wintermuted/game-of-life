@@ -161,6 +161,8 @@ function Home() {
               onLoadPattern={loadCustomPattern}
               disabled={isGameRunning}
             />
+          </Paper>
+          <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
             <ColorPaletteSelector
               selectedPaletteId={selectedPaletteId}
               onPaletteChange={handlePaletteChange}
