@@ -4,7 +4,7 @@ import { getCellFillColor, translateGrid } from '../util/coordinate';
 import { ColorPalette } from '../constants/colors';
 
 const CELL_STROKE_COLOR = '#777';
-const CELL_STROKE_WIDTH = 1;
+const CELL_STROKE_WIDTH = 0.5;
 const DISPLAY_SIZE = 800; // Fixed canvas size in pixels
 
 function getCoordinate(rowIndex: number, cellSize: number) {
