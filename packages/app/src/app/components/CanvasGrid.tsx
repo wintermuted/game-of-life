@@ -19,9 +19,11 @@ interface Props {
   offsetX?: number;
   offsetY?: number;
   palette?: ColorPalette;
+  isEditMode?: boolean;
+  onCellClick?: (coordinate: string) => void;
 }
 
-function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, palette }: Props) {
+function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, palette, isEditMode = false, onCellClick }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Calculate how many cells fit in the fixed display size based on cellSize
@@ -64,6 +66,29 @@ function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, pal
     }
   }, [grid, calculatedGridSize, cellSize, canvasWidth, canvasHeight, offsetX, offsetY, palette]);
 
+  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isEditMode || !onCellClick) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    // Calculate which cell was clicked
+    const cellWithStroke = cellSize + CELL_STROKE_WIDTH;
+    const rowIndex = Math.floor(x / cellWithStroke);
+    const columnIndex = Math.floor(y / cellWithStroke);
+
+    // Convert back to actual grid coordinates considering offset
+    const actualRow = rowIndex - offsetX;
+    const actualColumn = columnIndex - offsetY;
+
+    const coordinate = `${actualRow},${actualColumn}`;
+    onCellClick(coordinate);
+  };
+
   return (
     <div className="CanvasGrid">
       <canvas
@@ -71,6 +96,8 @@ function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, pal
         width={canvasWidth}
         height={canvasHeight}
         onMouseOver={onMouseOver}
+        onClick={handleCanvasClick}
+        style={{ cursor: isEditMode ? 'pointer' : 'default' }}
       />
     </div>
   );

@@ -16,7 +16,10 @@ export default {
     "reset": "Reiniciar",
     "copyUrl": "Copiar URL",
     "variables": "Variables del Juego",
-    "generationSpeed": "Velocidad de Generación"
+    "generationSpeed": "Velocidad de Generación",
+    "editMode": "Modo de Edición",
+    "editModeOn": "Modo de edición ACTIVADO - Haz clic en las celdas para cambiar",
+    "editModeOff": "Modo de edición DESACTIVADO"
   },
   "patterns": {
     "title": "Patrones Iniciales",
