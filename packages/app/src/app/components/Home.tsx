@@ -68,6 +68,7 @@ function Home() {
       setSnackbarOpen(true);
     } else {
       console.info("Starting game.");
+      setIsEditMode(false); // Disable edit mode when game starts
       runGameInterval();
       setIsGameRunning(true);
     }
@@ -158,6 +159,9 @@ function Home() {
     // Update the game with the new grid
     setCurrentPattern(newGrid);
     setBoardInitialization(true);
+    
+    // Update URL to allow sharing custom patterns
+    updateURLWithGrid(newGrid);
   }
 
   const gameStatus = game.getStatus ? game.getStatus() : {};

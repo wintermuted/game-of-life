@@ -129,8 +129,7 @@ describe('GridControls', () => {
   });
 
   it('does not show Edit Mode button when toggleEditMode is not provided', () => {
-    const propsWithoutEditMode = { ...defaultProps };
-    delete propsWithoutEditMode.toggleEditMode;
+    const { toggleEditMode, ...propsWithoutEditMode } = defaultProps;
     render(<GridControls {...propsWithoutEditMode} />);
     expect(screen.queryByText('Edit Mode')).not.toBeInTheDocument();
   });
