@@ -8,6 +8,7 @@ describe('GridControls', () => {
   const mockResetBoard = vi.fn();
   const mockToggleGame = vi.fn();
   const mockCopyCurrentURL = vi.fn();
+  const mockToggleEditMode = vi.fn();
 
   const defaultProps = {
     nextGeneration: mockNextGeneration,
@@ -17,6 +18,8 @@ describe('GridControls', () => {
     toggleGame: mockToggleGame,
     isGameRunning: false,
     copyCurrentURL: mockCopyCurrentURL,
+    isEditMode: false,
+    toggleEditMode: mockToggleEditMode,
   };
 
   beforeEach(() => {
@@ -118,5 +121,43 @@ describe('GridControls', () => {
     const copyButton = screen.getByText('Copy URL');
     fireEvent.click(copyButton);
     expect(mockCopyCurrentURL).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows Edit Mode button when toggleEditMode is provided', () => {
+    render(<GridControls {...defaultProps} />);
+    expect(screen.getByText('Edit Mode')).toBeInTheDocument();
+  });
+
+  it('does not show Edit Mode button when toggleEditMode is not provided', () => {
+    const propsWithoutEditMode = { ...defaultProps };
+    delete propsWithoutEditMode.toggleEditMode;
+    render(<GridControls {...propsWithoutEditMode} />);
+    expect(screen.queryByText('Edit Mode')).not.toBeInTheDocument();
+  });
+
+  it('calls toggleEditMode when Edit Mode button is clicked', () => {
+    render(<GridControls {...defaultProps} />);
+    const editModeButton = screen.getByText('Edit Mode');
+    fireEvent.click(editModeButton);
+    expect(mockToggleEditMode).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows Edit Mode button as active when isEditMode is true', () => {
+    render(<GridControls {...defaultProps} isEditMode={true} />);
+    const editModeButton = screen.getByText('Edit Mode');
+    // In MUI, variant="contained" makes the button appear as active/filled
+    expect(editModeButton).toBeInTheDocument();
+  });
+
+  it('disables Edit Mode button when game is running', () => {
+    render(<GridControls {...defaultProps} isGameRunning={true} />);
+    const editModeButton = screen.getByText('Edit Mode');
+    expect(editModeButton).toBeDisabled();
+  });
+
+  it('enables Edit Mode button when game is not running', () => {
+    render(<GridControls {...defaultProps} isGameRunning={false} />);
+    const editModeButton = screen.getByText('Edit Mode');
+    expect(editModeButton).not.toBeDisabled();
   });
 });
