@@ -74,7 +74,7 @@ function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, pal
     ctx.lineWidth = AXIS_STROKE_WIDTH;
 
     // Draw Y-axis (vertical line at X=0 in world coordinates)
-    if (xAxisGridIndex >= 0 && xAxisGridIndex <= calculatedGridSize) {
+    if (xAxisGridIndex >= 0 && xAxisGridIndex < calculatedGridSize) {
       const xPos = getCoordinate(xAxisGridIndex, cellSize);
       ctx.beginPath();
       ctx.moveTo(xPos, 0);
@@ -83,7 +83,7 @@ function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, pal
     }
 
     // Draw X-axis (horizontal line at Y=0 in world coordinates)
-    if (yAxisGridIndex >= 0 && yAxisGridIndex <= calculatedGridSize) {
+    if (yAxisGridIndex >= 0 && yAxisGridIndex < calculatedGridSize) {
       const yPos = getCoordinate(yAxisGridIndex, cellSize);
       ctx.beginPath();
       ctx.moveTo(0, yPos);
