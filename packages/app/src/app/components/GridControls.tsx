@@ -5,6 +5,7 @@ import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -15,6 +16,8 @@ interface Props {
   toggleGame: () => void;
   isGameRunning: boolean;
   copyCurrentURL: () => void;
+  isEditMode?: boolean;
+  toggleEditMode?: () => void;
 }
 
 function GridControls({ 
@@ -24,7 +27,9 @@ function GridControls({
   resetBoard,
   toggleGame,
   isGameRunning,
-  copyCurrentURL
+  copyCurrentURL,
+  isEditMode = false,
+  toggleEditMode
 }: Props) {
   const [showResetModal, setShowResetModal] = useState(false);
   const { t } = useTranslation();
@@ -80,6 +85,21 @@ function GridControls({
           {t('controls.copyUrl')}
         </Button>
       </Stack>
+
+      {toggleEditMode && (
+        <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+          <Button 
+            variant={isEditMode ? "contained" : "outlined"}
+            color={isEditMode ? "primary" : "inherit"}
+            startIcon={<EditIcon />} 
+            onClick={toggleEditMode}
+            disabled={isGameRunning}
+            fullWidth
+          >
+            {t('controls.editMode')}
+          </Button>
+        </Stack>
+      )}
 
       <Typography variant="h5" gutterBottom>{t('controls.variables')}</Typography>
 

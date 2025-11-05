@@ -23,6 +23,7 @@ function Home() {
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(3);
   const [isGameRunning, setIsGameRunning] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [currentPattern, setCurrentPattern] = useState<LifeGrid>(() => {
     // Check URL for pattern on initial load
     const urlPattern = getGridFromURL();
@@ -67,6 +68,7 @@ function Home() {
       setSnackbarOpen(true);
     } else {
       console.info("Starting game.");
+      setIsEditMode(false); // Disable edit mode when game starts
       runGameInterval();
       setIsGameRunning(true);
     }
@@ -137,6 +139,31 @@ function Home() {
     });
   }
 
+  function toggleEditMode() {
+    setIsEditMode(!isEditMode);
+  }
+
+  function handleCellClick(coordinate: string) {
+    if (!isEditMode || isGameRunning) return;
+    
+    const currentGrid = game.getStatus();
+    const newGrid = { ...currentGrid };
+    
+    // Toggle the cell
+    if (newGrid[coordinate]) {
+      delete newGrid[coordinate];
+    } else {
+      newGrid[coordinate] = true;
+    }
+    
+    // Update the game with the new grid
+    setCurrentPattern(newGrid);
+    setBoardInitialization(true);
+    
+    // Update URL to allow sharing custom patterns
+    updateURLWithGrid(newGrid);
+  }
+
   const gameStatus = game.getStatus ? game.getStatus() : {};
   const gridJSON = JSON.stringify(gameStatus, null, 2);
 
@@ -144,7 +171,13 @@ function Home() {
     <Container maxWidth="xl" className="App">
       <Box display="flex" gap={3} sx={{ py: 3, flexDirection: { xs: 'column', md: 'row' } }}>
         <Box className="left-column" sx={{ width: { xs: '100%', md: 'auto' } }}>
-          <Grid game={game} onMouseOver={onMouseOver} palette={selectedPalette} />
+          <Grid 
+            game={game} 
+            onMouseOver={onMouseOver} 
+            palette={selectedPalette}
+            isEditMode={isEditMode}
+            onCellClick={handleCellClick}
+          />
         </Box>
         <Box className="right-column" sx={{ width: { xs: '100%', md: '350px' } }}>
           <Paper elevation={3}>
@@ -156,6 +189,8 @@ function Home() {
               toggleGame={toggleGame}
               isGameRunning={isGameRunning}
               copyCurrentURL={copyCurrentURL}
+              isEditMode={isEditMode}
+              toggleEditMode={toggleEditMode}
             />
             <PatternInput 
               onLoadPattern={loadCustomPattern}

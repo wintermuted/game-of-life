@@ -16,7 +16,10 @@ export default {
     "reset": "Reset",
     "copyUrl": "Copy URL",
     "variables": "Game Variables",
-    "generationSpeed": "Generation Speed"
+    "generationSpeed": "Generation Speed",
+    "editMode": "Edit Mode",
+    "editModeOn": "Edit mode is ON - Click cells to toggle",
+    "editModeOff": "Edit mode is OFF"
   },
   "patterns": {
     "title": "Starter Patterns",
