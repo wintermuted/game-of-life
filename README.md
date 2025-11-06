@@ -58,7 +58,7 @@ This enables:
 - **Language**: TypeScript 5.0
 - **UI Framework**: React 18 with Vite
 - **UI Components**: Material-UI (MUI)
-- **Testing**: Vitest
+- **Testing**: Vitest (unit tests), Playwright (E2E tests)
 - **Bundler**: Vite
 
 ## Development
@@ -84,6 +84,12 @@ npm run build:app    # Build only the app package
 npm test             # Run tests for all packages
 npm run test:watch   # Run tests in watch mode
 npm run test:ui      # Open Vitest UI
+
+# End-to-End Testing with Playwright
+npm run test:e2e         # Run Playwright tests (headless)
+npm run test:e2e:ui      # Run Playwright tests with UI mode
+npm run test:e2e:headed  # Run Playwright tests in headed mode (see browser)
+npm run test:e2e:debug   # Run Playwright tests in debug mode
 
 # Linting
 npm run lint         # Lint the app package
@@ -136,8 +142,55 @@ game-of-life/
 │       └── vite.config.ts
 ├── package.json              # Root package.json (workspace)
 ├── tsconfig.json            # Root TypeScript config (project references)
-└── nx.json                  # NX workspace configuration
+├── nx.json                  # NX workspace configuration
+├── e2e/                     # Playwright end-to-end tests
+├── playwright.config.ts     # Playwright configuration
+└── .github/mcp.json         # MCP configuration for Playwright
 ```
+
+## End-to-End Testing
+
+This project uses [Playwright](https://playwright.dev/) for end-to-end testing of the UI.
+
+### Running E2E Tests
+
+Before running tests for the first time, install Playwright browsers:
+
+```bash
+npx playwright install
+```
+
+Run E2E tests:
+
+```bash
+npm run test:e2e         # Run tests headless
+npm run test:e2e:ui      # Run with Playwright UI mode (recommended for development)
+npm run test:e2e:headed  # Run in headed mode (see the browser)
+npm run test:e2e:debug   # Run in debug mode
+```
+
+### Test Organization
+
+E2E tests are located in the `e2e/` directory:
+
+- `home.spec.ts` - Tests for the home page, canvas, controls, and diagnostics
+- `game-interactions.spec.ts` - Tests for navigation (Home, About, GitHub links)
+- `patterns-and-controls.spec.ts` - Tests for pattern selection and game controls
+- `theme.spec.ts` - Tests for dark/light mode toggle
+
+### Playwright Configuration
+
+The Playwright configuration includes:
+
+- **Browser**: Chromium (desktop)
+- **Base URL**: http://localhost:5173 (Vite dev server)
+- **Web Server**: Automatically starts the dev server before running tests
+- **Reporter**: HTML report (view with `npx playwright show-report`)
+- **Retries**: 2 retries on CI, 0 locally
+
+### MCP Integration
+
+This repository is configured with Playwright MCP (Model Context Protocol) for enhanced development workflows. The configuration is in `.github/mcp.json`.
 
 ## Deployment
 

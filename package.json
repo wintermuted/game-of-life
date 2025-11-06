@@ -15,12 +15,17 @@
     "lint": "nx run @game-of-life/app:lint",
     "test": "nx run-many --target=test --all",
     "test:watch": "nx run @game-of-life/app:test:watch",
-    "test:ui": "nx run @game-of-life/app:test:ui"
+    "test:ui": "nx run @game-of-life/app:test:ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug"
   },
   "devDependencies": {
     "@nx/js": "^22.0.2",
     "@nx/vite": "^22.0.2",
     "@nx/workspace": "^22.0.2",
+    "@playwright/test": "^1.56.1",
     "@types/lodash": "^4.14.178",
     "@types/node": "^18.19.130",
     "@types/react": "^18.3.26",
