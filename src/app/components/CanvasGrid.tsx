@@ -5,6 +5,8 @@ import { ColorPalette } from '../constants/colors';
 
 const CELL_STROKE_COLOR = '#777';
 const CELL_STROKE_WIDTH = 0.5;
+const AXIS_STROKE_COLOR = '#333';
+const AXIS_STROKE_WIDTH = 2;
 const DISPLAY_SIZE = 800; // Fixed canvas size in pixels
 
 function getCoordinate(rowIndex: number, cellSize: number) {
@@ -61,6 +63,32 @@ function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, pal
         ctx.lineWidth = CELL_STROKE_WIDTH;
         ctx.strokeRect(x, y, cellSize, cellSize);
       }
+    }
+
+    // Draw darker axis lines at X=0 and Y=0
+    // Calculate grid indices for world coordinates (0, 0)
+    const xAxisGridIndex = calculatedGridSize / 2 - offsetX;
+    const yAxisGridIndex = calculatedGridSize / 2 - 1 - offsetY;
+
+    ctx.strokeStyle = AXIS_STROKE_COLOR;
+    ctx.lineWidth = AXIS_STROKE_WIDTH;
+
+    // Draw Y-axis (vertical line at X=0 in world coordinates)
+    if (xAxisGridIndex >= 0 && xAxisGridIndex < calculatedGridSize) {
+      const xPos = getCoordinate(xAxisGridIndex, cellSize);
+      ctx.beginPath();
+      ctx.moveTo(xPos, 0);
+      ctx.lineTo(xPos, canvasHeight);
+      ctx.stroke();
+    }
+
+    // Draw X-axis (horizontal line at Y=0 in world coordinates)
+    if (yAxisGridIndex >= 0 && yAxisGridIndex < calculatedGridSize) {
+      const yPos = getCoordinate(yAxisGridIndex, cellSize);
+      ctx.beginPath();
+      ctx.moveTo(0, yPos);
+      ctx.lineTo(canvasWidth, yPos);
+      ctx.stroke();
     }
   }, [grid, calculatedGridSize, cellSize, canvasWidth, canvasHeight, offsetX, offsetY, palette]);
 
