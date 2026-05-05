@@ -3,6 +3,7 @@ import { Game } from "@game-of-life/core";
 import '../styles/Grid.scss';
 import CanvasGrid from './CanvasGrid';
 import { ColorPalette } from '../constants/colors';
+import { useThemeMode } from '../ThemeContext';
 
 interface Props {
   game: Game;
@@ -28,17 +29,14 @@ const IconZoomIn = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="n
 const IconZoomOut = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>;
 const IconZoomReset = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>;
 
-const btnStyle: React.CSSProperties = {
+const btnStyleBase: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   width: 28,
   height: 28,
   padding: 0,
-  border: '1px solid rgba(0,0,0,0.15)',
   borderRadius: 4,
-  background: 'rgba(255,255,255,0.9)',
-  color: '#333',
   cursor: 'pointer',
   lineHeight: 1,
 };
@@ -47,6 +45,18 @@ function Grid({ game, onMouseOver, palette, isEditMode = false, onCellClick }: P
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
   const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
+
+  const overlayBg = isDark ? 'rgba(30,30,30,0.92)' : 'rgba(255,255,255,0.92)';
+  const overlayBorder = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)';
+  const btnColor = isDark ? '#d1d5db' : '#333';
+  const btnStyle: React.CSSProperties = {
+    ...btnStyleBase,
+    border: `1px solid ${overlayBorder}`,
+    background: overlayBg,
+    color: btnColor,
+  };
 
   if (!game) return null;
 
@@ -83,9 +93,10 @@ function Grid({ game, onMouseOver, palette, isEditMode = false, onCellClick }: P
             display: 'flex',
             flexDirection: 'column',
             gap: 4,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: overlayBg,
             borderRadius: 6,
             padding: 4,
+            border: `1px solid ${overlayBorder}`,
           }}
         >
           {/* Pan Up */}

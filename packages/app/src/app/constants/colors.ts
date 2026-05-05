@@ -6,6 +6,8 @@ export interface ColorPalette {
   liveCell: string;
   deadCell: string;
   centerCell: string;
+  deadCellDark: string;
+  centerCellDark: string;
   description?: string;
 }
 
@@ -16,6 +18,8 @@ export const COLOR_PALETTES: ColorPalette[] = [
     liveCell: '#22c55e',
     deadCell: '#CCCCCC',
     centerCell: '#888888',
+    deadCellDark: '#1a1a1a',
+    centerCellDark: '#2e2e2e',
     description: 'Traditional green color scheme'
   },
   {
@@ -24,6 +28,8 @@ export const COLOR_PALETTES: ColorPalette[] = [
     liveCell: '#39d353',
     deadCell: '#ebedf0',
     centerCell: '#9ca3af',
+    deadCellDark: '#161b22',
+    centerCellDark: '#21262d',
     description: 'GitHub contributions graph inspired palette'
   },
   {
@@ -32,6 +38,8 @@ export const COLOR_PALETTES: ColorPalette[] = [
     liveCell: '#3b82f6',
     deadCell: '#dbeafe',
     centerCell: '#93c5fd',
+    deadCellDark: '#0a1628',
+    centerCellDark: '#0f2040',
     description: 'Cool ocean blue theme'
   },
   {
@@ -40,6 +48,8 @@ export const COLOR_PALETTES: ColorPalette[] = [
     liveCell: '#f97316',
     deadCell: '#ffedd5',
     centerCell: '#fdba74',
+    deadCellDark: '#1c0a00',
+    centerCellDark: '#2d1500',
     description: 'Warm sunset orange theme'
   }
 ];
