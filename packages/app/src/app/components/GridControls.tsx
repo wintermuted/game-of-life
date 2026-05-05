@@ -1,11 +1,4 @@
 import { useState } from 'react';
-import { Button, Slider, Typography, Box, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -34,12 +27,6 @@ function GridControls({
   const [showResetModal, setShowResetModal] = useState(false);
   const { t } = useTranslation();
 
-  function onChange(_event: Event, value: number | number[]) {
-    if (typeof value === 'number') {
-      updateGenerationSpeed(value);
-    }
-  }
-
   function confirmReset() {
     resetBoard();
     setShowResetModal(false);
@@ -50,88 +37,94 @@ function GridControls({
   }
 
   return (
-    <Box className="GridControls" sx={{ p: 2, pb: 0 }}>
+    <div className="GridControls">
       <form onSubmit={(e) => e.preventDefault()}>
-
-      <Typography variant="h5" gutterBottom>{t('controls.title')}</Typography>
-      <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-        <Button 
-          variant="contained" 
-          color={isGameRunning ? "warning" : "success"} 
-          startIcon={isGameRunning ? <PauseIcon /> : <PlayArrowIcon />} 
-          onClick={toggleGame}
-        >
-          {isGameRunning ? t('controls.pause') : t('controls.start')}
-        </Button>
-        <Button variant="contained" startIcon={<SkipNextIcon />} onClick={nextGeneration}>{t('controls.next')}</Button>
-        <Button 
-          variant="outlined" 
-          color="error"
-          startIcon={<RestartAltIcon />} 
-          onClick={() => setShowResetModal(true)}
-          disabled={isGameRunning}
-        >
-          {t('controls.reset')}
-        </Button>
-      </Stack>
-
-      <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-        <Button 
-          variant="outlined" 
-          startIcon={<ContentCopyIcon />} 
-          onClick={copyCurrentURL}
-          fullWidth
-        >
-          {t('controls.copyUrl')}
-        </Button>
-      </Stack>
-
-      {toggleEditMode && (
-        <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-          <Button 
-            variant={isEditMode ? "contained" : "outlined"}
-            color={isEditMode ? "primary" : "inherit"}
-            startIcon={<EditIcon />} 
-            onClick={toggleEditMode}
-            disabled={isGameRunning}
-            fullWidth
+        <h5>{t('controls.title')}</h5>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          <button
+            className={`btn ${isGameRunning ? 'btn-warning' : 'btn-success'}`}
+            type="button"
+            onClick={toggleGame}
           >
-            {t('controls.editMode')}
-          </Button>
-        </Stack>
-      )}
+            {isGameRunning ? t('controls.pause') : t('controls.start')}
+          </button>
+          <button className="btn btn-secondary" type="button" onClick={nextGeneration}>
+            {t('controls.next')}
+          </button>
+          <button
+            className="btn btn-danger btn-outline"
+            type="button"
+            onClick={() => setShowResetModal(true)}
+            disabled={isGameRunning}
+          >
+            {t('controls.reset')}
+          </button>
+        </div>
 
-      <Typography variant="h5" gutterBottom>{t('controls.variables')}</Typography>
+        <div style={{ marginBottom: '1rem' }}>
+          <button
+            className="btn btn-secondary btn-outline"
+            type="button"
+            onClick={copyCurrentURL}
+            style={{ width: '100%' }}
+          >
+            {t('controls.copyUrl')}
+          </button>
+        </div>
 
-      <Typography gutterBottom>{t('controls.generationSpeed')}: {generationSpeed}</Typography>
-      <Slider
-        name="generationSpeed"
-        min={1}
-        max={10}
-        step={1}
-        value={generationSpeed}
-        onChange={onChange}
-        marks
-        valueLabelDisplay="auto"
-        sx={{ width: '100%', maxWidth: 300, mb: 3 }}
-      />
+        {toggleEditMode && (
+          <div style={{ marginBottom: '1rem' }}>
+            <button
+              className={`btn ${isEditMode ? 'btn-primary' : 'btn-secondary btn-outline'}`}
+              type="button"
+              onClick={toggleEditMode}
+              disabled={isGameRunning}
+              style={{ width: '100%' }}
+            >
+              {t('controls.editMode')}
+            </button>
+          </div>
+        )}
+
+        <h5>{t('controls.variables')}</h5>
+        <div className="wm-slider-row">
+          <span className="wm-slider-label">{t('controls.generationSpeed')}</span>
+          <span className="wm-slider-value">{generationSpeed}</span>
+        </div>
+        <input
+          type="range"
+          className="wm-slider"
+          name="generationSpeed"
+          min={1}
+          max={10}
+          step={1}
+          value={generationSpeed}
+          onChange={(e) => updateGenerationSpeed(Number(e.target.value))}
+          style={{ marginBottom: '1rem' }}
+        />
       </form>
-      
-      <Dialog open={showResetModal} onClose={cancelReset}>
-        <DialogTitle>{t('dialogs.confirmReset')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t('dialogs.resetMessage')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={cancelReset}>{t('dialogs.cancel')}</Button>
-          <Button onClick={confirmReset} color="error" variant="contained">
-            {t('dialogs.yesReset')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+
+      {showResetModal && (
+        <div className="modal-overlay" onClick={cancelReset}>
+          <div className="modal-panel" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">{t('dialogs.confirmReset')}</h3>
+            </div>
+            <div className="modal-body">
+              <p>{t('dialogs.resetMessage')}</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary btn-outline" type="button" onClick={cancelReset}>
+                {t('dialogs.cancel')}
+              </button>
+              <button className="btn btn-danger" type="button" onClick={confirmReset}>
+                {t('dialogs.yesReset')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

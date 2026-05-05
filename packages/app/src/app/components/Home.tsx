@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Paper, Snackbar, Alert } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
 import Grid from "./Grid";
 import GridControls from "./GridControls";
 import PatternInput from "./PatternInput";
@@ -10,8 +9,6 @@ import { Game, rPentomino, LifeGrid, GameStats, GameRules, DEFAULT_RULES } from 
 import { getGridFromURL, updateURLWithGrid } from '../util/urlState';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
-
-// Game of Life with MUI
 
 let game: Game = {} as Game;
 let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
@@ -31,6 +28,7 @@ function Home() {
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const toastHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [stats, setStats] = useState<GameStats>({ liveCells: 0, births: 0, deaths: 0 });
   const [rules, setRules] = useState<GameRules>(DEFAULT_RULES);
   const [selectedPaletteId, setSelectedPaletteId] = useState(DEFAULT_PALETTE_ID);
@@ -125,7 +123,18 @@ function Home() {
 
   function handleSnackbarClose() {
     setSnackbarOpen(false);
+    if (toastHideTimer.current) clearTimeout(toastHideTimer.current);
   }
+
+  useEffect(() => {
+    if (snackbarOpen) {
+      if (toastHideTimer.current) clearTimeout(toastHideTimer.current);
+      toastHideTimer.current = setTimeout(() => setSnackbarOpen(false), 3000);
+    }
+    return () => {
+      if (toastHideTimer.current) clearTimeout(toastHideTimer.current);
+    };
+  }, [snackbarOpen]);
 
   function copyCurrentURL() {
     const url = window.location.href;
@@ -168,80 +177,74 @@ function Home() {
   const gridJSON = JSON.stringify(gameStatus, null, 2);
 
   return (
-    <Container maxWidth="xl" className="App">
-      <Box display="flex" gap={3} sx={{ py: 3, flexDirection: { xs: 'column', md: 'row' } }}>
-        <Box className="left-column" sx={{ width: { xs: '100%', md: 'auto' } }}>
-          <Grid 
-            game={game} 
-            onMouseOver={onMouseOver} 
-            palette={selectedPalette}
+    <div className="App">
+      <div className="left-column">
+        <Grid 
+          game={game} 
+          onMouseOver={onMouseOver} 
+          palette={selectedPalette}
+          isEditMode={isEditMode}
+          onCellClick={handleCellClick}
+        />
+      </div>
+      <div className="right-column">
+        <div className="card card-body" style={{ marginBottom: '1rem' }}>
+          <GridControls 
+            nextGeneration={nextGeneration} 
+            updateGenerationSpeed={updateGenerationSpeed}
+            generationSpeed={generationSpeed} 
+            resetBoard={resetBoard}
+            toggleGame={toggleGame}
+            isGameRunning={isGameRunning}
+            copyCurrentURL={copyCurrentURL}
             isEditMode={isEditMode}
-            onCellClick={handleCellClick}
+            toggleEditMode={toggleEditMode}
           />
-        </Box>
-        <Box className="right-column" sx={{ width: { xs: '100%', md: '350px' } }}>
-          <Paper elevation={3}>
-            <GridControls 
-              nextGeneration={nextGeneration} 
-              updateGenerationSpeed={updateGenerationSpeed}
-              generationSpeed={generationSpeed} 
-              resetBoard={resetBoard}
-              toggleGame={toggleGame}
-              isGameRunning={isGameRunning}
-              copyCurrentURL={copyCurrentURL}
-              isEditMode={isEditMode}
-              toggleEditMode={toggleEditMode}
-            />
-            <PatternInput 
-              onLoadPattern={loadCustomPattern}
-              disabled={isGameRunning}
-            />
-          </Paper>
-          <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
-            <ColorPaletteSelector
-              selectedPaletteId={selectedPaletteId}
-              onPaletteChange={handlePaletteChange}
-              disabled={isGameRunning}
-            />
-          </Paper>
-          <RulesPanel 
-            rules={rules}
-            onRulesChange={handleRulesChange}
+          <PatternInput 
+            onLoadPattern={loadCustomPattern}
             disabled={isGameRunning}
           />
-          <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
-            <Typography variant="h5" gutterBottom>{t('diagnostics.title')}</Typography>
-            <Typography variant="h6" gutterBottom>{t('diagnostics.statistics')}</Typography>
-            <Typography variant="body1">
-              <strong>{t('diagnostics.generations')}:</strong> {generation}
-            </Typography>
-            <Typography variant="body1">
-              <strong>{t('diagnostics.liveCells')}:</strong> {stats.liveCells}
-            </Typography>
-            <Typography variant="body1">
-              <strong>{t('diagnostics.totalBirths')}:</strong> {stats.births}
-            </Typography>
-            <Typography variant="body1">
-              <strong>{t('diagnostics.totalDeaths')}:</strong> {stats.deaths}
-            </Typography>
-            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>{t('diagnostics.cellData')}</Typography>
-            <Box component="pre" sx={{ overflow: 'auto', maxHeight: 400 }}>
-              { gridJSON }
-            </Box>
-          </Paper>
-        </Box>
-      </Box>
-      <Snackbar 
-        open={snackbarOpen} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        </div>
+        <div className="card card-body" style={{ marginBottom: '1rem' }}>
+          <ColorPaletteSelector
+            selectedPaletteId={selectedPaletteId}
+            onPaletteChange={handlePaletteChange}
+            disabled={isGameRunning}
+          />
+        </div>
+        <RulesPanel 
+          rules={rules}
+          onRulesChange={handleRulesChange}
+          disabled={isGameRunning}
+        />
+        <div className="card card-body" style={{ marginTop: '1rem' }}>
+          <h5>{t('diagnostics.title')}</h5>
+          <h6>{t('diagnostics.statistics')}</h6>
+          <p><strong>{t('diagnostics.generations')}:</strong> {generation}</p>
+          <p><strong>{t('diagnostics.liveCells')}:</strong> {stats.liveCells}</p>
+          <p><strong>{t('diagnostics.totalBirths')}:</strong> {stats.births}</p>
+          <p><strong>{t('diagnostics.totalDeaths')}:</strong> {stats.deaths}</p>
+          <h6 style={{ marginTop: '1rem' }}>{t('diagnostics.cellData')}</h6>
+          <pre style={{ overflow: 'auto', maxHeight: '400px', fontSize: '0.75rem' }}>
+            {gridJSON}
+          </pre>
+        </div>
+      </div>
+
+      <div
+        className={`wm-toast wm-toast-success${snackbarOpen ? ' wm-toast-visible' : ''}`}
+        role="status"
+        aria-live="polite"
       >
-        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Container>
+        {snackbarMessage}
+        <button
+          className="wm-toast-dismiss"
+          type="button"
+          aria-label="Dismiss"
+          onClick={handleSnackbarClose}
+        >&#x2715;</button>
+      </div>
+    </div>
   );
 }
 

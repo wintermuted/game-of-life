@@ -1,13 +1,4 @@
 import { useState } from 'react';
-import { 
-  Button, 
-  TextField, 
-  Typography, 
-  Box, 
-  Alert,
-  Collapse 
-} from '@mui/material';
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import { parseCoordinates, LifeGrid } from '@game-of-life/core';
 import { useTranslation } from 'react-i18next';
 
@@ -24,11 +15,10 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
 
   function handleLoad() {
     setError(null);
-    
     try {
       const grid = parseCoordinates(input);
       onLoadPattern(grid);
-      setInput(''); // Clear input after successful load
+      setInput('');
     } catch (e) {
       if (e instanceof Error) {
         setError(e.message);
@@ -40,91 +30,66 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
 
   function handleInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setInput(e.target.value);
-    if (error) {
-      setError(null); // Clear error when user starts typing
-    }
+    if (error) setError(null);
   }
 
   return (
-    <Box>
-      <TextField
-        multiline
+    <div>
+      <textarea
+        className="form-control"
         rows={4}
-        fullWidth
         placeholder={t('patterns.placeholder')}
         value={input}
         onChange={handleInputChange}
         disabled={disabled}
-        variant="outlined"
-        sx={{ mb: 1 }}
-        helperText={
-          <Box
-            component="span"
-            role="button"
-            tabIndex={0}
-            onClick={() => setShowHelp(!showHelp)}
-            onKeyDown={(e: React.KeyboardEvent) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                setShowHelp(!showHelp);
-              }
-            }}
-            sx={{ 
-              cursor: 'pointer', 
-              textDecoration: 'underline',
-              '&:hover': {
-                opacity: 0.7
-              }
-            }}
-          >
-            {showHelp ? t('patterns.hideExamples') : t('patterns.showExamples')}
-          </Box>
-        }
+        style={{ width: '100%', resize: 'vertical', marginBottom: '0.25rem', boxSizing: 'border-box' }}
       />
+      <button
+        type="button"
+        className="btn btn-ghost"
+        style={{ fontSize: '0.8rem', padding: '0 0.25rem', marginBottom: '0.5rem' }}
+        onClick={() => setShowHelp(!showHelp)}
+      >
+        {showHelp ? t('patterns.hideExamples') : t('patterns.showExamples')}
+      </button>
 
-      <Collapse in={showHelp}>
-        <Box sx={{ mb: 2, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-          <Typography variant="body2" gutterBottom>
-            <strong>{t('patterns.supportedFormats')}</strong>
-          </Typography>
-          <Typography variant="body2" component="div">
-            <strong>1. JSON:</strong>
-            <Box component="pre" sx={{ fontSize: '0.75rem', m: '4px 0' }}>
-              {`{ "1,0": true, "0,1": true, "1,1": true }`}
-            </Box>
-          </Typography>
-          <Typography variant="body2" component="div">
-            <strong>2. Space-separated:</strong>
-            <Box component="pre" sx={{ fontSize: '0.75rem', m: '4px 0' }}>
-              {`1 0 0 1 1 1`}
-            </Box>
-          </Typography>
-          <Typography variant="body2" component="div">
-            <strong>3. Line-separated:</strong>
-            <Box component="pre" sx={{ fontSize: '0.75rem', m: '4px 0' }}>
-              {`1 0\n0 1\n1 1`}
-            </Box>
-          </Typography>
-        </Box>
-      </Collapse>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
+      {showHelp && (
+        <div
+          style={{
+            marginBottom: '0.75rem',
+            padding: '0.75rem',
+            background: 'var(--wm-color-surface-raised)',
+            borderRadius: 'var(--wm-radius-sm)',
+            fontSize: '0.8rem',
+          }}
+        >
+          <strong>{t('patterns.supportedFormats')}</strong>
+          <div><strong>1. JSON:</strong><pre style={{ margin: '2px 0', fontSize: '0.75rem' }}>{`{ "1,0": true, "0,1": true }`}</pre></div>
+          <div><strong>2. Space-separated:</strong><pre style={{ margin: '2px 0', fontSize: '0.75rem' }}>{'1 0 0 1 1 1'}</pre></div>
+          <div><strong>3. Line-separated:</strong><pre style={{ margin: '2px 0', fontSize: '0.75rem' }}>{'1 0\n0 1\n1 1'}</pre></div>
+        </div>
       )}
 
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<ContentPasteIcon />}
+      {error && (
+        <div
+          className="feedback feedback-error"
+          style={{ marginBottom: '0.75rem' }}
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
+
+      <button
+        className="btn btn-primary"
+        type="button"
         onClick={handleLoad}
         disabled={disabled || !input.trim()}
-        fullWidth
+        style={{ width: '100%' }}
       >
         {t('patterns.loadCustom')}
-      </Button>
-    </Box>
+      </button>
+    </div>
   );
 }
 
