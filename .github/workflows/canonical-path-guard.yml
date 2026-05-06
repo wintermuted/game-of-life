@@ -1,0 +1,36 @@
+name: Canonical App Path Guard
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enforce canonical app paths
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -d packages/app/src
+
+          if ! grep -q "Root Vite config is deprecated" vite.config.ts; then
+            echo "Expected deprecated root vite.config.ts guard not found"
+            exit 1
+          fi
+
+          if grep -Eq 'src="/src/index\\.tsx"' index.html; then
+            echo "Root index.html must not point to /src/index.tsx"
+            exit 1
+          fi
+
+          if grep -Eq '"sourceRoot"\s*:\s*"src"' packages/*/project.json; then
+            echo "Project sourceRoot must point to packages/*/src, not top-level src"
+            exit 1
+          fi

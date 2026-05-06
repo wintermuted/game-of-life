@@ -59,7 +59,7 @@ export default {
     "projectTitle": "Acerca de Este Proyecto",
     "projectDescription": "Esta es una implementación en TypeScript del Juego de la Vida de Conway que incluye:",
     "feature1": "Lógica central funcional pura con pruebas unitarias exhaustivas",
-    "feature2": "Interfaz interactiva basada en React con componentes Material-UI",
+    "feature2": "Interfaz interactiva basada en React con componentes personalizados de Wintermuted",
     "feature3": "Estructura de datos basada en diccionario optimizada para cuadrículas dispersas",
     "feature4": "Patrones precargados que incluyen vidas inmóviles, osciladores, naves espaciales y matusalenes",
     "feature5": "Compartir patrones basado en URL",

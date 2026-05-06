@@ -1,0 +1,231 @@
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.docs-topbar-language {
+  min-width: 6.25rem;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.App {
+  --wm-sidebar-aside-width: 390px;
+  --wm-sidebar-aside-min-width: 350px;
+  flex: 1;
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .App {
+    overflow: visible;
+    padding: 0.75rem;
+  }
+}
+
+.left-column {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+}
+
+@media (max-width: 767px) {
+  .left-column {
+    padding: 0;
+    overflow-y: visible;
+  }
+}
+
+.game-controls-bar {
+  width: min(100%, 920px);
+  flex-shrink: 0;
+  z-index: 90;
+  background: var(--wm-color-surface-raised);
+}
+
+.game-controls-bar-margin-top {
+  margin-top: 1rem;
+}
+
+.grid-controls-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.controls-main-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+.grid-controls-section {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.grid-controls-section-start {
+  padding-right: 0.5rem;
+}
+
+.grid-controls-section-end {
+  padding-left: 0.5rem;
+}
+
+.grid-controls-label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.68rem;
+}
+
+.grid-controls-actions-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.grid-controls-field-wrap {
+  max-width: 220px;
+}
+
+.grid-controls-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.grid-controls-slider {
+  margin: 0;
+  flex: 1 1 0;
+}
+
+.grid-controls-slider-value {
+  min-width: 1ch;
+  font-size: 0.8rem;
+}
+
+.grid-controls-palette-select {
+  width: 100%;
+  min-height: 1.6rem;
+  padding: 0.1rem 0.35rem 0.1rem 0.3rem;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  border-left-width: 0.5rem;
+  border-left-style: solid;
+}
+
+.grid-controls-palette-select-classic {
+  border-left-color: #22c55e;
+}
+
+.grid-controls-palette-select-github {
+  border-left-color: #39d353;
+}
+
+.grid-controls-palette-select-ocean {
+  border-left-color: #3b82f6;
+}
+
+.grid-controls-palette-select-sunset {
+  border-left-color: #f97316;
+}
+
+.pattern-input-section {
+  padding-top: 0.5rem;
+}
+
+.pattern-input-tabs {
+  margin-bottom: 0.75rem;
+}
+
+.game-controls-bar .wm-slider-compact {
+  height: 0.2rem;
+}
+
+.game-controls-bar .wm-slider-compact::-webkit-slider-runnable-track {
+  height: 0.2rem;
+}
+
+.game-controls-bar .wm-slider-compact::-webkit-slider-thumb {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: -0.325rem;
+}
+
+.game-controls-bar .wm-slider-compact::-moz-range-track,
+.game-controls-bar .wm-slider-compact::-moz-range-progress {
+  height: 0.2rem;
+}
+
+.game-controls-bar .wm-slider-compact::-moz-range-thumb {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.right-column {
+  overflow-y: auto;
+  height: 100%;
+  min-height: 0;
+  padding-left: 1.5rem;
+}
+
+.right-column-card-spaced {
+  margin-bottom: 1rem;
+}
+
+.diagnostics-card {
+  margin-top: 1rem;
+}
+
+.diagnostics-intro {
+  margin-top: 0;
+  font-size: 0.875rem;
+  color: var(--wm-color-text-muted);
+}
+
+.diagnostics-subheading {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--wm-color-text-muted);
+}
+
+.diagnostics-json {
+  overflow: auto;
+  max-height: 400px;
+  font-size: 0.75rem;
+  margin-bottom: 0;
+}
+
+@media (max-width: 767px) {
+  .right-column {
+    width: 100%;
+    height: auto;
+    overflow-y: visible;
+    border-bottom: none;
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .game-controls-bar {
+    width: 100%;
+    position: static;
+  }
+}

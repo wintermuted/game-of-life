@@ -1,4 +1,3 @@
-import { Box, Typography, Stack, ToggleButtonGroup, ToggleButton, Tooltip } from '@mui/material';
 import { COLOR_PALETTES, ColorPalette } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
 
@@ -10,49 +9,34 @@ interface Props {
 
 function ColorPaletteSelector({ selectedPaletteId, onPaletteChange, disabled = false }: Props) {
   const { t } = useTranslation();
-  
-  const handleChange = (_event: React.MouseEvent<HTMLElement>, newPaletteId: string | null) => {
-    if (newPaletteId !== null) {
-      onPaletteChange(newPaletteId);
-    }
-  };
 
   return (
-    <Box className="ColorPaletteSelector">
-      <Typography variant="h5" gutterBottom>{t('colors.title')}</Typography>
-      <ToggleButtonGroup
-        value={selectedPaletteId}
-        exclusive
-        onChange={handleChange}
-        aria-label="color palette selection"
-        disabled={disabled}
-        orientation="vertical"
-        fullWidth
+    <div className="ColorPaletteSelector">
+      <h5>{t('colors.title')}</h5>
+      <div
+        className="wm-toggle-group wm-toggle-group-vertical wm-toggle-group-full"
+        role="group"
+        aria-label={t('colors.title')}
       >
         {COLOR_PALETTES.map((palette: ColorPalette) => (
-          <ToggleButton 
-            key={palette.id} 
-            value={palette.id}
-            aria-label={palette.name}
+          <button
+            key={palette.id}
+            className={`wm-toggle-group-btn${selectedPaletteId === palette.id ? ' wm-toggle-group-btn-active' : ''}`}
+            type="button"
+            aria-pressed={selectedPaletteId === palette.id}
+            title={palette.description || palette.name}
+            disabled={disabled}
+            onClick={() => onPaletteChange(palette.id)}
           >
-            <Tooltip title={palette.description || palette.name} placement="right">
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ width: '100%' }}>
-                <Box
-                  sx={{
-                    width: 20,
-                    height: 20,
-                    backgroundColor: palette.liveCell,
-                    border: '1px solid #999',
-                    borderRadius: 1
-                  }}
-                />
-                <Typography variant="body2">{palette.name}</Typography>
-              </Stack>
-            </Tooltip>
-          </ToggleButton>
+            <span
+              className="wm-toggle-group-swatch"
+              style={{ background: palette.liveCell, borderColor: 'rgba(255,255,255,0.2)' }}
+            />
+            <span>{palette.name}</span>
+          </button>
         ))}
-      </ToggleButtonGroup>
-    </Box>
+      </div>
+    </div>
   );
 }
 

@@ -2,6 +2,9 @@ import { vi } from 'vitest';
 import { render } from '@testing-library/react';
 import PatternPreview from './PatternPreview';
 import { block } from '@game-of-life/core';
+import { getPaletteById } from '../constants/colors';
+
+const testPalette = getPaletteById('classic');
 
 // Mock canvas getContext to avoid JSDOM canvas errors
 beforeAll(() => {
@@ -14,7 +17,7 @@ beforeAll(() => {
 
 describe('PatternPreview', () => {
   test('renders without crashing', () => {
-    const { container } = render(<PatternPreview grid={block} />);
+    const { container } = render(<PatternPreview grid={block} palette={testPalette} />);
     
     // Check that a canvas element is rendered
     const canvas = container.querySelector('canvas');
@@ -22,7 +25,7 @@ describe('PatternPreview', () => {
   });
 
   test('renders with default size', () => {
-    const { container } = render(<PatternPreview grid={block} />);
+    const { container } = render(<PatternPreview grid={block} palette={testPalette} />);
     
     const canvas = container.querySelector('canvas');
     expect(canvas).toHaveAttribute('width', '60');
@@ -30,7 +33,7 @@ describe('PatternPreview', () => {
   });
 
   test('renders with custom size', () => {
-    const { container } = render(<PatternPreview grid={block} size={100} />);
+    const { container } = render(<PatternPreview grid={block} size={100} palette={testPalette} />);
     
     const canvas = container.querySelector('canvas');
     expect(canvas).toHaveAttribute('width', '100');
@@ -38,7 +41,7 @@ describe('PatternPreview', () => {
   });
 
   test('renders with empty grid', () => {
-    const { container } = render(<PatternPreview grid={{}} />);
+    const { container } = render(<PatternPreview grid={{}} palette={testPalette} />);
     
     // Should still render canvas even with empty grid
     const canvas = container.querySelector('canvas');

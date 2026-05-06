@@ -14,6 +14,16 @@ beforeAll(() => {
     strokeStyle: '',
     lineWidth: 0,
   })) as any;
+
+  Object.defineProperty(window, 'localStorage', {
+    value: {
+      getItem: vi.fn(() => 'light'),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    },
+    writable: true,
+  });
 });
 
 describe('App Dark Mode Toggle', () => {
@@ -25,7 +35,7 @@ describe('App Dark Mode Toggle', () => {
         </ThemeProviderWrapper>
       </MemoryRouter>
     );
-    const toggleButton = screen.getByLabelText('toggle dark mode');
+    const toggleButton = screen.getByLabelText(/toggle dark mode/i);
     expect(toggleButton).toBeInTheDocument();
   });
 
@@ -37,7 +47,7 @@ describe('App Dark Mode Toggle', () => {
         </ThemeProviderWrapper>
       </MemoryRouter>
     );
-    const toggleButton = screen.getByLabelText('toggle dark mode');
+    const toggleButton = screen.getByLabelText(/toggle dark mode/i);
     
     // Initial state should show dark mode icon (Brightness4Icon) in light mode
     // After clicking, should show light mode icon (Brightness7Icon) in dark mode
@@ -56,8 +66,8 @@ describe('App Dark Mode Toggle', () => {
       </MemoryRouter>
     );
     
-    expect(screen.getByLabelText('home')).toBeInTheDocument();
-    expect(screen.getByLabelText('about')).toBeInTheDocument();
-    expect(screen.getByLabelText('github')).toBeInTheDocument();
+    expect(screen.getByLabelText(/home/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/about/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/view source/i)).toBeInTheDocument();
   });
 });

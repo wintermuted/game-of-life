@@ -50,18 +50,23 @@ export function getCellFillColor(
   rowIndex: number, 
   columnIndex: number, 
   gridSize: number,
-  palette?: ColorPalette
+  palette?: ColorPalette,
+  isDark?: boolean
 ): string {
   const { nwQuad, swQuad, neQuad, seQuad } = getCenterPointSquares(columnIndex, rowIndex, gridSize);
   const centerCells = nwQuad || swQuad || neQuad || seQuad;
   
   if (palette) {
-    const defaultCells = centerCells ? palette.centerCell : palette.deadCell;
+    const dead = isDark ? palette.deadCellDark : palette.deadCell;
+    const center = isDark ? palette.centerCellDark : palette.centerCell;
+    const defaultCells = centerCells ? center : dead;
     return isAlive ? palette.liveCell : defaultCells;
   }
   
-  // Fallback to original colors if no palette provided
-  const defaultCells = centerCells ? "#888" : "#CCC";
-  const color = isAlive ? "green" : defaultCells;
+  // Fallback colors
+  const defaultCells = centerCells
+    ? (isDark ? '#3a3a3a' : '#888')
+    : (isDark ? '#1e1e1e' : '#CCC');
+  const color = isAlive ? 'green' : defaultCells;
   return color;
 }

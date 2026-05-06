@@ -59,7 +59,7 @@ export default {
     "projectTitle": "About This Project",
     "projectDescription": "This is a TypeScript implementation of Conway's Game of Life featuring:",
     "feature1": "Pure functional core logic with comprehensive unit tests",
-    "feature2": "React-based interactive UI with Material-UI components",
+    "feature2": "React-based interactive UI with custom Wintermuted components",
     "feature3": "Dictionary-based data structure optimized for sparse grids",
     "feature4": "Pre-loaded patterns including still lifes, oscillators, spaceships, and methuselahs",
     "feature5": "URL-based pattern sharing",

@@ -1,0 +1,103 @@
+.Grid {
+  border: 1px solid #000;
+  width: 100%;
+  max-width: 800px;
+}
+
+@media (min-width: 768px) {
+  .Grid {
+    height: 800px;
+  }
+}
+
+@media (max-width: 767px) {
+  .Grid {
+    aspect-ratio: 1;
+    max-height: calc(100vw - 20px);
+  }
+}
+
+.CanvasGrid {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-stage {
+  position: relative;
+  --grid-overlay-bg: rgba(255, 255, 255, 0.92);
+  --grid-overlay-border: rgba(0, 0, 0, 0.15);
+  --grid-overlay-button-color: #333;
+  --grid-overlay-divider: rgba(0, 0, 0, 0.12);
+}
+
+.grid-stage[data-theme-mode='dark'] {
+  --grid-overlay-bg: rgba(30, 30, 30, 0.92);
+  --grid-overlay-border: rgba(255, 255, 255, 0.12);
+  --grid-overlay-button-color: #d1d5db;
+  --grid-overlay-divider: rgba(255, 255, 255, 0.12);
+}
+
+.grid-overlay-controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--grid-overlay-border);
+  border-radius: 6px;
+  background: var(--grid-overlay-bg);
+}
+
+.grid-overlay-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.grid-overlay-row-center {
+  gap: 0;
+}
+
+.grid-overlay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--grid-overlay-border);
+  border-radius: 4px;
+  background: var(--grid-overlay-bg);
+  color: var(--grid-overlay-button-color);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.grid-overlay-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.grid-overlay-divider {
+  height: 1px;
+  margin: 2px 0;
+  background: var(--grid-overlay-divider);
+}
+
+.CanvasGrid canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+@media (max-width: 767px) {
+  .CanvasGrid canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+}

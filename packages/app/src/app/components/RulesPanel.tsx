@@ -1,4 +1,3 @@
-import { Box, Typography, FormGroup, FormControlLabel, Switch, Paper } from '@mui/material';
 import { GameRules } from '@game-of-life/core';
 import { useTranslation } from 'react-i18next';
 
@@ -23,37 +22,34 @@ function RulesPanel({ rules, onRulesChange, disabled = false }: Props) {
   };
 
   return (
-    <Paper elevation={3} sx={{ mt: 3, p: 2 }}>
-      <Typography variant="h5" gutterBottom>{t('rules.title')}</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        {t('rules.description')}
-      </Typography>
-      <FormGroup>
-        {Object.entries(rules).map(([key, rule]) => (
-          <Box key={rule.id} sx={{ mb: 2 }}>
-            <FormControlLabel
-              control={
-                <Switch
+    <div className="card" style={{ marginTop: '1rem' }}>
+      <div className="card-header">
+        <h4>{t('rules.title')}</h4>
+      </div>
+      <div className="card-body">
+        <p style={{ fontSize: '0.875rem', color: 'var(--wm-color-text-muted)', marginBottom: '0.75rem', marginTop: 0 }}>
+          {t('rules.description')}
+        </p>
+        <div className="wm-toggle-list">
+          {Object.entries(rules).map(([key, rule]) => (
+            <div key={rule.id}>
+              <label className="wm-toggle">
+                <input
+                  type="checkbox"
+                  className="wm-toggle-input"
                   checked={rule.enabled}
                   onChange={() => handleToggle(key as keyof GameRules)}
                   disabled={disabled}
                 />
-              }
-              label={
-                <Box>
-                  <Typography variant="body1" component="div">
-                    {rule.name}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" component="div">
-                    {rule.description}
-                  </Typography>
-                </Box>
-              }
-            />
-          </Box>
-        ))}
-      </FormGroup>
-    </Paper>
+                <span className="wm-toggle-track"><span className="wm-toggle-thumb"></span></span>
+                <span className="wm-toggle-label">{rule.name}</span>
+              </label>
+              <p className="wm-toggle-description">{rule.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -2,9 +2,9 @@ import { useEffect, useRef } from "react";
 import { LifeGrid } from '@game-of-life/core';
 import { getCellFillColor, translateGrid } from '../util/coordinate';
 import { ColorPalette } from '../constants/colors';
+import { useThemeMode } from '../ThemeContext';
 
-const CELL_STROKE_COLOR = '#777';
-const CELL_STROKE_WIDTH = 1;
+const CELL_STROKE_WIDTH = 0.5;
 const DISPLAY_SIZE = 800; // Fixed canvas size in pixels
 
 function getCoordinate(rowIndex: number, cellSize: number) {
@@ -25,6 +25,8 @@ interface Props {
 
 function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, palette, isEditMode = false, onCellClick }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
   
   // Calculate how many cells fit in the fixed display size based on cellSize
   // Smaller cellSize = more cells visible, larger cellSize = fewer cells visible
@@ -52,19 +54,19 @@ function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, pal
         const x = getCoordinate(rowIndex, cellSize);
         const y = getCoordinate(columnIndex, cellSize);
         const alive = translatedGrid[`${rowIndex},${columnIndex}`];
-        const color = getCellFillColor(alive, rowIndex, columnIndex, calculatedGridSize, palette);
+        const color = getCellFillColor(alive, rowIndex, columnIndex, calculatedGridSize, palette, isDark);
 
         // Fill the cell
         ctx.fillStyle = color;
         ctx.fillRect(x, y, cellSize, cellSize);
 
         // Draw the stroke
-        ctx.strokeStyle = CELL_STROKE_COLOR;
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.12)';
         ctx.lineWidth = CELL_STROKE_WIDTH;
         ctx.strokeRect(x, y, cellSize, cellSize);
       }
     }
-  }, [grid, calculatedGridSize, cellSize, canvasWidth, canvasHeight, offsetX, offsetY, palette]);
+  }, [grid, calculatedGridSize, cellSize, canvasWidth, canvasHeight, offsetX, offsetY, palette, isDark]);
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isEditMode || !onCellClick) return;

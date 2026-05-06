@@ -1,12 +1,7 @@
 import { useState } from 'react';
-import { Button, Slider, Typography, Box, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import EditIcon from '@mui/icons-material/Edit';
 import { useTranslation } from 'react-i18next';
+import { Play, Pause, ChevronRight, RotateCcw, Link, Pencil } from 'lucide-react';
+import { COLOR_PALETTES } from '../constants/colors';
 
 interface Props {
   nextGeneration: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
@@ -16,6 +11,8 @@ interface Props {
   toggleGame: () => void;
   isGameRunning: boolean;
   copyCurrentURL: () => void;
+  selectedPaletteId: string;
+  onPaletteChange: (paletteId: string) => void;
   isEditMode?: boolean;
   toggleEditMode?: () => void;
 }
@@ -28,17 +25,18 @@ function GridControls({
   toggleGame,
   isGameRunning,
   copyCurrentURL,
+  selectedPaletteId,
+  onPaletteChange,
   isEditMode = false,
   toggleEditMode
 }: Props) {
   const [showResetModal, setShowResetModal] = useState(false);
   const { t } = useTranslation();
-
-  function onChange(_event: Event, value: number | number[]) {
-    if (typeof value === 'number') {
-      updateGenerationSpeed(value);
-    }
-  }
+  const toggleLabel = isGameRunning ? t('controls.pause') : t('controls.start');
+  const nextLabel = t('controls.next');
+  const resetLabel = t('controls.reset');
+  const copyLabel = t('controls.copyUrl');
+  const editLabel = t('controls.editMode');
 
   function confirmReset() {
     resetBoard();
@@ -50,88 +48,135 @@ function GridControls({
   }
 
   return (
-    <Box className="GridControls" sx={{ p: 2, pb: 0 }}>
-      <form onSubmit={(e) => e.preventDefault()}>
+    <div className="GridControls">
+      <form onSubmit={(e) => e.preventDefault()} className="grid-controls-form">
+        <div className="controls-main-row">
+          <div className="grid-controls-section grid-controls-section-start">
+            <span className="wm-slider-label grid-controls-label">
+              Game Controls
+            </span>
+            <div className="grid-controls-actions-row">
+              <div className="btn-group">
+              <button
+                className="btn btn-sm btn-primary-neutral"
+                type="button"
+                onClick={toggleGame}
+                aria-label={toggleLabel}
+                title={toggleLabel}
+              >
+                {isGameRunning ? <Pause size={12} /> : <Play size={12} />}
+              </button>
+              <button
+                className="btn btn-sm btn-secondary-neutral"
+                type="button"
+                onClick={nextGeneration}
+                aria-label={nextLabel}
+                title={nextLabel}
+              >
+                <ChevronRight size={12} />
+              </button>
+              <button
+                className="btn btn-sm btn-secondary-neutral"
+                type="button"
+                onClick={() => setShowResetModal(true)}
+                disabled={isGameRunning}
+                aria-label={resetLabel}
+                title={resetLabel}
+              >
+                <RotateCcw size={12} />
+              </button>
+            </div>
+            <button
+              className="btn btn-sm btn-secondary-neutral"
+              type="button"
+              onClick={copyCurrentURL}
+              aria-label={copyLabel}
+              title={copyLabel}
+            >
+              <Link size={12} />
+            </button>
+            {toggleEditMode && (
+              <button
+                className={`btn btn-sm ${isEditMode ? 'btn-primary' : 'btn-secondary-neutral'}`}
+                type="button"
+                onClick={toggleEditMode}
+                disabled={isGameRunning}
+                aria-label={editLabel}
+                title={editLabel}
+              >
+                <Pencil size={12} />
+              </button>
+            )}
+            </div>
+          </div>
 
-      <Typography variant="h5" gutterBottom>{t('controls.title')}</Typography>
-      <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-        <Button 
-          variant="contained" 
-          color={isGameRunning ? "warning" : "success"} 
-          startIcon={isGameRunning ? <PauseIcon /> : <PlayArrowIcon />} 
-          onClick={toggleGame}
-        >
-          {isGameRunning ? t('controls.pause') : t('controls.start')}
-        </Button>
-        <Button variant="contained" startIcon={<SkipNextIcon />} onClick={nextGeneration}>{t('controls.next')}</Button>
-        <Button 
-          variant="outlined" 
-          color="error"
-          startIcon={<RestartAltIcon />} 
-          onClick={() => setShowResetModal(true)}
-          disabled={isGameRunning}
-        >
-          {t('controls.reset')}
-        </Button>
-      </Stack>
+          <div className="grid-controls-section">
+            <span className="wm-slider-label grid-controls-label">
+              {t('controls.generationSpeed')}
+            </span>
+            <div className="grid-controls-field-wrap">
+              <div className="grid-controls-slider-row">
+                <input
+                  type="range"
+                  className="wm-slider wm-slider-compact grid-controls-slider"
+                  name="generationSpeed"
+                  aria-label={t('controls.generationSpeed')}
+                  min={1}
+                  max={10}
+                  step={1}
+                  value={generationSpeed}
+                  onChange={(e) => updateGenerationSpeed(Number(e.target.value))}
+                />
+                <span className="wm-slider-value grid-controls-slider-value">{generationSpeed}</span>
+              </div>
+            </div>
+          </div>
 
-      <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-        <Button 
-          variant="outlined" 
-          startIcon={<ContentCopyIcon />} 
-          onClick={copyCurrentURL}
-          fullWidth
-        >
-          {t('controls.copyUrl')}
-        </Button>
-      </Stack>
+          <div className="grid-controls-section grid-controls-section-end">
+            <div className="grid-controls-field-wrap">
+              <label htmlFor="palette-select" className="wm-slider-label grid-controls-label">
+                {t('colors.title')}
+              </label>
+              <select
+                id="palette-select"
+                className={`grid-controls-palette-select grid-controls-palette-select-${selectedPaletteId}`}
+                value={selectedPaletteId}
+                onChange={(e) => onPaletteChange(e.target.value)}
+                disabled={isGameRunning}
+              >
+                {COLOR_PALETTES.map((palette) => (
+                  <option key={palette.id} value={palette.id}>
+                    {palette.name} ({palette.liveCell})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
 
-      {toggleEditMode && (
-        <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-          <Button 
-            variant={isEditMode ? "contained" : "outlined"}
-            color={isEditMode ? "primary" : "inherit"}
-            startIcon={<EditIcon />} 
-            onClick={toggleEditMode}
-            disabled={isGameRunning}
-            fullWidth
-          >
-            {t('controls.editMode')}
-          </Button>
-        </Stack>
-      )}
-
-      <Typography variant="h5" gutterBottom>{t('controls.variables')}</Typography>
-
-      <Typography gutterBottom>{t('controls.generationSpeed')}: {generationSpeed}</Typography>
-      <Slider
-        name="generationSpeed"
-        min={1}
-        max={10}
-        step={1}
-        value={generationSpeed}
-        onChange={onChange}
-        marks
-        valueLabelDisplay="auto"
-        sx={{ width: '100%', maxWidth: 300, mb: 3 }}
-      />
       </form>
-      
-      <Dialog open={showResetModal} onClose={cancelReset}>
-        <DialogTitle>{t('dialogs.confirmReset')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t('dialogs.resetMessage')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={cancelReset}>{t('dialogs.cancel')}</Button>
-          <Button onClick={confirmReset} color="error" variant="contained">
-            {t('dialogs.yesReset')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+
+      {showResetModal && (
+        <div className="modal-overlay" onClick={cancelReset}>
+          <div className="modal-panel" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">{t('dialogs.confirmReset')}</h3>
+            </div>
+            <div className="modal-body">
+              <p>{t('dialogs.resetMessage')}</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary btn-outline" type="button" onClick={cancelReset}>
+                {t('dialogs.cancel')}
+              </button>
+              <button className="btn btn-danger" type="button" onClick={confirmReset}>
+                {t('dialogs.yesReset')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

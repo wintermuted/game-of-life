@@ -1,6 +1,4 @@
-import React, { createContext, useState, useMemo, useContext } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import React, { createContext, useState, useMemo, useContext, useEffect } from 'react';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -35,15 +33,9 @@ export function ThemeProviderWrapper({ children }: ThemeProviderWrapperProps) {
     });
   };
 
-  const theme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode,
-        },
-      }),
-    [mode]
-  );
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', mode === 'dark' ? 'dark' : '');
+  }, [mode]);
 
   const contextValue = useMemo(
     () => ({
@@ -55,10 +47,7 @@ export function ThemeProviderWrapper({ children }: ThemeProviderWrapperProps) {
 
   return (
     <ThemeContext.Provider value={contextValue}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
+      {children}
     </ThemeContext.Provider>
   );
 }

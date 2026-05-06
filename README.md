@@ -23,6 +23,12 @@ This project is an implementation of [Conway's Game of Life](https://en.wikipedi
 
 This project is organized as an **NX monorepo** with TypeScript composite builds:
 
+### Canonical App Path
+
+- The canonical UI app is `packages/app/src/`.
+- The historical top-level `src/` tree has been removed.
+- Use root scripts (`npm run dev`, `npm run build`, `npm test`) or Nx targets so commands resolve to `@game-of-life/app`.
+
 ### Packages
 
 - **`@game-of-life/core`** (`packages/core/`) - Core game logic library
@@ -34,7 +40,7 @@ This project is organized as an **NX monorepo** with TypeScript composite builds
   
 - **`@game-of-life/app`** (`packages/app/`) - React UI application
   - Vite-based React application
-  - Material-UI components
+  - Wintermuted UI theme components
   - Canvas-based grid rendering
   - Pattern selector and game controls
   - Depends on `@game-of-life/core`
@@ -57,7 +63,7 @@ This enables:
 - **Build System**: [NX](https://nx.dev) - Smart monorepo build system with caching
 - **Language**: TypeScript 5.0
 - **UI Framework**: React 18 with Vite
-- **UI Components**: Material-UI (MUI)
+- **UI Components**: [@wintermuted/ui-theme](https://github.com/wintermuted/ui-theme)
 - **Testing**: Vitest
 - **Bundler**: Vite
 

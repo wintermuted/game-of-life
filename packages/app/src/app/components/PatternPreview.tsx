@@ -1,13 +1,18 @@
 import { useEffect, useRef } from 'react';
 import { LifeGrid } from '@game-of-life/core';
+import { useThemeMode } from '../ThemeContext';
+import { ColorPalette } from '../constants/colors';
 
 interface Props {
   grid: LifeGrid;
   size?: number; // Size in pixels for the preview canvas
+  palette: ColorPalette;
 }
 
-function PatternPreview({ grid, size = 60 }: Props) {
+function PatternPreview({ grid, size = 60, palette }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { mode } = useThemeMode();
+  const isDark = mode === 'dark';
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -18,6 +23,10 @@ function PatternPreview({ grid, size = 60 }: Props) {
 
     // Clear canvas
     ctx.clearRect(0, 0, size, size);
+
+    // Fill background using the active palette so previews match the board styling.
+    ctx.fillStyle = isDark ? palette.deadCellDark : palette.deadCell;
+    ctx.fillRect(0, 0, size, size);
 
     // Find the bounds of the pattern
     const coordinates = Object.keys(grid);
@@ -53,12 +62,12 @@ function PatternPreview({ grid, size = 60 }: Props) {
       const drawX = offsetX + ((x - minX) * cellSize);
       const drawY = offsetY + ((y - minY) * cellSize);
 
-      ctx.fillStyle = '#1976d2'; // Material UI primary color
+      ctx.fillStyle = palette.liveCell;
       // Ensure at least 1px cell size is drawn
       const renderSize = Math.max(1, cellSize - 1);
       ctx.fillRect(drawX, drawY, renderSize, renderSize);
     });
-  }, [grid, size]);
+  }, [grid, size, isDark, palette]);
 
   return (
     <canvas
@@ -66,9 +75,9 @@ function PatternPreview({ grid, size = 60 }: Props) {
       width={size}
       height={size}
       style={{
-        border: '1px solid #ccc',
+        border: `1px solid ${isDark ? palette.centerCellDark : palette.centerCell}`,
         borderRadius: '4px',
-        backgroundColor: '#f5f5f5'
+        backgroundColor: isDark ? palette.deadCellDark : palette.deadCell
       }}
     />
   );
