@@ -3,7 +3,6 @@ import Grid from "./Grid";
 import GridControls from "./GridControls";
 import PatternInput from "./PatternInput";
 import RulesPanel from "./RulesPanel";
-import ColorPaletteSelector from "./ColorPaletteSelector";
 import { getGenerationSpeed } from '../util';
 import { Game, rPentomino, LifeGrid, GameStats, GameRules, DEFAULT_RULES } from '@game-of-life/core';
 import { getGridFromURL, updateURLWithGrid } from '../util/urlState';
@@ -177,8 +176,8 @@ function Home() {
   const gridJSON = JSON.stringify(gameStatus, null, 2);
 
   return (
-    <div className="App">
-      <div className="left-column">
+    <div className="App wm-sidebar-layout wm-sidebar-layout-stretch">
+      <div className="left-column wm-sidebar-layout-main">
         <Grid 
           game={game} 
           onMouseOver={onMouseOver} 
@@ -186,9 +185,7 @@ function Home() {
           isEditMode={isEditMode}
           onCellClick={handleCellClick}
         />
-      </div>
-      <div className="right-column">
-        <div className="card card-body" style={{ marginBottom: '1rem' }}>
+        <div className="card card-body game-controls-bar wm-sticky-bottom game-controls-bar-margin-top">
           <GridControls 
             nextGeneration={nextGeneration} 
             updateGenerationSpeed={updateGenerationSpeed}
@@ -197,19 +194,19 @@ function Home() {
             toggleGame={toggleGame}
             isGameRunning={isGameRunning}
             copyCurrentURL={copyCurrentURL}
+            selectedPaletteId={selectedPaletteId}
+            onPaletteChange={handlePaletteChange}
             isEditMode={isEditMode}
             toggleEditMode={toggleEditMode}
           />
+        </div>
+      </div>
+      <div className="right-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider">
+        <div className="card card-body right-column-card-spaced">
           <PatternInput 
             onLoadPattern={loadCustomPattern}
             disabled={isGameRunning}
-          />
-        </div>
-        <div className="card card-body" style={{ marginBottom: '1rem' }}>
-          <ColorPaletteSelector
             selectedPaletteId={selectedPaletteId}
-            onPaletteChange={handlePaletteChange}
-            disabled={isGameRunning}
           />
         </div>
         <RulesPanel 
@@ -217,17 +214,21 @@ function Home() {
           onRulesChange={handleRulesChange}
           disabled={isGameRunning}
         />
-        <div className="card card-body" style={{ marginTop: '1rem' }}>
-          <h5>{t('diagnostics.title')}</h5>
-          <h6>{t('diagnostics.statistics')}</h6>
-          <p><strong>{t('diagnostics.generations')}:</strong> {generation}</p>
-          <p><strong>{t('diagnostics.liveCells')}:</strong> {stats.liveCells}</p>
-          <p><strong>{t('diagnostics.totalBirths')}:</strong> {stats.births}</p>
-          <p><strong>{t('diagnostics.totalDeaths')}:</strong> {stats.deaths}</p>
-          <h6 style={{ marginTop: '1rem' }}>{t('diagnostics.cellData')}</h6>
-          <pre style={{ overflow: 'auto', maxHeight: '400px', fontSize: '0.75rem' }}>
-            {gridJSON}
-          </pre>
+        <div className="card diagnostics-card">
+          <div className="card-header">
+            <h4>{t('diagnostics.title')}</h4>
+          </div>
+          <div className="card-body">
+            <p className="diagnostics-intro">{t('diagnostics.statistics')}</p>
+            <p><strong>{t('diagnostics.generations')}:</strong> {generation}</p>
+            <p><strong>{t('diagnostics.liveCells')}:</strong> {stats.liveCells}</p>
+            <p><strong>{t('diagnostics.totalBirths')}:</strong> {stats.births}</p>
+            <p><strong>{t('diagnostics.totalDeaths')}:</strong> {stats.deaths}</p>
+            <p className="diagnostics-subheading">{t('diagnostics.cellData')}</p>
+            <pre className="diagnostics-json">
+              {gridJSON}
+            </pre>
+          </div>
         </div>
       </div>
 

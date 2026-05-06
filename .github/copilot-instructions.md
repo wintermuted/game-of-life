@@ -51,6 +51,11 @@ src/
 - Use SCSS for styling
 - Components go in `src/app/components/`
 
+### Design System (`@wintermuted/ui-theme`)
+- **Always use theme classes when available** — prefer `btn-sm`, `btn-primary`, etc. over custom inline styles or SCSS overrides
+- **Do not introduce custom CSS overrides** for things the theme already provides (sizing, color variants, spacing tokens)
+- **When a new variation is needed** that doesn't exist in the theme, ask the user before implementing it custom — it may belong in the canonical theme for reuse
+
 ## Key Concepts
 
 ### Game Logic (src/core/)

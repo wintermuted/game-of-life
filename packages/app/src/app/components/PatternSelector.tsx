@@ -1,12 +1,24 @@
 import { patterns, Pattern, LifeGrid } from '@game-of-life/core';
 import PatternPreview from './PatternPreview';
+import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
 
 interface Props {
   onSelectPattern: (grid: LifeGrid) => void;
   disabled?: boolean;
+  selectedPaletteId?: string;
 }
 
-function PatternSelector({ onSelectPattern, disabled = false }: Props) {
+function PatternSelector({ onSelectPattern, disabled = false, selectedPaletteId = DEFAULT_PALETTE_ID }: Props) {
+  const palette = getPaletteById(selectedPaletteId);
+
+  function formatPatternTitle(name: string) {
+    return name
+      .toLowerCase()
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
   function handlePatternClick(pattern: Pattern) {
     if (!disabled) {
       onSelectPattern(pattern.grid);
@@ -41,15 +53,26 @@ function PatternSelector({ onSelectPattern, disabled = false }: Props) {
               width: '100%',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'flex-start',
               gap: '0.75rem',
               padding: '0.75rem',
               textAlign: 'left',
               borderRadius: 0,
             }}
           >
-            <PatternPreview grid={pattern.grid} size={60} />
+            <PatternPreview grid={pattern.grid} size={60} palette={palette} />
             <div>
-              <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>{pattern.name}</div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: '0.9375rem',
+                  lineHeight: 1.2,
+                  textTransform: 'none',
+                  letterSpacing: 0,
+                }}
+              >
+                {formatPatternTitle(pattern.name)}
+              </div>
               <span className="badge" style={{ marginTop: '0.25rem' }}>{pattern.category}</span>
             </div>
           </button>

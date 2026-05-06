@@ -1,10 +1,11 @@
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, NavLink } from 'react-router-dom';
+import { Moon, Sun } from 'lucide-react';
 import Home from "./components/Home";
 import About from "./components/About";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 import { useThemeMode } from './ThemeContext';
 import { useTranslation } from 'react-i18next';
-import './styles/App.scss';
+import './styles/App.css';
 
 function App() {
   const { mode, toggleTheme } = useThemeMode();
@@ -12,36 +13,54 @@ function App() {
 
   return (
     <div className="app-layout">
-      <header className="app-header">
-        <div className="app-brand">
-          <span className="app-brand-name">{t('app.title')}</span>
-        </div>
-        <nav className="app-nav">
-          <Link to="/" className="app-nav-link" aria-label={t('nav.home')}>{t('nav.home')}</Link>
-          <Link to="/about" className="app-nav-link" aria-label={t('nav.about')}>{t('nav.about')}</Link>
+      <header className="docs-topbar">
+        <div className="docs-topbar-inner">
+          <div className="docs-topbar-brand">
+          <h1>{t('app.title')}</h1>
+          </div>
+          <nav className="docs-topbar-nav wm-app-nav-nowrap" aria-label="Primary navigation">
+          <NavLink
+            to="/"
+            className={({ isActive }) => `docs-topbar-link${isActive ? ' is-active' : ''}`}
+            aria-label={t('nav.home')}
+          >
+            {t('nav.home')}
+          </NavLink>
+          <NavLink
+            to="/about"
+            className={({ isActive }) => `docs-topbar-link${isActive ? ' is-active' : ''}`}
+            aria-label={t('nav.about')}
+          >
+            {t('nav.about')}
+          </NavLink>
         </nav>
-        <div className="app-header-actions">
+        <div className="docs-topbar-actions">
           <LanguageSwitcher />
           <button
-            className="btn btn-ghost app-icon-btn"
+            className="docs-topbar-toggle"
             onClick={toggleTheme}
             aria-label={t('nav.toggleDarkMode')}
             title={t('nav.toggleDarkMode')}
           >
-            {mode === 'dark' ? '☀' : '🌙'}
+            {mode === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+            <span>{mode === 'dark' ? 'Light' : 'Dark'}</span>
           </button>
           <a
-            className="btn btn-ghost app-icon-btn"
+            className="docs-topbar-github"
             href="https://github.com/wintermuted/game-of-life"
             target="_blank"
             rel="noopener noreferrer"
             aria-label={t('nav.viewSource')}
             title={t('nav.viewSource')}
           >
-            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path
+                fill="currentColor"
+                d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.5-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+              />
             </svg>
           </a>
+        </div>
         </div>
       </header>
       <main className="app-main">

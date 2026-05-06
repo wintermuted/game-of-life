@@ -3,6 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import PatternSelector from './PatternSelector';
 import { patterns } from '@game-of-life/core';
 
+function formatPatternTitle(name: string) {
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 // Mock canvas getContext to avoid JSDOM canvas errors
 beforeAll(() => {
   HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
@@ -19,7 +27,7 @@ describe('PatternSelector', () => {
     
     // Check that all pattern names are rendered
     patterns.forEach(pattern => {
-      expect(screen.getByText(pattern.name)).toBeInTheDocument();
+      expect(screen.getByText(formatPatternTitle(pattern.name))).toBeInTheDocument();
     });
     
     // Check that categories are rendered (some may appear multiple times)
@@ -34,7 +42,7 @@ describe('PatternSelector', () => {
     render(<PatternSelector onSelectPattern={mockHandler} />);
     
     // Click on the first pattern
-    const firstPattern = screen.getByText(patterns[0].name);
+    const firstPattern = screen.getByText(formatPatternTitle(patterns[0].name));
     fireEvent.click(firstPattern);
     
     // Check that the handler was called with the correct grid
@@ -46,7 +54,7 @@ describe('PatternSelector', () => {
     render(<PatternSelector onSelectPattern={mockHandler} disabled={true} />);
     
     // Try to click on a pattern
-    const firstPattern = screen.getByText(patterns[0].name);
+    const firstPattern = screen.getByText(formatPatternTitle(patterns[0].name));
     fireEvent.click(firstPattern);
     
     // Handler should not be called when disabled

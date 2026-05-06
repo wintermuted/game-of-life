@@ -9,6 +9,7 @@ describe('GridControls', () => {
   const mockToggleGame = vi.fn();
   const mockCopyCurrentURL = vi.fn();
   const mockToggleEditMode = vi.fn();
+  const mockOnPaletteChange = vi.fn();
 
   const defaultProps = {
     nextGeneration: mockNextGeneration,
@@ -18,6 +19,8 @@ describe('GridControls', () => {
     toggleGame: mockToggleGame,
     isGameRunning: false,
     copyCurrentURL: mockCopyCurrentURL,
+    selectedPaletteId: 'classic',
+    onPaletteChange: mockOnPaletteChange,
     isEditMode: false,
     toggleEditMode: mockToggleEditMode,
   };
@@ -32,36 +35,36 @@ describe('GridControls', () => {
 
   it('shows Start button when game is not running', () => {
     render(<GridControls {...defaultProps} />);
-    expect(screen.getByText('Start')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Start' })).toBeInTheDocument();
   });
 
   it('shows Pause button when game is running', () => {
     render(<GridControls {...defaultProps} isGameRunning={true} />);
-    expect(screen.getByText('Pause')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
   });
 
   it('calls toggleGame when Start/Pause button is clicked', () => {
     render(<GridControls {...defaultProps} />);
-    const toggleButton = screen.getByText('Start');
+    const toggleButton = screen.getByRole('button', { name: 'Start' });
     fireEvent.click(toggleButton);
     expect(mockToggleGame).toHaveBeenCalledTimes(1);
   });
 
   it('disables Reset button when game is running', () => {
     render(<GridControls {...defaultProps} isGameRunning={true} />);
-    const resetButton = screen.getByText('Reset');
+    const resetButton = screen.getByRole('button', { name: 'Reset' });
     expect(resetButton).toBeDisabled();
   });
 
   it('enables Reset button when game is not running', () => {
     render(<GridControls {...defaultProps} isGameRunning={false} />);
-    const resetButton = screen.getByText('Reset');
+    const resetButton = screen.getByRole('button', { name: 'Reset' });
     expect(resetButton).not.toBeDisabled();
   });
 
   it('shows confirmation modal when Reset is clicked while game is paused', () => {
     render(<GridControls {...defaultProps} isGameRunning={false} />);
-    const resetButton = screen.getByText('Reset');
+    const resetButton = screen.getByRole('button', { name: 'Reset' });
     fireEvent.click(resetButton);
     expect(screen.getByText('Confirm Reset')).toBeInTheDocument();
     expect(screen.getByText('Are you sure you want to reset the game? This will clear the current state and start over.')).toBeInTheDocument();
@@ -69,14 +72,14 @@ describe('GridControls', () => {
 
   it('does not show modal when Reset is clicked while game is running', () => {
     render(<GridControls {...defaultProps} isGameRunning={true} />);
-    const resetButton = screen.getByText('Reset');
+    const resetButton = screen.getByRole('button', { name: 'Reset' });
     fireEvent.click(resetButton);
     expect(screen.queryByText('Confirm Reset')).not.toBeInTheDocument();
   });
 
   it('calls resetBoard when Yes, Reset is clicked in modal', async () => {
     render(<GridControls {...defaultProps} isGameRunning={false} />);
-    const resetButton = screen.getByText('Reset');
+    const resetButton = screen.getByRole('button', { name: 'Reset' });
     fireEvent.click(resetButton);
     
     const confirmButton = screen.getByText('Yes, Reset');
@@ -90,7 +93,7 @@ describe('GridControls', () => {
 
   it('closes modal without resetting when Cancel is clicked', async () => {
     render(<GridControls {...defaultProps} isGameRunning={false} />);
-    const resetButton = screen.getByText('Reset');
+    const resetButton = screen.getByRole('button', { name: 'Reset' });
     fireEvent.click(resetButton);
     
     const cancelButton = screen.getByText('Cancel');
@@ -104,7 +107,7 @@ describe('GridControls', () => {
 
   it('calls nextGeneration when Next button is clicked', () => {
     render(<GridControls {...defaultProps} />);
-    const nextButton = screen.getByText('Next');
+    const nextButton = screen.getByRole('button', { name: 'Next' });
     fireEvent.click(nextButton);
     expect(mockNextGeneration).toHaveBeenCalledTimes(1);
   });
@@ -118,45 +121,45 @@ describe('GridControls', () => {
 
   it('calls copyCurrentURL when Copy URL button is clicked', () => {
     render(<GridControls {...defaultProps} />);
-    const copyButton = screen.getByText('Copy URL');
+    const copyButton = screen.getByRole('button', { name: 'Copy URL' });
     fireEvent.click(copyButton);
     expect(mockCopyCurrentURL).toHaveBeenCalledTimes(1);
   });
 
   it('shows Edit Mode button when toggleEditMode is provided', () => {
     render(<GridControls {...defaultProps} />);
-    expect(screen.getByText('Edit Mode')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit Mode' })).toBeInTheDocument();
   });
 
   it('does not show Edit Mode button when toggleEditMode is not provided', () => {
     const { toggleEditMode, ...propsWithoutEditMode } = defaultProps;
     render(<GridControls {...propsWithoutEditMode} />);
-    expect(screen.queryByText('Edit Mode')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit Mode' })).not.toBeInTheDocument();
   });
 
   it('calls toggleEditMode when Edit Mode button is clicked', () => {
     render(<GridControls {...defaultProps} />);
-    const editModeButton = screen.getByText('Edit Mode');
+    const editModeButton = screen.getByRole('button', { name: 'Edit Mode' });
     fireEvent.click(editModeButton);
     expect(mockToggleEditMode).toHaveBeenCalledTimes(1);
   });
 
   it('shows Edit Mode button as active when isEditMode is true', () => {
     render(<GridControls {...defaultProps} isEditMode={true} />);
-    const editModeButton = screen.getByText('Edit Mode');
-    // In MUI, variant="contained" makes the button appear as active/filled
+    const editModeButton = screen.getByRole('button', { name: 'Edit Mode' });
+    // Active edit mode should render the button in the active semantic variant.
     expect(editModeButton).toBeInTheDocument();
   });
 
   it('disables Edit Mode button when game is running', () => {
     render(<GridControls {...defaultProps} isGameRunning={true} />);
-    const editModeButton = screen.getByText('Edit Mode');
+    const editModeButton = screen.getByRole('button', { name: 'Edit Mode' });
     expect(editModeButton).toBeDisabled();
   });
 
   it('enables Edit Mode button when game is not running', () => {
     render(<GridControls {...defaultProps} isGameRunning={false} />);
-    const editModeButton = screen.getByText('Edit Mode');
+    const editModeButton = screen.getByRole('button', { name: 'Edit Mode' });
     expect(editModeButton).not.toBeDisabled();
   });
 });

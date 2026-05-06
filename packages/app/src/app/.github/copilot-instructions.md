@@ -14,7 +14,7 @@ app/
 │   ├── CanvasGrid.tsx   # Alternative canvas-based rendering
 │   ├── GridSquares.tsx  # Individual cell rendering
 │   └── GridControls.tsx # Play/pause/speed controls
-├── styles/              # SCSS stylesheets
+├── styles/              # CSS stylesheets
 └── util/                # UI utility functions
 ```
 
@@ -106,17 +106,16 @@ useEffect(() => {
 }
 ```
 
-## Styling (SCSS)
+## Styling (CSS)
 
 ### File Organization
-- One SCSS file per component in `styles/`
+- Use plain CSS files in `styles/`
 - Import in corresponding component
-- Use BEM-like naming conventions (e.g., `.grid__cell--active` for Block__Element--Modifier)
+- Keep selectors app-scoped and layout-focused; prefer ui-theme primitives for components
 
 ### Current Styles
-- `App.scss` - Layout (two-column design)
-- `Grid.scss` - Grid and cell styling
-- `GridControls.scss` - Control panel styling
+- `App.css` - Layout (two-column design)
+- `Grid.css` - Grid and cell styling
 
 ## Utilities (util/)
 
@@ -146,7 +145,7 @@ Exports utility functions including `getGenerationSpeed()` which converts slider
 1. Add handler function in `App.tsx`
 2. Pass as prop to `GridControls`
 3. Add button in `GridControls.tsx`
-4. Style in `GridControls.scss`
+4. Prefer theme primitives from `@wintermuted/ui-theme`; add app-scoped style only for layout-specific adjustments in `App.css`
 
 ### Changing Initial Pattern
 ```typescript
@@ -157,7 +156,7 @@ const baseGame = yourPattern; // Change this line
 
 ### Modifying Grid Rendering
 1. Edit `Grid.tsx` or switch to `CanvasGrid.tsx`
-2. Update styles in `Grid.scss`
+2. Update styles in `Grid.css`
 3. Test with various grid sizes
 4. Check performance impact
 
@@ -212,7 +211,7 @@ if (isGameRunning) {
 - Don't mutate game state directly
 - Don't forget to clear intervals
 - Don't put business logic in render methods
-- Don't use inline styles (use SCSS)
+- Don't use inline styles for shared component primitives; prefer ui-theme classes + app CSS
 
 ## Testing UI Components
 

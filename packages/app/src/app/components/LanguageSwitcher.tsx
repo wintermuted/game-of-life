@@ -7,22 +7,22 @@ const languages = [
 
 function LanguageSwitcher() {
   const { i18n } = useTranslation();
+  const activeLanguage = i18n.language.startsWith('es') ? 'es' : 'en';
 
-  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    i18n.changeLanguage(e.target.value);
+  function handleChange(languageCode: string) {
+    i18n.changeLanguage(languageCode);
   }
 
   return (
     <select
-      className="form-control"
-      value={i18n.language}
-      onChange={handleChange}
+      className="docs-topbar-version docs-topbar-language"
       aria-label="Change language"
-      style={{ width: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+      value={activeLanguage}
+      onChange={(event) => handleChange(event.target.value)}
     >
-      {languages.map((lang) => (
-        <option key={lang.code} value={lang.code}>
-          {lang.name}
+      {languages.map((language) => (
+        <option key={language.code} value={language.code}>
+          {language.name}
         </option>
       ))}
     </select>

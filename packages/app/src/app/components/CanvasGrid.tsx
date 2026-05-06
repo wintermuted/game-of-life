@@ -4,7 +4,7 @@ import { getCellFillColor, translateGrid } from '../util/coordinate';
 import { ColorPalette } from '../constants/colors';
 import { useThemeMode } from '../ThemeContext';
 
-const CELL_STROKE_WIDTH = 1;
+const CELL_STROKE_WIDTH = 0.5;
 const DISPLAY_SIZE = 800; // Fixed canvas size in pixels
 
 function getCoordinate(rowIndex: number, cellSize: number) {
@@ -61,7 +61,7 @@ function CanvasGrid({ onMouseOver, grid, cellSize, offsetX = 0, offsetY = 0, pal
         ctx.fillRect(x, y, cellSize, cellSize);
 
         // Draw the stroke
-        ctx.strokeStyle = isDark ? '#333' : '#777';
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.12)';
         ctx.lineWidth = CELL_STROKE_WIDTH;
         ctx.strokeRect(x, y, cellSize, cellSize);
       }

@@ -3,6 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import PatternInput from './PatternInput';
 import { patterns } from '@game-of-life/core';
 
+function formatPatternTitle(name: string) {
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 // Mock canvas getContext to avoid JSDOM canvas errors
 beforeAll(() => {
   HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
@@ -22,7 +30,7 @@ describe('PatternInput', () => {
     expect(screen.getByText('Custom Pattern')).toBeInTheDocument();
     
     // Check that pattern list is visible (starter patterns should be selected)
-    expect(screen.getByText(patterns[0].name)).toBeInTheDocument();
+    expect(screen.getByText(formatPatternTitle(patterns[0].name))).toBeInTheDocument();
   });
 
   test('switches to Custom Pattern tab when clicked', () => {
@@ -48,7 +56,7 @@ describe('PatternInput', () => {
     fireEvent.click(screen.getByText('Starter Patterns'));
     
     // Check that pattern list is visible again
-    expect(screen.getByText(patterns[0].name)).toBeInTheDocument();
+    expect(screen.getByText(formatPatternTitle(patterns[0].name))).toBeInTheDocument();
   });
 
   test('disables pattern items when disabled prop is true', () => {
@@ -56,7 +64,7 @@ describe('PatternInput', () => {
     render(<PatternInput onLoadPattern={mockHandler} disabled={true} />);
     
     // Pattern list should still be visible but items should be disabled
-    const firstPatternButton = screen.getByRole('button', { name: new RegExp(patterns[0].name) });
-    expect(firstPatternButton).toHaveAttribute('aria-disabled', 'true');
+    const firstPatternButton = screen.getByRole('button', { name: new RegExp(patterns[0].name, 'i') });
+    expect(firstPatternButton).toBeDisabled();
   });
 });

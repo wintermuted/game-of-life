@@ -3,47 +3,42 @@ import CustomPatternInput from './CustomPatternInput';
 import PatternSelector from './PatternSelector';
 import { LifeGrid } from '@game-of-life/core';
 import { useTranslation } from 'react-i18next';
+import { DEFAULT_PALETTE_ID } from '../constants/colors';
+import ThemeTabs from './ui/ThemeTabs';
 
 interface Props {
   onLoadPattern: (grid: LifeGrid) => void;
   disabled?: boolean;
+  selectedPaletteId?: string;
 }
 
-function PatternInput({ onLoadPattern, disabled = false }: Props) {
-  const [activeTab, setActiveTab] = useState(0);
+function PatternInput({ onLoadPattern, disabled = false, selectedPaletteId = DEFAULT_PALETTE_ID }: Props) {
+  const [activeTab, setActiveTab] = useState<'starter' | 'custom'>('starter');
   const { t } = useTranslation();
 
   return (
-    <div style={{ paddingTop: '0.5rem' }}>
-      <div className="tab-bar" role="tablist" style={{ marginBottom: '0.75rem' }}>
-        <button
-          className={`tab-btn${activeTab === 0 ? ' tab-btn-active' : ''}`}
-          role="tab"
-          aria-selected={activeTab === 0}
-          type="button"
-          onClick={() => setActiveTab(0)}
-        >
-          {t('patterns.title')}
-        </button>
-        <button
-          className={`tab-btn${activeTab === 1 ? ' tab-btn-active' : ''}`}
-          role="tab"
-          aria-selected={activeTab === 1}
-          type="button"
-          onClick={() => setActiveTab(1)}
-        >
-          {t('patterns.custom')}
-        </button>
+    <div className="pattern-input-section">
+      <div className="pattern-input-tabs">
+        <ThemeTabs
+          options={[
+            { value: 'starter', label: t('patterns.title') },
+            { value: 'custom', label: t('patterns.custom') },
+          ]}
+          activeValue={activeTab}
+          onChange={(value) => setActiveTab(value as 'starter' | 'custom')}
+          ariaLabel={t('patterns.title')}
+        />
       </div>
 
-      {activeTab === 0 && (
+      {activeTab === 'starter' && (
         <PatternSelector 
           onSelectPattern={onLoadPattern}
           disabled={disabled}
+          selectedPaletteId={selectedPaletteId}
         />
       )}
 
-      {activeTab === 1 && (
+      {activeTab === 'custom' && (
         <CustomPatternInput 
           onLoadPattern={onLoadPattern}
           disabled={disabled}
