@@ -1,6 +1,14 @@
 name: Deploy to GitHub Pages
 # Deploys main to the Pages root while keeping PR previews under previews/pr-<number>/.
 # This allows production and preview deployments to coexist on gh-pages.
+#
+# Two-job design:
+#   deploy  — no environment block; runs for every event (push + PR).
+#             Builds, pushes to gh-pages branch via worktree, uploads the
+#             Pages artifact, and posts the PR preview comment.
+#   publish — has `environment: github-pages` (required by deploy-pages@v4).
+#             Skipped for pull_request events so the environment's branch
+#             protection rules never block PR runs.
 
 on:
   push:
@@ -119,16 +127,14 @@ jobs:
             });
 
       - name: Configure Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./gh-pages-out
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
 
       - name: Mark PR deployment success
         if: github.event_name == 'pull_request' && success()
@@ -175,3 +181,15 @@ jobs:
               log_url: runUrl,
               description: 'Preview deployment failed'
             });
+
+  publish:
+    needs: deploy
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
