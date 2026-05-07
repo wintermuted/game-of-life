@@ -1,0 +1,4 @@
+# This project deploys via GitHub Actions (GitHub Pages).
+# Netlify builds are disabled.
+[build]
+  ignore = "exit 0"

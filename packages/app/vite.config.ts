@@ -5,7 +5,7 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/game-of-life/',
+  base: process.env.VITE_BASE_URL || '/game-of-life/',
   resolve: {
     alias: {
       '@game-of-life/core': path.resolve(__dirname, '../core/src/index.ts'),
