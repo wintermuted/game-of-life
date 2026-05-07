@@ -21,8 +21,8 @@ function PatternInput({ onLoadPattern, disabled = false, selectedPaletteId = DEF
       <div className="pattern-input-tabs">
         <ThemeTabs
           options={[
-            { value: 'starter', label: 'Starters' },
-            { value: 'custom', label: 'Custom' },
+            { value: 'starter', label: t('patterns.title') },
+            { value: 'custom', label: t('patterns.custom') },
           ]}
           activeValue={activeTab}
           onChange={(value) => setActiveTab(value as 'starter' | 'custom')}
