@@ -39,10 +39,12 @@ function PatternInput({ onLoadPattern, disabled = false, selectedPaletteId = DEF
       )}
 
       {activeTab === 'custom' && (
-        <CustomPatternInput 
-          onLoadPattern={onLoadPattern}
-          disabled={disabled}
-        />
+        <div className="card card-body">
+          <CustomPatternInput 
+            onLoadPattern={onLoadPattern}
+            disabled={disabled}
+          />
+        </div>
       )}
     </div>
   );

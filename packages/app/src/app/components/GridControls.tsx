@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Play, Pause, ChevronRight, RotateCcw, Link, Pencil } from 'lucide-react';
 import { COLOR_PALETTES } from '../constants/colors';
@@ -7,7 +6,7 @@ interface Props {
   nextGeneration: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   updateGenerationSpeed: (value: number) => void;
   generationSpeed: number;
-  resetBoard: () => void;
+  onResetRequested: () => void;
   toggleGame: () => void;
   isGameRunning: boolean;
   copyCurrentURL: () => void;
@@ -21,7 +20,7 @@ function GridControls({
   nextGeneration, 
   updateGenerationSpeed, 
   generationSpeed,
-  resetBoard,
+  onResetRequested,
   toggleGame,
   isGameRunning,
   copyCurrentURL,
@@ -30,22 +29,12 @@ function GridControls({
   isEditMode = false,
   toggleEditMode
 }: Props) {
-  const [showResetModal, setShowResetModal] = useState(false);
   const { t } = useTranslation();
   const toggleLabel = isGameRunning ? t('controls.pause') : t('controls.start');
   const nextLabel = t('controls.next');
   const resetLabel = t('controls.reset');
   const copyLabel = t('controls.copyUrl');
   const editLabel = t('controls.editMode');
-
-  function confirmReset() {
-    resetBoard();
-    setShowResetModal(false);
-  }
-
-  function cancelReset() {
-    setShowResetModal(false);
-  }
 
   return (
     <div className="GridControls">
@@ -78,7 +67,7 @@ function GridControls({
               <button
                 className="btn btn-sm btn-secondary-neutral"
                 type="button"
-                onClick={() => setShowResetModal(true)}
+                onClick={onResetRequested}
                 disabled={isGameRunning}
                 aria-label={resetLabel}
                 title={resetLabel}
@@ -155,27 +144,6 @@ function GridControls({
         </div>
 
       </form>
-
-      {showResetModal && (
-        <div className="modal-overlay" onClick={cancelReset}>
-          <div className="modal-panel" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="modal-title">{t('dialogs.confirmReset')}</h3>
-            </div>
-            <div className="modal-body">
-              <p>{t('dialogs.resetMessage')}</p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary btn-outline" type="button" onClick={cancelReset}>
-                {t('dialogs.cancel')}
-              </button>
-              <button className="btn btn-danger" type="button" onClick={confirmReset}>
-                {t('dialogs.yesReset')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

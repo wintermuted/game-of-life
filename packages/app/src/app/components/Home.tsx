@@ -8,6 +8,7 @@ import { Game, rPentomino, LifeGrid, GameStats, GameRules, DEFAULT_RULES } from 
 import { getGridFromURL, updateURLWithGrid } from '../util/urlState';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
+import ThemeTabs from './ui/ThemeTabs';
 
 let game: Game = {} as Game;
 let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
@@ -15,11 +16,14 @@ let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
 const baseGame = rPentomino;
 
 function Home() {
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'patterns' | 'rules' | 'diagnostics'>('patterns');
   const [boardNeedsInitialization, setBoardInitialization] = useState(true);
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(3);
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [cellDataCopied, setCellDataCopied] = useState(false);
   const [currentPattern, setCurrentPattern] = useState<LifeGrid>(() => {
     // Check URL for pattern on initial load
     const urlPattern = getGridFromURL();
@@ -96,6 +100,19 @@ function Home() {
   function resetBoard() {
     console.info("Reset board pushed.");
     setBoardInitialization(true);
+  }
+
+  function requestResetBoard() {
+    setIsResetModalOpen(true);
+  }
+
+  function confirmResetBoard() {
+    resetBoard();
+    setIsResetModalOpen(false);
+  }
+
+  function cancelResetBoard() {
+    setIsResetModalOpen(false);
   }
 
   function loadCustomPattern(grid: LifeGrid) {
@@ -190,7 +207,7 @@ function Home() {
             nextGeneration={nextGeneration} 
             updateGenerationSpeed={updateGenerationSpeed}
             generationSpeed={generationSpeed} 
-            resetBoard={resetBoard}
+            onResetRequested={requestResetBoard}
             toggleGame={toggleGame}
             isGameRunning={isGameRunning}
             copyCurrentURL={copyCurrentURL}
@@ -202,34 +219,76 @@ function Home() {
         </div>
       </div>
       <div className="right-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider">
-        <div className="card card-body right-column-card-spaced">
-          <PatternInput 
-            onLoadPattern={loadCustomPattern}
-            disabled={isGameRunning}
-            selectedPaletteId={selectedPaletteId}
+        <div className="sidebar-tabs-nav right-column-card-spaced">
+          <ThemeTabs
+            options={[
+              { value: 'patterns', label: 'Patterns' },
+              { value: 'rules', label: 'Rules' },
+              { value: 'diagnostics', label: 'Stats' },
+            ]}
+            activeValue={activeSidebarTab}
+            onChange={(value) => setActiveSidebarTab(value as 'patterns' | 'rules' | 'diagnostics')}
+            ariaLabel="Simulation panels"
           />
         </div>
-        <RulesPanel 
-          rules={rules}
-          onRulesChange={handleRulesChange}
-          disabled={isGameRunning}
-        />
-        <div className="card diagnostics-card">
-          <div className="card-header">
-            <h4>{t('diagnostics.title')}</h4>
+
+        {activeSidebarTab === 'patterns' && (
+          <div className="right-column-card-fill">
+            <PatternInput 
+              onLoadPattern={loadCustomPattern}
+              disabled={isGameRunning}
+              selectedPaletteId={selectedPaletteId}
+            />
           </div>
-          <div className="card-body">
-            <p className="diagnostics-intro">{t('diagnostics.statistics')}</p>
-            <p><strong>{t('diagnostics.generations')}:</strong> {generation}</p>
-            <p><strong>{t('diagnostics.liveCells')}:</strong> {stats.liveCells}</p>
-            <p><strong>{t('diagnostics.totalBirths')}:</strong> {stats.births}</p>
-            <p><strong>{t('diagnostics.totalDeaths')}:</strong> {stats.deaths}</p>
-            <p className="diagnostics-subheading">{t('diagnostics.cellData')}</p>
-            <pre className="diagnostics-json">
-              {gridJSON}
-            </pre>
+        )}
+
+        {activeSidebarTab === 'rules' && (
+          <RulesPanel 
+            rules={rules}
+            onRulesChange={handleRulesChange}
+            disabled={isGameRunning}
+          />
+        )}
+
+        {activeSidebarTab === 'diagnostics' && (
+          <div className="diagnostics-panel">
+            <h4 className="diagnostics-section-heading">{t('diagnostics.statistics')}</h4>
+            <div className="diagnostics-stats-grid">
+              <article className="diagnostics-stat-card">
+                <p className="diagnostics-stat-label">{t('diagnostics.generations')}</p>
+                <p className="diagnostics-stat-value">{generation}</p>
+              </article>
+              <article className="diagnostics-stat-card">
+                <p className="diagnostics-stat-label">{t('diagnostics.liveCells')}</p>
+                <p className="diagnostics-stat-value">{stats.liveCells}</p>
+              </article>
+              <article className="diagnostics-stat-card">
+                <p className="diagnostics-stat-label">{t('diagnostics.totalBirths')}</p>
+                <p className="diagnostics-stat-value diagnostics-stat-value--success">{stats.births}</p>
+              </article>
+              <article className="diagnostics-stat-card">
+                <p className="diagnostics-stat-label">{t('diagnostics.totalDeaths')}</p>
+                <p className="diagnostics-stat-value diagnostics-stat-value--danger">{stats.deaths}</p>
+              </article>
+            </div>
+            <h4 className="diagnostics-section-heading">{t('diagnostics.cellData')}</h4>
+            <div className="code-sample" data-lang="json">
+              <button
+                className="code-copy-btn"
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(gridJSON).then(() => {
+                    setCellDataCopied(true);
+                    setTimeout(() => setCellDataCopied(false), 1500);
+                  });
+                }}
+              >
+                {cellDataCopied ? 'Copied!' : 'Copy'}
+              </button>
+              <pre className="code-block"><code className="language-json">{gridJSON}</code></pre>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div
@@ -245,6 +304,33 @@ function Home() {
           onClick={handleSnackbarClose}
         >&#x2715;</button>
       </div>
+
+      {isResetModalOpen && (
+        <div className="wm-modal-overlay" onClick={cancelResetBoard}>
+          <div
+            className="wm-modal-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="wm-modal-header">
+              <h3 id="reset-modal-title" className="wm-modal-title">{t('dialogs.confirmReset')}</h3>
+            </div>
+            <div className="wm-modal-body">
+              <p>{t('dialogs.resetMessage')}</p>
+            </div>
+            <div className="wm-modal-footer">
+              <button className="btn btn-secondary btn-outline" type="button" onClick={cancelResetBoard}>
+                {t('dialogs.cancel')}
+              </button>
+              <button className="btn btn-danger" type="button" onClick={confirmResetBoard}>
+                {t('dialogs.yesReset')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,33 +5,41 @@ function About() {
   
   return (
     <div style={{ maxWidth: '768px', margin: '0 auto', padding: '2rem 1.25rem' }}>
-      <div className="card card-body">
-        <h1>{t('about.title')}</h1>
+      <h1 style={{ marginBottom: '2rem' }}>{t('about.title')}</h1>
 
-        <h2 style={{ marginTop: '2rem' }}>{t('about.whatIsIt')}</h2>
-        <p>{t('about.description1')}</p>
-        <p>{t('about.description2')}</p>
-        <ul>
-          <li><p>{t('about.rule1')}</p></li>
-          <li><p>{t('about.rule2')}</p></li>
-          <li><p>{t('about.rule3')}</p></li>
-          <li><p>{t('about.rule4')}</p></li>
+      <section>
+        <h2>{t('about.whatIsIt')}</h2>
+        <p style={{ marginTop: '0.75rem' }}>{t('about.description1')}</p>
+        <p style={{ marginTop: '0.5rem' }}>{t('about.description2')}</p>
+        <ul className="wm-list" style={{ marginTop: '0.75rem' }}>
+          <li>{t('about.rule1')}</li>
+          <li>{t('about.rule2')}</li>
+          <li>{t('about.rule3')}</li>
+          <li>{t('about.rule4')}</li>
         </ul>
-        <p>{t('about.description3')}</p>
+        <p style={{ marginTop: '0.75rem' }}>{t('about.description3')}</p>
+      </section>
 
-        <h2 style={{ marginTop: '2rem' }}>{t('about.projectTitle')}</h2>
-        <p>{t('about.projectDescription')}</p>
-        <ul>
-          <li><p>{t('about.feature1')}</p></li>
-          <li><p>{t('about.feature2')}</p></li>
-          <li><p>{t('about.feature3')}</p></li>
-          <li><p>{t('about.feature4')}</p></li>
-          <li><p>{t('about.feature5')}</p></li>
+      <hr className="wm-separator" style={{ margin: '2rem 0' }} />
+
+      <section>
+        <h2>{t('about.projectTitle')}</h2>
+        <p style={{ marginTop: '0.75rem' }}>{t('about.projectDescription')}</p>
+        <ul className="wm-list" style={{ marginTop: '0.75rem' }}>
+          <li>{t('about.feature1')}</li>
+          <li>{t('about.feature2')}</li>
+          <li>{t('about.feature3')}</li>
+          <li>{t('about.feature4')}</li>
+          <li>{t('about.feature5')}</li>
         </ul>
+      </section>
 
-        <h2 style={{ marginTop: '2rem' }}>{t('about.linksTitle')}</h2>
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          <li style={{ marginBottom: '0.5rem' }}>
+      <hr className="wm-separator" style={{ margin: '2rem 0' }} />
+
+      <section>
+        <h2>{t('about.linksTitle')}</h2>
+        <ul className="wm-list" style={{ marginTop: '0.75rem' }}>
+          <li>
             <a
               href="https://github.com/wintermuted/game-of-life"
               target="_blank"
@@ -50,7 +58,7 @@ function About() {
             </a>
           </li>
         </ul>
-      </div>
+      </section>
     </div>
   );
 }

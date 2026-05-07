@@ -16,19 +16,20 @@ function App() {
       <header className="docs-topbar">
         <div className="docs-topbar-inner">
           <div className="docs-topbar-brand">
-          <h1>{t('app.title')}</h1>
+            <img src={`${import.meta.env.BASE_URL}gol-mark.svg`} alt="" aria-hidden="true" className="docs-topbar-brand-icon" width="28" height="28" />
+            <h1>{t('app.title')}</h1>
           </div>
           <nav className="docs-topbar-nav wm-app-nav-nowrap" aria-label="Primary navigation">
           <NavLink
             to="/"
-            className={({ isActive }) => `docs-topbar-link${isActive ? ' is-active' : ''}`}
+            className={({ isActive }) => `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`}
             aria-label={t('nav.home')}
           >
             {t('nav.home')}
           </NavLink>
           <NavLink
             to="/about"
-            className={({ isActive }) => `docs-topbar-link${isActive ? ' is-active' : ''}`}
+            className={({ isActive }) => `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`}
             aria-label={t('nav.about')}
           >
             {t('nav.about')}
