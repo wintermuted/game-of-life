@@ -1,14 +1,20 @@
 name: Deploy to GitHub Pages
+# Deploys main to the Pages root while keeping PR previews under previews/pr-<number>/.
+# This allows production and preview deployments to coexist on gh-pages.
 
 on:
   push:
     branches: [main, master]
+  pull_request:
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+  pull-requests: write
+  deployments: write
 
 # Allow only one concurrent deployment
 concurrency:
@@ -25,6 +31,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Checkout ui-theme
+        run: |
+          git clone --branch v0.18.0 --depth 1 https://github.com/wintermuted/ui-theme.git \
+            ${{ github.workspace }}/../wintermuted-ui-theme
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -35,7 +46,45 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npm run build -- --base=/${{ github.event.repository.name }}/previews/pr-${{ github.event.pull_request.number }}/
+          else
+            npm run build
+          fi
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy to gh-pages
+        run: |
+          if git ls-remote --exit-code --heads origin gh-pages > /dev/null 2>&1; then
+            git fetch origin gh-pages
+            git worktree add --detach ./gh-pages-out FETCH_HEAD
+          else
+            git worktree add --orphan -b gh-pages ./gh-pages-out
+            touch ./gh-pages-out/.nojekyll
+          fi
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            preview_dir="gh-pages-out/previews/pr-${{ github.event.pull_request.number }}"
+            rm -rf "$preview_dir"
+            mkdir -p "$preview_dir"
+            cp -R packages/app/build/. "$preview_dir/"
+          else
+            # Replace root content but preserve previews so PR preview links remain valid.
+            find gh-pages-out -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'previews' -exec rm -rf {} +
+            cp -R packages/app/build/. gh-pages-out/
+          fi
+
+          cd gh-pages-out
+          git add -A
+          if ! git diff --staged --quiet; then
+            git commit -m "Deploy (${{ github.event_name }}): ${{ github.sha }}"
+            git push --force origin HEAD:refs/heads/gh-pages
+          fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -43,8 +92,51 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./packages/app/build
+          path: ./gh-pages-out
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Post PR preview comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const base = 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}';
+            const previewUrl = `${base}/previews/pr-${{ github.event.pull_request.number }}/`;
+            const sha = '${{ github.sha }}'.substring(0, 7);
+
+            const body = [
+              '🚀 **Preview deployed!**',
+              '',
+              `🎮 [Open Game of Life preview](${previewUrl})`,
+              '',
+              `> ℹ️ Production remains at root Pages URL. This preview is isolated to PR #${{ github.event.pull_request.number }}.`,
+              '',
+              `_Run \`${{ github.run_id }}\` — commit \`${sha}\`_`,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c => c.user.type === 'Bot' && c.body.includes('Preview deployed!'));
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
