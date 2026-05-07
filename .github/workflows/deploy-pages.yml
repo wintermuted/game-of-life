@@ -1,16 +1,34 @@
 name: Deploy to GitHub Pages
+# Deploys main to the Pages root while keeping PR previews under previews/pr-<number>/.
+# This allows production and preview deployments to coexist on gh-pages.
+#
+# Two-job design:
+#   deploy  — no environment block; runs for every event (push + PR).
+#             Builds, pushes to gh-pages branch via worktree, uploads the
+#             Pages artifact, and posts the PR preview comment.
+#   publish — has `environment: github-pages` (required by deploy-pages@v4).
+#             Skipped for pull_request events so the environment's branch
+#             protection rules never block PR runs.
 
 on:
   push:
     branches: [main, master]
+  pull_request:
+    branches: [main, master]
   workflow_dispatch:
 
+# contents: write  — push to gh-pages branch
+# pull-requests: write — post/update preview comment
 permissions:
   contents: write
+  pages: write
+  id-token: write
+  pull-requests: write
+  deployments: write
 
 # Allow only one concurrent deployment
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
@@ -19,6 +37,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Checkout ui-theme
+        run: |
+          git clone --branch v0.18.0 --depth 1 https://github.com/wintermuted/ui-theme.git \
+            ${{ github.workspace }}/../wintermuted-ui-theme
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -29,12 +52,144 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create PR deployment record
+        if: github.event_name == 'pull_request'
+        id: create_deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.payload.pull_request.head.sha,
+              environment: `preview/pr-${context.payload.pull_request.number}`,
+              description: `Preview for PR #${context.payload.pull_request.number}`,
+              auto_merge: false,
+              required_contexts: []
+            });
+
+            core.setOutput('deployment_id', String(deployment.data.id));
+
       - name: Build
         run: npm run build
+        env:
+          VITE_BASE_URL: ${{ github.event_name == 'pull_request' && format('/{0}/previews/pr-{1}/', github.event.repository.name, github.event.pull_request.number) || format('/{0}/', github.event.repository.name) }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
+        run: |
+          if git ls-remote --exit-code --heads origin gh-pages > /dev/null 2>&1; then
+            git fetch origin gh-pages
+            git worktree add --detach ./gh-pages-out FETCH_HEAD
+          else
+            git worktree add --orphan -b gh-pages ./gh-pages-out
+            touch ./gh-pages-out/.nojekyll
+          fi
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            preview_dir="gh-pages-out/previews/pr-${{ github.event.pull_request.number }}"
+            rm -rf "$preview_dir"
+            mkdir -p "$preview_dir"
+            cp -R packages/app/build/. "$preview_dir/"
+          else
+            # Replace root content but preserve previews so PR preview links remain valid.
+            find gh-pages-out -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'previews' -exec rm -rf {} +
+            cp -R packages/app/build/. gh-pages-out/
+          fi
+
+          cd gh-pages-out
+          git add -A
+          if ! git diff --staged --quiet; then
+            git commit -m "Deploy (${{ github.event_name }}): ${{ github.sha }}"
+            git push --force origin HEAD:refs/heads/gh-pages
+          fi
+
+      - name: Post PR preview comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./packages/app/build
-          keep_files: true
+          script: |
+            const base = 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}';
+            const previewUrl = `${base}/previews/pr-${{ github.event.pull_request.number }}/`;
+            const sha = '${{ github.sha }}'.substring(0, 7);
+
+            const body = `🚀 **PR Preview deployed!**\n\n🎮 [Open Game of Life preview](${previewUrl})\n\n> ℹ️ Production remains at root Pages URL. This preview is isolated to PR #${{ github.event.pull_request.number }}.\n\n_Run \`${{ github.run_id }}\` — commit \`${sha}\`_`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+
+      - name: Configure Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./gh-pages-out
+
+      - name: Mark PR deployment success
+        if: github.event_name == 'pull_request' && success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deploymentId = Number('${{ steps.create_deployment.outputs.deployment_id }}');
+            if (!deploymentId) {
+              core.info('No deployment id found; skipping deployment status update.');
+              return;
+            }
+
+            const previewUrl = 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/previews/pr-${{ github.event.pull_request.number }}/';
+            const runUrl = 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deploymentId,
+              state: 'success',
+              environment_url: previewUrl,
+              log_url: runUrl,
+              description: 'Preview deployed'
+            });
+
+      - name: Mark PR deployment failure
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deploymentId = Number('${{ steps.create_deployment.outputs.deployment_id }}');
+            if (!deploymentId) {
+              core.info('No deployment id found; skipping deployment status update.');
+              return;
+            }
+
+            const runUrl = 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deploymentId,
+              state: 'failure',
+              log_url: runUrl,
+              description: 'Preview deployment failed'
+            });
+
+  publish:
+    needs: deploy
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
