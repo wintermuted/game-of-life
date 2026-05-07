@@ -5,9 +5,10 @@ interface Props {
   rules: GameRules;
   onRulesChange: (rules: GameRules) => void;
   disabled?: boolean;
+  embedded?: boolean;
 }
 
-function RulesPanel({ rules, onRulesChange, disabled = false }: Props) {
+function RulesPanel({ rules, onRulesChange, disabled = false, embedded = false }: Props) {
   const { t } = useTranslation();
   
   const handleToggle = (ruleId: keyof GameRules) => {
@@ -21,13 +22,15 @@ function RulesPanel({ rules, onRulesChange, disabled = false }: Props) {
     onRulesChange(updatedRules);
   };
 
-  return (
-    <div className="card" style={{ marginTop: '1rem' }}>
-      <div className="card-header">
-        <h4>{t('rules.title')}</h4>
-      </div>
+  const content = (
+    <>
+      {!embedded && (
+        <div className="card-header">
+          <h4>{t('rules.title')}</h4>
+        </div>
+      )}
       <div className="card-body">
-        <p style={{ fontSize: '0.875rem', color: 'var(--wm-color-text-muted)', marginBottom: '0.75rem', marginTop: 0 }}>
+        <p className="rules-description">
           {t('rules.description')}
         </p>
         <div className="wm-toggle-list">
@@ -49,8 +52,14 @@ function RulesPanel({ rules, onRulesChange, disabled = false }: Props) {
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
+
+  if (embedded) {
+    return content;
+  }
+
+  return <div className="card rules-panel-card">{content}</div>;
 }
 
 export default RulesPanel;

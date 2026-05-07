@@ -1,5 +1,8 @@
 .Grid {
-  border: 1px solid #000;
+  border: 1px solid var(--wm-color-border);
+  border-radius: var(--wm-radius-sm);
+  background: var(--wm-color-surface-solid);
+  overflow: hidden;
   width: 100%;
   max-width: 800px;
 }

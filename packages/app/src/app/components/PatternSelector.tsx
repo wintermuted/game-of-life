@@ -26,54 +26,24 @@ function PatternSelector({ onSelectPattern, disabled = false, selectedPaletteId 
   }
 
   return (
-    <ul
-      style={{
-        listStyle: 'none',
-        margin: 0,
-        padding: 0,
-        maxHeight: '400px',
-        overflowY: 'auto',
-        border: '1px solid var(--wm-color-border)',
-        borderRadius: 'var(--wm-radius-sm)',
-      }}
-    >
+    <ul className="pattern-selector-list">
       {patterns.map((pattern, index) => (
         <li
           key={pattern.name}
-          style={{
-            borderBottom: index < patterns.length - 1 ? '1px solid var(--wm-color-border)' : 'none',
-          }}
+          className={`pattern-selector-item${index === patterns.length - 1 ? ' pattern-selector-item-last' : ''}`}
         >
           <button
-            className="btn btn-ghost"
+            className="btn btn-ghost pattern-selector-btn"
             type="button"
             onClick={() => handlePatternClick(pattern)}
             disabled={disabled}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              gap: '0.75rem',
-              padding: '0.75rem',
-              textAlign: 'left',
-              borderRadius: 0,
-            }}
           >
             <PatternPreview grid={pattern.grid} size={60} palette={palette} />
-            <div>
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: '0.9375rem',
-                  lineHeight: 1.2,
-                  textTransform: 'none',
-                  letterSpacing: 0,
-                }}
-              >
+            <div className="pattern-selector-meta">
+              <div className="pattern-selector-title">
                 {formatPatternTitle(pattern.name)}
               </div>
-              <span className="badge" style={{ marginTop: '0.25rem' }}>{pattern.category}</span>
+              <span className="badge pattern-selector-badge">{pattern.category}</span>
             </div>
           </button>
         </li>

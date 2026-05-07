@@ -1,11 +1,11 @@
 import { vi } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import GridControls from './GridControls';
 
 describe('GridControls', () => {
   const mockNextGeneration = vi.fn();
   const mockUpdateGenerationSpeed = vi.fn();
-  const mockResetBoard = vi.fn();
+  const mockOnResetRequested = vi.fn();
   const mockToggleGame = vi.fn();
   const mockCopyCurrentURL = vi.fn();
   const mockToggleEditMode = vi.fn();
@@ -15,7 +15,7 @@ describe('GridControls', () => {
     nextGeneration: mockNextGeneration,
     updateGenerationSpeed: mockUpdateGenerationSpeed,
     generationSpeed: 3,
-    resetBoard: mockResetBoard,
+    onResetRequested: mockOnResetRequested,
     toggleGame: mockToggleGame,
     isGameRunning: false,
     copyCurrentURL: mockCopyCurrentURL,
@@ -62,47 +62,18 @@ describe('GridControls', () => {
     expect(resetButton).not.toBeDisabled();
   });
 
-  it('shows confirmation modal when Reset is clicked while game is paused', () => {
+  it('requests reset when Reset is clicked while game is paused', () => {
     render(<GridControls {...defaultProps} isGameRunning={false} />);
     const resetButton = screen.getByRole('button', { name: 'Reset' });
     fireEvent.click(resetButton);
-    expect(screen.getByText('Confirm Reset')).toBeInTheDocument();
-    expect(screen.getByText('Are you sure you want to reset the game? This will clear the current state and start over.')).toBeInTheDocument();
+    expect(mockOnResetRequested).toHaveBeenCalledTimes(1);
   });
 
-  it('does not show modal when Reset is clicked while game is running', () => {
+  it('does not request reset when Reset is clicked while game is running', () => {
     render(<GridControls {...defaultProps} isGameRunning={true} />);
     const resetButton = screen.getByRole('button', { name: 'Reset' });
     fireEvent.click(resetButton);
-    expect(screen.queryByText('Confirm Reset')).not.toBeInTheDocument();
-  });
-
-  it('calls resetBoard when Yes, Reset is clicked in modal', async () => {
-    render(<GridControls {...defaultProps} isGameRunning={false} />);
-    const resetButton = screen.getByRole('button', { name: 'Reset' });
-    fireEvent.click(resetButton);
-    
-    const confirmButton = screen.getByText('Yes, Reset');
-    fireEvent.click(confirmButton);
-    
-    expect(mockResetBoard).toHaveBeenCalledTimes(1);
-    await waitFor(() => {
-      expect(screen.queryByText('Confirm Reset')).not.toBeInTheDocument();
-    });
-  });
-
-  it('closes modal without resetting when Cancel is clicked', async () => {
-    render(<GridControls {...defaultProps} isGameRunning={false} />);
-    const resetButton = screen.getByRole('button', { name: 'Reset' });
-    fireEvent.click(resetButton);
-    
-    const cancelButton = screen.getByText('Cancel');
-    fireEvent.click(cancelButton);
-    
-    expect(mockResetBoard).not.toHaveBeenCalled();
-    await waitFor(() => {
-      expect(screen.queryByText('Confirm Reset')).not.toBeInTheDocument();
-    });
+    expect(mockOnResetRequested).not.toHaveBeenCalled();
   });
 
   it('calls nextGeneration when Next button is clicked', () => {

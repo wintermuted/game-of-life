@@ -21,8 +21,8 @@ function PatternInput({ onLoadPattern, disabled = false, selectedPaletteId = DEF
       <div className="pattern-input-tabs">
         <ThemeTabs
           options={[
-            { value: 'starter', label: t('patterns.title') },
-            { value: 'custom', label: t('patterns.custom') },
+            { value: 'starter', label: 'Starters' },
+            { value: 'custom', label: 'Custom' },
           ]}
           activeValue={activeTab}
           onChange={(value) => setActiveTab(value as 'starter' | 'custom')}
@@ -39,10 +39,12 @@ function PatternInput({ onLoadPattern, disabled = false, selectedPaletteId = DEF
       )}
 
       {activeTab === 'custom' && (
-        <CustomPatternInput 
-          onLoadPattern={onLoadPattern}
-          disabled={disabled}
-        />
+        <div className="card card-body">
+          <CustomPatternInput 
+            onLoadPattern={onLoadPattern}
+            disabled={disabled}
+          />
+        </div>
       )}
     </div>
   );

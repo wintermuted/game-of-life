@@ -44,10 +44,31 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
         disabled={disabled}
         style={{ width: '100%', resize: 'vertical', marginBottom: '0.25rem', boxSizing: 'border-box' }}
       />
+
+      {error && (
+        <div
+          className="feedback feedback-error"
+          style={{ marginBottom: '0.75rem' }}
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
+
+      <button
+        className="btn btn-primary-neutral"
+        type="button"
+        onClick={handleLoad}
+        disabled={disabled || !input.trim()}
+        style={{ width: '100%', marginBottom: '0.5rem' }}
+      >
+        {t('patterns.loadCustom')}
+      </button>
+
       <button
         type="button"
-        className="btn btn-ghost"
-        style={{ fontSize: '0.8rem', padding: '0 0.25rem', marginBottom: '0.5rem' }}
+        className="btn btn-expand"
+        aria-expanded={showHelp}
         onClick={() => setShowHelp(!showHelp)}
       >
         {showHelp ? t('patterns.hideExamples') : t('patterns.showExamples')}
@@ -64,31 +85,22 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
           }}
         >
           <strong>{t('patterns.supportedFormats')}</strong>
-          <div><strong>1. JSON:</strong><pre style={{ margin: '2px 0', fontSize: '0.75rem' }}>{`{ "1,0": true, "0,1": true }`}</pre></div>
-          <div><strong>2. Space-separated:</strong><pre style={{ margin: '2px 0', fontSize: '0.75rem' }}>{'1 0 0 1 1 1'}</pre></div>
-          <div><strong>3. Line-separated:</strong><pre style={{ margin: '2px 0', fontSize: '0.75rem' }}>{'1 0\n0 1\n1 1'}</pre></div>
+          <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div>
+              <div style={{ marginBottom: '0.2rem', color: 'var(--wm-color-text-muted)' }}>JSON</div>
+              <code>{`{ "1,0": true, "0,1": true }`}</code>
+            </div>
+            <div>
+              <div style={{ marginBottom: '0.2rem', color: 'var(--wm-color-text-muted)' }}>Space-separated</div>
+              <code>{'1 0 0 1 1 1'}</code>
+            </div>
+            <div>
+              <div style={{ marginBottom: '0.2rem', color: 'var(--wm-color-text-muted)' }}>Line-separated</div>
+              <pre style={{ margin: 0, fontSize: '0.75rem' }}>{'1 0\n0 1\n1 1'}</pre>
+            </div>
+          </div>
         </div>
       )}
-
-      {error && (
-        <div
-          className="feedback feedback-error"
-          style={{ marginBottom: '0.75rem' }}
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
-
-      <button
-        className="btn btn-primary"
-        type="button"
-        onClick={handleLoad}
-        disabled={disabled || !input.trim()}
-        style={{ width: '100%' }}
-      >
-        {t('patterns.loadCustom')}
-      </button>
     </div>
   );
 }
