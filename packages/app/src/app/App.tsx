@@ -37,15 +37,6 @@ function App() {
         </nav>
         <div className="docs-topbar-actions">
           <LanguageSwitcher />
-          <button
-            className="docs-topbar-toggle"
-            onClick={toggleTheme}
-            aria-label={t('nav.toggleDarkMode')}
-            title={t('nav.toggleDarkMode')}
-          >
-            {mode === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
-            <span>{mode === 'dark' ? 'Light' : 'Dark'}</span>
-          </button>
           <a
             className="docs-topbar-github"
             href="https://github.com/wintermuted/game-of-life"
@@ -61,6 +52,15 @@ function App() {
               />
             </svg>
           </a>
+          <button
+            className="docs-topbar-toggle"
+            onClick={toggleTheme}
+            aria-label={t('nav.toggleDarkMode')}
+            title={t('nav.toggleDarkMode')}
+          >
+            {mode === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+            <span>{mode === 'dark' ? 'Light' : 'Dark'}</span>
+          </button>
         </div>
         </div>
       </header>

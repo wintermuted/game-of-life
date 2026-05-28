@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Play, Pause, ChevronRight, RotateCcw, Link, Pencil } from 'lucide-react';
+import { Play, Pause, ChevronRight, RotateCcw, Link, Pencil, Maximize2, Minimize2 } from 'lucide-react';
 import { COLOR_PALETTES } from '../constants/colors';
 
 interface Props {
@@ -14,6 +14,8 @@ interface Props {
   onPaletteChange: (paletteId: string) => void;
   isEditMode?: boolean;
   toggleEditMode?: () => void;
+  isBoardMaximized?: boolean;
+  toggleBoardMaximized?: () => void;
 }
 
 function GridControls({ 
@@ -27,7 +29,9 @@ function GridControls({
   selectedPaletteId,
   onPaletteChange,
   isEditMode = false,
-  toggleEditMode
+  toggleEditMode,
+  isBoardMaximized = false,
+  toggleBoardMaximized
 }: Props) {
   const { t } = useTranslation();
   const toggleLabel = isGameRunning ? t('controls.pause') : t('controls.start');
@@ -35,6 +39,7 @@ function GridControls({
   const resetLabel = t('controls.reset');
   const copyLabel = t('controls.copyUrl');
   const editLabel = t('controls.editMode');
+  const maximizeLabel = isBoardMaximized ? t('controls.restoreBoard') : t('controls.maximizeBoard');
 
   return (
     <div className="GridControls">
@@ -84,6 +89,17 @@ function GridControls({
             >
               <Link size={12} />
             </button>
+            {toggleBoardMaximized && (
+              <button
+                className="btn btn-sm btn-secondary-neutral"
+                type="button"
+                onClick={toggleBoardMaximized}
+                aria-label={maximizeLabel}
+                title={maximizeLabel}
+              >
+                {isBoardMaximized ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
+              </button>
+            )}
             {toggleEditMode && (
               <button
                 className={`btn btn-sm ${isEditMode ? 'btn-primary' : 'btn-secondary-neutral'}`}

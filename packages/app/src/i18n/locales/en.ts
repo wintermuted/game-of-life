@@ -18,6 +18,8 @@ export default {
     "variables": "Game Variables",
     "generationSpeed": "Generation Speed",
     "editMode": "Edit Mode",
+    "maximizeBoard": "Maximize board",
+    "restoreBoard": "Restore layout",
     "editModeOn": "Edit mode is ON - Click cells to toggle",
     "editModeOff": "Edit mode is OFF"
   },

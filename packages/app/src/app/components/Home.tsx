@@ -16,13 +16,15 @@ let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
 const baseGame = rPentomino;
 
 function Home() {
-  const [activeSidebarTab, setActiveSidebarTab] = useState<'patterns' | 'rules' | 'diagnostics'>('patterns');
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'patterns' | 'rules' | 'diagnostics'>('diagnostics');
   const [boardNeedsInitialization, setBoardInitialization] = useState(true);
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(3);
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isBoardMaximized, setIsBoardMaximized] = useState(false);
+  const [showMaximizedControls, setShowMaximizedControls] = useState(true);
   const [cellDataCopied, setCellDataCopied] = useState(false);
   const [currentPattern, setCurrentPattern] = useState<LifeGrid>(() => {
     // Check URL for pattern on initial load
@@ -32,6 +34,7 @@ function Home() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const toastHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const maximizeControlsHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [stats, setStats] = useState<GameStats>({ liveCells: 0, births: 0, deaths: 0 });
   const [rules, setRules] = useState<GameRules>(DEFAULT_RULES);
   const [selectedPaletteId, setSelectedPaletteId] = useState(DEFAULT_PALETTE_ID);
@@ -152,6 +155,35 @@ function Home() {
     };
   }, [snackbarOpen]);
 
+  useEffect(() => {
+    document.body.classList.toggle('gol-board-maximized', isBoardMaximized);
+
+    return () => {
+      document.body.classList.remove('gol-board-maximized');
+    };
+  }, [isBoardMaximized]);
+
+  useEffect(() => {
+    return () => {
+      if (maximizeControlsHideTimer.current) clearTimeout(maximizeControlsHideTimer.current);
+    };
+  }, []);
+
+  function scheduleMaximizedControlsHide() {
+    if (maximizeControlsHideTimer.current) clearTimeout(maximizeControlsHideTimer.current);
+    maximizeControlsHideTimer.current = setTimeout(() => {
+      setShowMaximizedControls(false);
+    }, 1600);
+  }
+
+  function handleBoardMouseMove() {
+    if (!isBoardMaximized) return;
+    if (!showMaximizedControls) {
+      setShowMaximizedControls(true);
+    }
+    scheduleMaximizedControlsHide();
+  }
+
   function copyCurrentURL() {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
@@ -166,6 +198,21 @@ function Home() {
 
   function toggleEditMode() {
     setIsEditMode(!isEditMode);
+  }
+
+  function toggleBoardMaximized() {
+    setIsBoardMaximized((previous) => {
+      const next = !previous;
+
+      if (next) {
+        setShowMaximizedControls(true);
+        scheduleMaximizedControlsHide();
+      } else if (maximizeControlsHideTimer.current) {
+        clearTimeout(maximizeControlsHideTimer.current);
+      }
+
+      return next;
+    });
   }
 
   function handleCellClick(coordinate: string) {
@@ -194,7 +241,10 @@ function Home() {
 
   return (
     <div className="App wm-sidebar-layout wm-sidebar-layout-stretch">
-      <div className="left-column wm-sidebar-layout-main">
+      <div
+        className={`left-column wm-sidebar-layout-main${isBoardMaximized ? ' board-maximized' : ''}`}
+        onMouseMove={handleBoardMouseMove}
+      >
         <Grid 
           game={game} 
           onMouseOver={onMouseOver} 
@@ -202,7 +252,17 @@ function Home() {
           isEditMode={isEditMode}
           onCellClick={handleCellClick}
         />
-        <div className="card card-body game-controls-bar wm-sticky-bottom game-controls-bar-margin-top">
+        <div
+          className={`card card-body game-controls-bar ${isBoardMaximized
+            ? `game-controls-overlay${showMaximizedControls ? ' game-controls-overlay-visible' : ''}`
+            : 'wm-sticky-bottom game-controls-bar-margin-top'}`}
+          onMouseEnter={() => {
+            if (isBoardMaximized) {
+              setShowMaximizedControls(true);
+              scheduleMaximizedControlsHide();
+            }
+          }}
+        >
           <GridControls 
             nextGeneration={nextGeneration} 
             updateGenerationSpeed={updateGenerationSpeed}
@@ -215,6 +275,8 @@ function Home() {
             onPaletteChange={handlePaletteChange}
             isEditMode={isEditMode}
             toggleEditMode={toggleEditMode}
+            isBoardMaximized={isBoardMaximized}
+            toggleBoardMaximized={toggleBoardMaximized}
           />
         </div>
       </div>
@@ -222,9 +284,9 @@ function Home() {
         <div className="sidebar-tabs-nav right-column-card-spaced">
           <ThemeTabs
             options={[
+              { value: 'diagnostics', label: 'State' },
               { value: 'patterns', label: 'Patterns' },
               { value: 'rules', label: 'Rules' },
-              { value: 'diagnostics', label: 'Stats' },
             ]}
             activeValue={activeSidebarTab}
             onChange={(value) => setActiveSidebarTab(value as 'patterns' | 'rules' | 'diagnostics')}

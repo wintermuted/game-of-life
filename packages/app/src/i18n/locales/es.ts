@@ -18,6 +18,8 @@ export default {
     "variables": "Variables del Juego",
     "generationSpeed": "Velocidad de Generación",
     "editMode": "Modo de Edición",
+    "maximizeBoard": "Maximizar tablero",
+    "restoreBoard": "Restaurar diseño",
     "editModeOn": "Modo de edición ACTIVADO - Haz clic en las celdas para cambiar",
     "editModeOff": "Modo de edición DESACTIVADO"
   },

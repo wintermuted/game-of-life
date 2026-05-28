@@ -1,4 +1,4 @@
-import { handleXCoord, handleYCoord, translateGrid } from './coordinate';
+import { handleXCoord, handleYCoord, translateGrid, translateGridToViewport } from './coordinate';
 import { LifeGrid } from '@game-of-life/core';
 
 describe('coordinate utilities', () => {
@@ -137,6 +137,34 @@ describe('coordinate utilities', () => {
       const translated = translateGrid(grid, gridSize, 5, 5);
 
       expect(translated).toStrictEqual({});
+    });
+  });
+
+  describe('translateGridToViewport', () => {
+    test('should translate grid with independent width and height', () => {
+      const grid: LifeGrid = {
+        '0,0': true,
+        '1,1': true
+      };
+
+      const translated = translateGridToViewport(grid, 120, 80, 0, 0);
+
+      expect(translated).toStrictEqual({
+        '60,39': true,
+        '61,38': true
+      });
+    });
+
+    test('should apply offsets with independent width and height', () => {
+      const grid: LifeGrid = {
+        '10,-10': true
+      };
+
+      const translated = translateGridToViewport(grid, 120, 80, 5, -5);
+
+      expect(translated).toStrictEqual({
+        '65,53': true
+      });
     });
   });
 });
