@@ -1,0 +1,11 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="28" fill="#101828"/>
+  <!-- R-pentomino: row 0 -->
+  <rect x="52" y="24" width="24" height="24" fill="#22c55e"/>
+  <rect x="80" y="24" width="24" height="24" fill="#22c55e"/>
+  <!-- R-pentomino: row 1 -->
+  <rect x="24" y="52" width="24" height="24" fill="#22c55e"/>
+  <rect x="52" y="52" width="24" height="24" fill="#22c55e"/>
+  <!-- R-pentomino: row 2 -->
+  <rect x="52" y="80" width="24" height="24" fill="#22c55e"/>
+</svg>
