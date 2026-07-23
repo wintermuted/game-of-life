@@ -32,6 +32,7 @@
   --grid-overlay-border: rgba(0, 0, 0, 0.15);
   --grid-overlay-button-color: #333;
   --grid-overlay-divider: rgba(0, 0, 0, 0.12);
+  --grid-overlay-text: #333;
 }
 
 .grid-stage[data-theme-mode='dark'] {
@@ -39,6 +40,19 @@
   --grid-overlay-border: rgba(255, 255, 255, 0.12);
   --grid-overlay-button-color: #d1d5db;
   --grid-overlay-divider: rgba(255, 255, 255, 0.12);
+  --grid-overlay-text: #cbd5e1;
+  --grid-minimap-bg: rgba(15, 23, 42, 0.62);
+  --grid-minimap-cell: rgba(148, 163, 184, 0.9);
+  --grid-minimap-viewport: rgba(125, 211, 252, 0.98);
+  --grid-minimap-origin-line: rgba(148, 163, 184, 0.6);
+}
+
+.grid-stage[data-theme-mode='light'] {
+  --grid-overlay-text: #1e293b;
+  --grid-minimap-bg: rgba(241, 245, 249, 0.85);
+  --grid-minimap-cell: rgba(51, 65, 85, 0.75);
+  --grid-minimap-viewport: rgba(37, 99, 235, 0.95);
+  --grid-minimap-origin-line: rgba(51, 65, 85, 0.5);
 }
 
 .grid-overlay-controls {
@@ -52,6 +66,99 @@
   border: 1px solid var(--grid-overlay-border);
   border-radius: 6px;
   background: var(--grid-overlay-bg);
+}
+
+.grid-overlay-controls-bottom-left {
+  top: auto;
+  right: auto;
+  bottom: 8px;
+  left: 8px;
+}
+
+.grid-overlay-readout {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 28px;
+  padding: 0.18rem 0.5rem;
+  border: 1px solid var(--grid-overlay-border);
+  border-radius: 6px;
+  background: var(--grid-overlay-bg);
+  color: var(--grid-overlay-button-color);
+  font-family: var(--wm-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.76rem;
+  line-height: 1;
+}
+
+.grid-overlay-readout-bottom-right {
+  right: 8px;
+  bottom: 8px;
+}
+
+.grid-overlay-minimap {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border: 1px solid var(--grid-overlay-border);
+  border-radius: 8px;
+  background: var(--grid-overlay-bg);
+}
+
+.grid-overlay-minimap-canvas {
+  display: block;
+  border: 1px solid var(--grid-overlay-border);
+  border-radius: 5px;
+  background: var(--grid-minimap-bg);
+  cursor: grab;
+}
+
+.grid-overlay-minimap-canvas.grid-overlay-minimap-canvas-panning {
+  cursor: grabbing;
+}
+
+.grid-overlay-minimap-cell {
+  fill: var(--grid-minimap-cell);
+}
+
+.grid-overlay-minimap-viewport {
+  fill: none;
+  stroke: var(--grid-minimap-viewport);
+  stroke-width: 1.5;
+}
+
+.grid-overlay-minimap-origin-line {
+  stroke: var(--grid-minimap-origin-line);
+  stroke-width: 0.5;
+  opacity: 0.5;
+}
+
+.grid-overlay-minimap-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--grid-overlay-text);
+  font-family: monospace;
+}
+
+.grid-overlay-minimap-stat-line {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.grid-overlay-readout-count {
+  color: var(--wm-color-text-secondary);
+  white-space: nowrap;
+}
+
+.grid-overlay-readout-coordinates {
+  white-space: nowrap;
 }
 
 .grid-overlay-row {
@@ -90,14 +197,61 @@
   background: var(--grid-overlay-divider);
 }
 
-.CanvasGrid canvas {
+.CanvasGrid canvas,
+.canvas-grid-surface {
   display: block;
   width: 100%;
   height: 100%;
+  cursor: default;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable {
+  cursor: pointer;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-pencil {
+  cursor: crosshair;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-selection {
+  cursor: crosshair;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-eraser {
+  cursor: cell;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-grab {
+  cursor: grab;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-grab.canvas-grid-surface-tool-grab-active {
+  cursor: grabbing;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-stamp {
+  cursor: copy;
+}
+
+.grid-controls-tool-text {
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 @media (max-width: 767px) {
-  .CanvasGrid canvas {
+  .grid-overlay-minimap {
+    padding: 4px;
+  }
+
+  .grid-overlay-minimap-canvas {
+    width: 92px;
+    height: 92px;
+  }
+
+  .CanvasGrid canvas,
+  .canvas-grid-surface {
     width: 100% !important;
     height: auto !important;
   }

@@ -67,6 +67,7 @@ describe('App Dark Mode Toggle', () => {
     );
     
     expect(screen.getByLabelText(/home/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/play/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/about/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/view source/i)).toBeInTheDocument();
   });

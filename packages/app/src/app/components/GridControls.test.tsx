@@ -10,6 +10,7 @@ describe('GridControls', () => {
   const mockCopyCurrentURL = vi.fn();
   const mockToggleEditMode = vi.fn();
   const mockOnPaletteChange = vi.fn();
+  const mockOnDrawColorChange = vi.fn();
 
   const defaultProps = {
     nextGeneration: mockNextGeneration,
@@ -20,7 +21,9 @@ describe('GridControls', () => {
     isGameRunning: false,
     copyCurrentURL: mockCopyCurrentURL,
     selectedPaletteId: 'classic',
+    selectedDrawColor: '#22c55e',
     onPaletteChange: mockOnPaletteChange,
+    onDrawColorChange: mockOnDrawColorChange,
     isEditMode: false,
     toggleEditMode: mockToggleEditMode,
   };

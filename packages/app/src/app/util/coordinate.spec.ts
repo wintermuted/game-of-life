@@ -1,5 +1,5 @@
+import { createLifeGrid, LifeGrid } from '@game-of-life/core';
 import { handleXCoord, handleYCoord, translateGrid, translateGridToViewport } from './coordinate';
-import { LifeGrid } from '@game-of-life/core';
 
 describe('coordinate utilities', () => {
   describe('handleXCoord', () => {
@@ -62,73 +62,73 @@ describe('coordinate utilities', () => {
     const gridSize = 100;
 
     test('should translate grid without offset', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '0,0': true,
         '1,0': true,
         '0,1': true
-      };
+      });
 
       const translated = translateGrid(grid, gridSize);
 
-      expect(translated).toStrictEqual({
+      expect(translated).toStrictEqual(createLifeGrid({
         '50,49': true,  // (0,0) -> (50, 49)
         '51,49': true,  // (1,0) -> (51, 49)
         '50,48': true   // (0,1) -> (50, 48)
-      });
+      }));
     });
 
     test('should translate grid with positive x offset', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '0,0': true,
         '10,0': true
-      };
+      });
 
       const translated = translateGrid(grid, gridSize, 10, 0);
 
-      expect(translated).toStrictEqual({
+      expect(translated).toStrictEqual(createLifeGrid({
         '40,49': true,  // (0,0) with offsetX=10 -> (50-10, 49)
         '50,49': true   // (10,0) with offsetX=10 -> (60-10, 49)
-      });
+      }));
     });
 
     test('should translate grid with positive y offset', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '0,0': true,
         '0,10': true
-      };
+      });
 
       const translated = translateGrid(grid, gridSize, 0, 10);
 
-      expect(translated).toStrictEqual({
+      expect(translated).toStrictEqual(createLifeGrid({
         '50,39': true,  // (0,0) with offsetY=10 -> (50, 49-10)
         '50,29': true   // (0,10) with offsetY=10 -> (50, 39-10)
-      });
+      }));
     });
 
     test('should translate grid with both x and y offsets', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '5,5': true,
         '-5,-5': true
-      };
+      });
 
       const translated = translateGrid(grid, gridSize, 10, 10);
 
-      expect(translated).toStrictEqual({
+      expect(translated).toStrictEqual(createLifeGrid({
         '45,34': true,  // (5,5) with offsets (10,10) -> (55-10, 44-10)
         '35,44': true   // (-5,-5) with offsets (10,10) -> (45-10, 64-10)
-      });
+      }));
     });
 
     test('should translate grid with negative offsets', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '0,0': true
-      };
+      });
 
       const translated = translateGrid(grid, gridSize, -10, -10);
 
-      expect(translated).toStrictEqual({
+      expect(translated).toStrictEqual(createLifeGrid({
         '60,59': true  // (0,0) with offsets (-10,-10) -> (50-(-10), 49-(-10))
-      });
+      }));
     });
 
     test('should handle empty grid', () => {
@@ -142,29 +142,29 @@ describe('coordinate utilities', () => {
 
   describe('translateGridToViewport', () => {
     test('should translate grid with independent width and height', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '0,0': true,
         '1,1': true
-      };
+      });
 
       const translated = translateGridToViewport(grid, 120, 80, 0, 0);
 
-      expect(translated).toStrictEqual({
+      expect(translated).toStrictEqual(createLifeGrid({
         '60,39': true,
         '61,38': true
-      });
+      }));
     });
 
     test('should apply offsets with independent width and height', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '10,-10': true
-      };
+      });
 
       const translated = translateGridToViewport(grid, 120, 80, 5, -5);
 
-      expect(translated).toStrictEqual({
+      expect(translated).toStrictEqual(createLifeGrid({
         '65,53': true
-      });
+      }));
     });
   });
 });

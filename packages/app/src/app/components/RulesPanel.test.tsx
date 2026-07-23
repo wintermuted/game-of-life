@@ -12,7 +12,9 @@ describe('RulesPanel', () => {
     expect(screen.getByText('Survival (2 neighbors)')).toBeInTheDocument();
     expect(screen.getByText('Survival (3 neighbors)')).toBeInTheDocument();
     expect(screen.getByText('Birth (3 neighbors)')).toBeInTheDocument();
-    expect(screen.getByText('Death (underpopulation/overpopulation)')).toBeInTheDocument();
+    expect(screen.getByText('Experimental Species Competition Birth')).toBeInTheDocument();
+    expect(screen.getByText('Experimental Species Competition Tie-Break Birth')).toBeInTheDocument();
+    expect(screen.getByText('Death (underpopulation / overpopulation)')).toBeInTheDocument();
   });
 
   test('toggles rule when clicked', () => {
@@ -44,6 +46,8 @@ describe('RulesPanel', () => {
     expect(screen.getByText('Live cells with 2 neighbors survive')).toBeInTheDocument();
     expect(screen.getByText('Live cells with 3 neighbors survive')).toBeInTheDocument();
     expect(screen.getByText('Dead cells with 3 neighbors become alive')).toBeInTheDocument();
+    expect(screen.getByText('Mixed-species births require a dominant color; evenly split species do not reproduce')).toBeInTheDocument();
+    expect(screen.getByText('When species competition ties, births randomly choose among the tied colors instead of failing')).toBeInTheDocument();
     expect(screen.getByText('Live cells with <2 or >3 neighbors die')).toBeInTheDocument();
   });
 });

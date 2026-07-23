@@ -3,6 +3,7 @@ import { blinker, beacon, toad, pulsar, pentadecathlon } from './oscillators';
 import { block, beehive, tub, boat, loaf, pond } from './stillLifes';
 import { glider, lwss } from './spaceships';
 import { rPentomino, diehard, acorn } from './methuselahs';
+import { gosperGliderGun, simkinGliderGun } from './guns';
 
 export interface Pattern {
   name: string;
@@ -78,6 +79,17 @@ export const patterns: Pattern[] = [
     name: 'LWSS',
     category: 'Spaceship',
     grid: lwss
+  },
+  // Guns
+  {
+    name: 'Gosper Glider Gun',
+    category: 'Gun',
+    grid: gosperGliderGun
+  },
+  {
+    name: 'Simkin Glider Gun',
+    category: 'Gun',
+    grid: simkinGliderGun
   },
   // Methuselahs
   {

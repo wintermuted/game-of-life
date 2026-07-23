@@ -1,16 +1,18 @@
-export const blinker = { 
+import { createLifeGrid } from '../core/cells';
+
+export const blinker = createLifeGrid({ 
   "0,0": true,
   "1,0": true,
   "2,0": true,
-};
+});
 
-export const blinker2 = {
+export const blinker2 = createLifeGrid({
   "0,1": true,
   "1,1": true,
   "2,1": true,
-};
+});
 
-export const beacon = {
+export const beacon = createLifeGrid({
   "0,2": true,
   "0,3": true,
   "1,2": true,
@@ -20,27 +22,27 @@ export const beacon = {
   "3,0": true,
   "2,1": true,
   "3,1": true
-};
+});
 
-export const beaconA2 = {
+export const beaconA2 = createLifeGrid({
   "0,2": true,
   "0,3": true,
   "1,3": true,
   "2,0": true,
   "3,0": true,
   "3,1": true
-};
+});
 
-export const toad = {
+export const toad = createLifeGrid({
   "1,0": true,
   "2,0": true,
   "3,0": true,
   "0,1": true,
   "1,1": true,
   "2,1": true
-};
+});
 
-export const pulsar = {
+export const pulsar = createLifeGrid({
   // Top section
   "2,0": true,
   "3,0": true,
@@ -97,9 +99,9 @@ export const pulsar = {
   "8,12": true,
   "9,12": true,
   "10,12": true
-};
+});
 
-export const pentadecathlon = {
+export const pentadecathlon = createLifeGrid({
   "3,2": true,
   "4,2": true,
   "2,3": true,
@@ -118,4 +120,4 @@ export const pentadecathlon = {
   "5,9": true,
   "3,10": true,
   "4,10": true
-};
+});

@@ -1,9 +1,10 @@
 import { LifeGrid } from '../interfaces';
+import { createLiveCell, createLifeGrid, isLiveCell } from './cells';
 
 /**
  * Parses a string of coordinates into a LifeGrid
  * Supports multiple formats:
- * 1. JSON format: { "x,y": true, "x2,y2": true }
+ * 1. JSON format: { "x,y": "#22c55e", "x2,y2": true }
  * 2. Coordinate list format: x,y x2,y2 (space or newline separated)
  * 3. Coordinate pairs format: x,y\nx2,y2 (newline separated)
  */
@@ -19,14 +20,20 @@ export function parseCoordinates(input: string): LifeGrid {
     try {
       const parsed = JSON.parse(trimmedInput);
       // Validate that all keys are valid coordinate strings
-      const grid: LifeGrid = {};
+      const seed: Record<string, boolean | string> = {};
       for (const key in parsed) {
-        if (isValidCoordinate(key)) {
-          grid[key] = true;
-        } else {
+        if (!isValidCoordinate(key)) {
           throw new Error(`Invalid coordinate format: ${key}`);
         }
+
+        const value = parsed[key];
+        if (value !== true && !isLiveCell(value)) {
+          throw new Error(`Invalid cell value at: ${key}`);
+        }
+
+        seed[key] = value;
       }
+      const grid = createLifeGrid(seed);
       if (Object.keys(grid).length === 0) {
         throw new Error('No valid coordinates found in JSON');
       }
@@ -62,7 +69,7 @@ export function parseCoordinates(input: string): LifeGrid {
     }
     
     const coord = `${x},${y}`;
-    grid[coord] = true;
+    grid[coord] = createLiveCell();
   }
 
   if (Object.keys(grid).length === 0) {

@@ -1,6 +1,8 @@
+export type LifeCell = string;
+
 // The Life Grid state is represented as a Hash
 export interface LifeGrid {
-  [coordinate: string]: boolean;
+  [coordinate: string]: LifeCell;
 }
 
 // Statistics for a generation transition
@@ -23,5 +25,7 @@ export interface GameRules {
   survival2: GameRule;
   survival3: GameRule;
   birth3: GameRule;
+  experimentalSpeciesCompetitionBirth: GameRule;
+  experimentalSpeciesCompetitionTieBreakBirth: GameRule;
   death: GameRule;
 }

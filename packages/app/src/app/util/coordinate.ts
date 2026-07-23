@@ -1,5 +1,5 @@
 import { toNumber, forEach } from "lodash";
-import { LifeGrid } from "@game-of-life/core";
+import { getCellColor, isLiveCell, LifeGrid } from "@game-of-life/core";
 import { ColorPalette } from "../constants/colors";
 
 export function handleXCoord(x: string, gridSize: number, offsetX: number = 0) {
@@ -23,12 +23,12 @@ export function translateGridToViewport(
 ): LifeGrid {
   const translatedGrid: LifeGrid = {} as LifeGrid;
 
-  forEach(grid, (_entry, key) => {
+  forEach(grid, (entry, key) => {
     const [x, y] = key.split(',');
     const xOffset = handleXCoord(x, gridWidth, offsetX);
     const yOffset = handleYCoord(y, gridHeight, offsetY);
     const newKey = `${xOffset},${yOffset}`;
-    translatedGrid[newKey] = true;
+    translatedGrid[newKey] = entry;
   });
 
   return translatedGrid;
@@ -39,20 +39,13 @@ export function translateGrid (grid: LifeGrid, gridSize: number, offsetX: number
 }
 
 export function getCellFillColor(
-  isAlive: boolean, 
-  _rowIndex: number, 
-  _columnIndex: number, 
-  _gridSize: number,
-  palette?: ColorPalette,
+  cellColor: string | undefined,
+  _palette?: ColorPalette,
   isDark?: boolean
 ): string {
-  if (palette) {
-    const dead = isDark ? palette.deadCellDark : palette.deadCell;
-    return isAlive ? palette.liveCell : dead;
+  if (isLiveCell(cellColor)) {
+    return getCellColor(cellColor);
   }
-  
-  // Fallback colors
-  const dead = isDark ? '#1e1e1e' : '#CCC';
-  const color = isAlive ? 'green' : dead;
-  return color;
+
+  return isDark ? '#161b22' : '#ebedf0';
 }

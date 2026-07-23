@@ -1,12 +1,87 @@
 export default {
   "app": {
-    "title": "Conway's Game of Life"
+    "title": "Game of Life"
   },
   "nav": {
     "home": "Home",
+    "play": "Play",
+    "explore": "Explore",
     "about": "About",
+    "user": "User",
+    "userMenu": "User menu",
+    "profile": "Profile",
+    "settings": "Settings",
+    "signOut": "Sign out",
     "toggleDarkMode": "Toggle dark mode",
     "viewSource": "View source on GitHub"
+  },
+  "footer": {
+    "label": "Global footer",
+    "blurb": "Conway's Game of Life playground",
+    "sourceLink": "Open source on GitHub",
+    "releaseLink": "Current release",
+    "shortcuts": {
+      "menuLabel": "Keyboard shortcuts",
+      "title": "Keyboard shortcuts",
+      "currentContext": "Current context: {{context}}",
+      "focusHint": "Shortcut keys are active only when focus is not inside an input, select, textarea, or button.",
+      "controlPrefix": "Control: {{control}}",
+      "availableNow": "Available now",
+      "allShortcuts": "All play page shortcuts",
+      "noShortcutsHere": "No page-specific shortcuts are active in this view.",
+      "currentBadge": "Current",
+      "contextLanding": "Home page",
+      "contextPlaySelect": "Play pattern picker",
+      "contextPlayEdit": "Play page - Edit mode",
+      "contextPlayRun": "Play page - Run mode",
+      "contextExplore": "Explore page",
+      "contextAbout": "About page",
+      "contextProfile": "Profile page",
+      "contextSettings": "Settings page",
+      "actions": {
+        "panBoard": "Pan board",
+        "zoomBoard": "Zoom board in or out",
+        "centerView": "Center board view",
+        "toggleSimulation": "Start or pause simulation",
+        "increaseSpeed": "Increase generation speed",
+        "decreaseSpeed": "Decrease generation speed"
+      },
+      "controls": {
+        "panControls": "Pan controls",
+        "zoomControls": "Zoom in and Zoom out controls",
+        "centerView": "Center view control",
+        "startPause": "Start / Pause control",
+        "increaseSpeed": "Increase generation speed control",
+        "decreaseSpeed": "Decrease generation speed control"
+      }
+    }
+  },
+  "landing": {
+    "eyebrow": "Cellular Automata Playground",
+    "title": "Welcome to Game of Life",
+    "description": "Explore emergent behavior from simple rules. Launch the interactive board, load starter patterns, and watch complexity unfold.",
+    "enter": "Enter Simulation",
+    "about": "Read About",
+    "presetsTitle": "Try A Preset",
+    "presetsDescription": "Jump directly into the board with a preloaded pattern.",
+    "openPreset": "Open Preset",
+    "presets": {
+      "default": {
+        "title": "R-Pentomino",
+        "description": "The classic starter used in this app: small seed, surprisingly rich evolution."
+      },
+      "gosper": {
+        "title": "Gosper Glider Gun",
+        "description": "The first famous finite pattern that emits an endless stream of gliders."
+      },
+      "simkin": {
+        "title": "Simkin Glider Gun",
+        "description": "A compact period-120 glider gun and a modern counterpart to Gosper."
+      }
+    },
+    "feature1": "Interactive infinite grid",
+    "feature2": "Pattern presets and custom seeds",
+    "feature3": "Rule toggles, diagnostics, and shareable URLs"
   },
   "controls": {
     "title": "Game Controls",
@@ -15,11 +90,48 @@ export default {
     "next": "Next",
     "reset": "Reset",
     "copyUrl": "Copy URL",
+    "mode": "Mode",
+    "playControls": "Play Controls",
+    "editControls": "Edit Controls",
     "variables": "Game Variables",
     "generationSpeed": "Generation Speed",
+    "generationSpeedDecrease": "Decrease generation speed",
+    "generationSpeedIncrease": "Increase generation speed",
+    "generationSpeedValue": "Generation speed {{level}}",
+    "edit": "Edit",
     "editMode": "Edit Mode",
+    "selection": "Select cells",
+    "grabPan": "Grab pan",
+    "stamp": "Stamp pattern",
+    "stampPatterns": "Starter patterns",
+    "currentStampSelection": "Current selection",
+    "searchStampPatterns": "Search patterns",
+    "noStampPatternsFound": "No patterns match your search.",
+    "rotateStamp": "Rotate stamp",
+    "rotateStampHotkey": "[ / ]",
+    "stampRotation": "{{degrees}} deg",
+    "selectionCount": "{{count}} selected",
+    "undo": "Undo",
+    "pencil": "Pencil",
+    "eraser": "Eraser",
+    "drawColor": "Draw color",
+    "systemColors": "System colors",
+    "customColors": "Custom colors",
+    "customColor": "Custom color",
+    "customColorHex": "Custom color hex",
+    "hoveredCell": "Hovered Cell",
+    "hoveredCellNone": "None",
+    "miniMap": "Mini map",
+    "miniMapViewport": "Current viewport",
     "maximizeBoard": "Maximize board",
     "restoreBoard": "Restore layout",
+    "panUp": "Pan up",
+    "panLeft": "Pan left",
+    "centerView": "Center view",
+    "panRight": "Pan right",
+    "panDown": "Pan down",
+    "zoomOut": "Zoom out",
+    "zoomIn": "Zoom in",
     "editModeOn": "Edit mode is ON - Click cells to toggle",
     "editModeOff": "Edit mode is OFF"
   },
@@ -37,13 +149,79 @@ export default {
   },
   "rules": {
     "title": "Game Rules",
-    "description": "Toggle rules to customize the simulation behavior"
+    "description": "Toggle rules to customize the simulation behavior",
+    "standardSection": "Standard Rules",
+    "experimentalSection": "Experimental Rules"
+  },
+  "playground": {
+    "copyHash": "Copy Hash",
+    "save": "Save",
+    "saveAs": "Save As",
+    "saveOptions": "Save options",
+    "fork": "Fork",
+    "forkSuffix": "Fork",
+    "savePrompt": "Save template as",
+    "editTitle": "Edit template title",
+    "forkTitle": "Name your fork",
+    "createFork": "Create fork",
+    "patternName": "Pattern name",
+    "patternMetadata": "Pattern metadata",
+    "infoTab": "Info",
+    "infoTitle": "Pattern info",
+    "infoAuthorLabel": "Author",
+    "infoCategoryLabel": "Category",
+    "infoDescriptionLabel": "Description",
+    "infoVisibilityLabel": "Visibility",
+    "infoPopularityLabel": "Popularity",
+    "infoStarsLabel": "{{count}} stars",
+    "infoForksLabel": "{{count}} forks",
+    "viewForks": "View forks",
+    "infoDescriptionSystem": "A built-in {{category}} pattern from the system library.",
+    "infoDescriptionUser": "A community {{category}} pattern created by {{creator}}.",
+    "infoDescriptionForked": "This version was forked from {{name}}.",
+    "starsModalTitle": "Starred by ({{pattern}})",
+    "forksModalTitle": "Forked by ({{pattern}})",
+    "forkingPatternLabel": "forked as {{pattern}}",
+    "forkedDateLabel": "Forked",
+    "lastModifiedDateLabel": "Last modified",
+    "noStarsYet": "No local stars yet.",
+    "noForksYet": "No local forks yet.",
+    "unknownForkPattern": "Unknown fork pattern",
+    "youUserLabel": "You",
+    "popularityBadge": "{{stars}} stars · {{forks}} forks",
+    "categoryBadge": "Category: {{category}}",
+    "createdByLabel": "Author:",
+    "createdByBadge": "Author: {{creator}}",
+    "forkedFrom": "Forked from: {{name}}",
+    "originalPattern": "Original pattern",
+    "categoryUncategorized": "Uncategorized",
+    "categoryUnknown": "Custom",
+    "visibilityPublic": "Public",
+    "visibilityPrivate": "Private",
+    "insertSystemPattern": "Insert System Pattern",
+    "systemReadonlyHint": "System patterns are read-only. Fork to create your own editable copy.",
+    "unsavedEmptyBoardNotice": "Unsaved board",
+    "confirmDraftSaveTitle": "Save board",
+    "confirmDraftSaveMessage": "Save this board to your account as \"{{name}}\"?",
+    "confirmDraftSaveAction": "Save board",
+    "confirmDraftSaveNamePlaceholder": "Enter a board name",
+    "confirmDraftSaveCategoryLabel": "Category",
+    "confirmDraftSaveCategoryPlaceholder": "Select a category",
+    "confirmDraftSaveDescriptionPlaceholder": "Add an optional description",
+    "confirmDraftSaveVisibilityLabel": "Visibility",
+    "confirmDraftSaveCategoryHint": "Choose category and visibility, and review name/description before first save."
   },
   "diagnostics": {
     "title": "Diagnostics",
+    "settings": "Settings",
+    "stabilityOverlayEnabled": "Show stability modal",
+    "stabilityOverlayDescription": "When off, Continue playing suppresses the stability modal until you turn it back on.",
     "statistics": "Statistics",
     "generations": "Generations",
     "liveCells": "Live Cells",
+    "liveCellsByColor": "Live Cells by Color",
+    "noLiveCellsByColor": "No live cells yet.",
+    "liveCellsCount": "{{count}} alive",
     "totalBirths": "Total Births",
     "totalDeaths": "Total Deaths",
     "cellData": "Cell Data"
@@ -69,14 +247,215 @@ export default {
     "viewSource": "View Source Code on GitHub",
     "wikiLink": "Conway's Game of Life on Wikipedia"
   },
+  "explore": {
+    "title": "Explore Patterns",
+    "subtitle": "Browse common Game of Life patterns, run them instantly, fork them into your own saved set, and favorite the ones you want in your profile.",
+    "searchPlaceholder": "Search patterns or categories",
+    "categoryFilterLabel": "Filter by category",
+    "categoryAll": "All categories",
+    "sourceFilterLabel": "Filter by source",
+    "sourceAll": "All sources",
+    "authorFilterLabel": "Filter by author",
+    "authorAll": "All authors",
+    "sortLabel": "Sort patterns",
+    "sortFavorites": "Top favorites",
+    "sortForks": "Top forks",
+    "sortName": "Name",
+    "sortCategory": "Category",
+    "sortUser": "User",
+    "sortDirectionLabel": "Direction",
+    "sortDirectionAsc": "Ascending",
+    "sortDirectionDesc": "Descending",
+    "groupByCategory": "Group by category",
+    "viewModeLabel": "View mode",
+    "viewCards": "Cards",
+    "viewTable": "Table",
+    "allPatternsGroupLabel": "All patterns",
+    "favoritesOnly": "Favorites only",
+    "clearFilters": "Clear filters",
+    "resultsCount": "{{count}} patterns",
+    "noResults": "No patterns match your current filters.",
+    "tablePattern": "Pattern",
+    "tableSource": "Source",
+    "tableCategory": "Category",
+    "tableForks": "Forks",
+    "tableStars": "Stars",
+    "tableActions": "Actions",
+    "categoryLabel": "Category: {{category}}",
+    "popularityLabel": "Pattern popularity",
+    "playPattern": "Play",
+    "forkPattern": "Fork",
+    "viewFavorites": "View favorites",
+    "favorite": "Stars",
+    "favorited": "Starred",
+    "forkSuffix": "Fork"
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your account details and jump back into saved board states.",
+    "openPlayground": "Open Playground",
+    "user": {
+      "name": "James Nyeholt",
+      "email": "james@example.com",
+      "memberSince": "April 2026",
+      "timezone": "America/Los_Angeles",
+      "favoritePalette": "Classic Green"
+    },
+    "details": {
+      "memberSince": "Member since",
+      "timezone": "Timezone",
+      "favoritePalette": "Favorite palette",
+      "boardsSaved": "Boards saved"
+    },
+    "savedBoards": {
+      "title": "Saved Boards",
+      "items": {
+        "rpentomino": {
+          "title": "R-Pentomino Seed",
+          "updated": "Updated 2 days ago"
+        },
+        "gosper": {
+          "title": "Gosper Gun Lab",
+          "updated": "Updated 5 days ago"
+        },
+        "simkin": {
+          "title": "Simkin Compact Stream",
+          "updated": "Updated 1 week ago"
+        }
+      }
+    },
+    "recentBoards": {
+      "title": "Recent Boards",
+      "items": {
+        "glider": {
+          "title": "Glider Warmup",
+          "updated": "Opened 45 minutes ago"
+        },
+        "blinker": {
+          "title": "Blinker Timing Check",
+          "updated": "Opened yesterday"
+        },
+        "pulsar": {
+          "title": "Pulsar Sandbox",
+          "updated": "Opened 3 days ago"
+        }
+      }
+    },
+    "myBoards": {
+      "title": "My Gameboards",
+      "empty": "No personal gameboards yet. Save a non-forked board to see it here."
+    },
+    "createEmptyBoard": "Create empty board",
+    "emptyBoardTitle": "Empty board",
+    "forkedBoards": {
+      "title": "Forked Boards",
+      "empty": "No forked boards yet. Fork a board in Play to see it here."
+    },
+    "stars": {
+      "title": "Starred Boards",
+      "empty": "No stars yet. Star boards in Explore to see them here."
+    },
+    "tableBoard": "Board",
+    "tableDetails": "Origin",
+    "tableUpdated": "Updated",
+    "tableLiveCells": "Cells",
+    "tableOriginFork": "Fork of {{name}}",
+    "tableOriginMine": "Mine",
+    "tableOriginLibrary": "Library",
+    "forkedFrom": "Forked from {{name}}",
+    "removeStar": "Remove star",
+    "openBoard": "Open Board",
+    "liveCells": "{{count}} live cells",
+    "storageModeLabel": "Storage mode",
+    "persistenceNote": "Backend persistence and account data will be wired in a future update."
+  },
+  "playStart": {
+    "title": "Start a New Game",
+    "subtitle": "Choose how you want to begin in Play.",
+    "emptyTitle": "Create Empty Board",
+    "emptyDescription": "Start with a blank grid and build your own pattern.",
+    "emptyAction": "Start Empty",
+    "randomTitle": "Random System Pattern",
+    "randomDescription": "Jump in with a random built-in pattern from the system library.",
+    "randomAction": "Start Random"
+  },
+  "settings": {
+    "title": "Settings",
+    "stubDescription": "Choose how temporary state is stored while backend persistence is in progress.",
+    "persistenceNote": "These options are browser-only stubs until backend account settings are available.",
+    "storage": {
+      "title": "Browser Storage",
+      "description": "Saved boards, recent boards, and profile defaults are persisted in the selected browser storage.",
+      "local": "Local storage",
+      "localHint": "Persists across browser restarts on this device.",
+      "session": "Session storage",
+      "sessionHint": "Clears when the browser tab/window session ends.",
+      "clearActive": "Clear active storage data",
+      "summaryTitle": "Stored Data Summary",
+      "activeMode": "Active mode",
+      "savedTemplates": "Saved templates",
+      "savedBoards": "Saved boards",
+      "recentBoards": "Recent boards",
+      "profileName": "Profile name",
+      "profileEmail": "Profile email",
+      "savedListTitle": "Saved board titles",
+      "recentListTitle": "Recent board titles",
+      "emptyList": "No stored entries yet"
+    },
+    "messages": {
+      "storageSaved": "Storage mode updated",
+      "activeDataCleared": "Active storage data cleared"
+    }
+  },
+  "signOut": {
+    "title": "Sign Out",
+    "stubDescription": "This is a placeholder sign-out flow.",
+    "persistenceNote": "Authentication and session handling will be implemented later.",
+    "returnToPlay": "Return to Play"
+  },
   "messages": {
     "urlUpdated": "URL updated with current pattern",
     "urlCopied": "URL copied to clipboard",
-    "urlCopyFailed": "Failed to copy URL"
+    "urlCopyFailed": "Failed to copy URL",
+    "hashCopied": "Pattern hash copied to clipboard",
+    "hashCopyFailed": "Failed to copy pattern hash",
+    "simulationStarted": "Simulation started",
+    "simulationPaused": "Simulation paused",
+    "playModeEntered": "Entered play mode",
+    "editModeEntered": "Entered edit mode",
+    "enterPlayModeToRun": "Enter play mode before running the simulation",
+    "enterEditModeToInsertPattern": "Enter edit mode before inserting a pattern",
+    "generationSpeedChanged": "Generation speed: {{level}}",
+    "pauseToInsertPattern": "Pause the simulation before inserting a pattern",
+    "boardUndoApplied": "Reverted the previous board change",
+    "systemPatternInserted": "Inserted system pattern",
+    "stampPatternSelected": "Stamp pattern selected",
+    "stampPatternApplied": "Stamped pattern onto board",
+    "stampRotationUpdated": "Stamp rotation: {{degrees}} deg",
+    "selectStampPatternFirst": "Select a starter pattern before stamping",
+    "templateSaved": "Template saved",
+    "customColorUpdated": "Custom color updated: {{color}}",
+    "patternForked": "Forked {{name}} to your saved patterns",
+    "patternFavorited": "Added {{name}} to favorites",
+    "patternUnfavorited": "Removed {{name}} from favorites",
+    "stabilityDetectedTitle": "Stable Population Detected",
+    "stabilityDetectedDescription": "Live cell count remained unchanged for 20 generations. Simulation paused.",
+    "gameOverTitle": "Game Over",
+    "gameOverDescription": "No live cells remain on the board.",
+    "stabilityBannerTitle": "Stability achieved",
+    "stabilityBannerDescription": "Live cell count stayed at {{liveCells}} for {{generations}} generations.",
+    "returnToEditMode": "Return to edit mode",
+    "continuePlaying": "Continue playing"
+  },
+  "patternSource": {
+    "system": "System",
+    "user": "User",
+    "byUser": "By {{name}}"
   },
   "dialogs": {
     "confirmReset": "Confirm Reset",
     "resetMessage": "Are you sure you want to reset the game? This will clear the current state and start over.",
+    "close": "Close",
     "cancel": "Cancel",
     "yesReset": "Yes, Reset"
   }

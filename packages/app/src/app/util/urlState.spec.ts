@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { encodeGridToBase64, decodeBase64ToGrid, getGridFromURL, updateURLWithGrid } from './urlState';
-import { LifeGrid } from '@game-of-life/core';
+import { createLifeGrid, DEFAULT_LIVE_CELL_COLOR, LifeGrid } from '@game-of-life/core';
 
 describe('urlState utilities', () => {
   describe('encodeGridToBase64', () => {
@@ -11,23 +11,23 @@ describe('urlState utilities', () => {
     });
 
     test('should encode a simple grid', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '0,0': true,
         '1,1': true,
-      };
+      });
       const encoded = encodeGridToBase64(grid);
       const expected = btoa(JSON.stringify(grid));
       expect(encoded).toBe(expected);
     });
 
     test('should encode a complex grid', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '0,0': true,
         '1,0': true,
         '2,0': true,
         '0,1': true,
         '-5,-5': true,
-      };
+      });
       const encoded = encodeGridToBase64(grid);
       const decoded = atob(encoded);
       expect(JSON.parse(decoded)).toStrictEqual(grid);
@@ -36,10 +36,10 @@ describe('urlState utilities', () => {
 
   describe('decodeBase64ToGrid', () => {
     test('should decode a valid base64 string to grid', () => {
-      const grid: LifeGrid = {
+      const grid: LifeGrid = createLifeGrid({
         '0,0': true,
         '1,1': true,
-      };
+      });
       const encoded = btoa(JSON.stringify(grid));
       const decoded = decodeBase64ToGrid(encoded);
       expect(decoded).toStrictEqual(grid);
@@ -56,7 +56,7 @@ describe('urlState utilities', () => {
       expect(result).toBeNull();
     });
 
-    test('should return null for grid with non-boolean values', () => {
+    test('should return null for grid with invalid cell values', () => {
       const invalidGrid = {
         '0,0': 'not a boolean',
       };
@@ -66,13 +66,13 @@ describe('urlState utilities', () => {
     });
 
     test('should return null for grid with non-string keys', () => {
-      const invalidGrid = {
+      const validLegacyGrid = {
         '0,0': true,
       };
-      const encoded = btoa(JSON.stringify(invalidGrid));
+      const encoded = btoa(JSON.stringify(validLegacyGrid));
       // This test validates that keys must be strings (they always are in JSON)
       const result = decodeBase64ToGrid(encoded);
-      expect(result).toStrictEqual(invalidGrid);
+      expect(result).toStrictEqual({ '0,0': DEFAULT_LIVE_CELL_COLOR });
     });
 
     test('should handle empty grid', () => {
@@ -103,7 +103,7 @@ describe('urlState utilities', () => {
     });
 
     test('should decode pattern from URL parameter', () => {
-      const grid: LifeGrid = { '0,0': true, '1,1': true };
+      const grid: LifeGrid = createLifeGrid({ '0,0': true, '1,1': true });
       const encoded = btoa(JSON.stringify(grid));
       (window as any).location = { search: `?pattern=${encoded}` };
       const result = getGridFromURL();
@@ -139,7 +139,7 @@ describe('urlState utilities', () => {
     });
 
     test('should update URL with encoded grid pattern', () => {
-      const grid: LifeGrid = { '0,0': true, '1,1': true };
+      const grid: LifeGrid = createLifeGrid({ '0,0': true, '1,1': true });
       updateURLWithGrid(grid);
       
       expect(window.history.pushState).toHaveBeenCalled();
