@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Copy, GitFork, Pencil, Save, SaveAll, Star } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ChevronDown, GitFork, Lock, LockOpen, Pencil, Save, SaveAll, Settings, Star, Tag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Cpu, User } from 'lucide-react';
 import Grid from "./Grid";
@@ -9,7 +10,7 @@ import PatternSelector from './PatternSelector';
 import PatternPreview from './PatternPreview';
 import RulesPanel from "./RulesPanel";
 import { getGenerationSpeed } from '../util';
-import { createLifeGrid, Game, rPentomino, LifeGrid, GameStats, GameRules, DEFAULT_RULES, patterns } from '@game-of-life/core';
+import { createLifeGrid, getCellColor, getNeighborCoordinates, Game, rPentomino, LifeGrid, GameRule, GameRuleKey, GameStats, GameRules, DEFAULT_RULES, RULESETS, patterns } from '@game-of-life/core';
 import { encodeGridToBase64, getGridFromURL, updateURLWithGrid } from '../util/urlState';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
@@ -41,8 +42,15 @@ const STABILITY_GENERATION_THRESHOLD = 20;
 
 type PatternSource = 'system' | 'user';
 type NameModalMode = 'rename' | 'fork';
+type DraftSaveModalMode = 'save' | 'edit';
 type EditTool = 'pencil' | 'eraser' | 'selection' | 'grab' | 'stamp';
 type StampRotation = 0 | 90 | 180 | 270;
+type RulesetSelectionId = 'standard' | 'highlife' | 'day-and-night' | 'life-without-death' | 'custom';
+
+interface CenterCoordinateRequest {
+  coordinate: string;
+  requestKey: number;
+}
 
 interface PlayPatternMetadata {
   hash: string;
@@ -52,6 +60,9 @@ interface PlayPatternMetadata {
   creatorName?: string;
   favoriteCount: number;
   forkCount: number;
+  tags?: string[];
+  description?: string;
+  referenceUrl?: string;
 }
 
 interface SeededPlayPatternMetadata {
@@ -67,6 +78,127 @@ interface SeededPlayPatternMetadata {
 interface ParsedCoordinate {
   x: number;
   y: number;
+}
+
+interface GenerationInteractionMetrics {
+  overcrowdingDeathsByPressureColor: Record<string, number>;
+  experimentalBirthsByColor: Record<string, number>;
+  tieBreakBirthsByColor: Record<string, number>;
+}
+
+const EMPTY_GENERATION_INTERACTION_METRICS: GenerationInteractionMetrics = {
+  overcrowdingDeathsByPressureColor: {},
+  experimentalBirthsByColor: {},
+  tieBreakBirthsByColor: {},
+};
+
+function incrementColorCount(counter: Record<string, number>, color: string): void {
+  const normalized = color.toLowerCase();
+  counter[normalized] = (counter[normalized] ?? 0) + 1;
+}
+
+function getColorCounts(colors: string[]): Record<string, number> {
+  return colors.reduce<Record<string, number>>((accumulator, color) => {
+    const normalized = color.toLowerCase();
+    accumulator[normalized] = (accumulator[normalized] ?? 0) + 1;
+    return accumulator;
+  }, {});
+}
+
+function getDominantColor(colorCounts: Record<string, number>): string | null {
+  const sorted = Object.entries(colorCounts).sort((left, right) => {
+    if (left[1] === right[1]) {
+      return left[0].localeCompare(right[0]);
+    }
+
+    return right[1] - left[1];
+  });
+
+  return sorted[0]?.[0] ?? null;
+}
+
+function analyzeGenerationInteractions(previousGrid: LifeGrid, nextGrid: LifeGrid, rules: GameRules): GenerationInteractionMetrics {
+  const metrics: GenerationInteractionMetrics = {
+    overcrowdingDeathsByPressureColor: {},
+    experimentalBirthsByColor: {},
+    tieBreakBirthsByColor: {},
+  };
+
+  const deadCoordinates = Object.keys(previousGrid).filter((coordinate) => !nextGrid[coordinate]);
+  for (const coordinate of deadCoordinates) {
+    const ownColor = getCellColor(previousGrid[coordinate]);
+    const liveNeighborColors = getNeighborCoordinates(coordinate)
+      .map((neighborCoordinate) => previousGrid[neighborCoordinate])
+      .filter((neighborCell): neighborCell is string => typeof neighborCell === 'string')
+      .map((neighborCell) => getCellColor(neighborCell));
+
+    if (liveNeighborColors.length <= 3) {
+      continue;
+    }
+
+    const foreignNeighborColors = liveNeighborColors.filter((neighborColor) => neighborColor !== ownColor);
+    if (foreignNeighborColors.length === 0) {
+      continue;
+    }
+
+    const dominantPressureColor = getDominantColor(getColorCounts(foreignNeighborColors));
+    if (!dominantPressureColor) {
+      continue;
+    }
+
+    incrementColorCount(metrics.overcrowdingDeathsByPressureColor, dominantPressureColor);
+  }
+
+  if (!rules.experimentalSpeciesCompetitionBirth.enabled) {
+    return metrics;
+  }
+
+  const bornCoordinates = Object.keys(nextGrid).filter((coordinate) => !previousGrid[coordinate]);
+  for (const coordinate of bornCoordinates) {
+    const liveNeighborColors = getNeighborCoordinates(coordinate)
+      .map((neighborCoordinate) => previousGrid[neighborCoordinate])
+      .filter((neighborCell): neighborCell is string => typeof neighborCell === 'string')
+      .map((neighborCell) => getCellColor(neighborCell));
+
+    const uniqueNeighborColors = Array.from(new Set(liveNeighborColors));
+    if (uniqueNeighborColors.length <= 1) {
+      continue;
+    }
+
+    const bornColor = getCellColor(nextGrid[coordinate]);
+    incrementColorCount(metrics.experimentalBirthsByColor, bornColor);
+
+    if (!rules.experimentalSpeciesCompetitionTieBreakBirth.enabled) {
+      continue;
+    }
+
+    const colorCounts = getColorCounts(liveNeighborColors);
+    const highestCount = Math.max(...Object.values(colorCounts));
+    const tiedColors = Object.values(colorCounts).filter((count) => count === highestCount);
+
+    if (tiedColors.length > 1) {
+      incrementColorCount(metrics.tieBreakBirthsByColor, bornColor);
+    }
+  }
+
+  return metrics;
+}
+
+function mergeColorCountLedger(
+  previousLedger: Record<string, number>,
+  nextCounts: Record<string, number>,
+): Record<string, number> {
+  const nextEntries = Object.entries(nextCounts);
+  if (nextEntries.length === 0) {
+    return previousLedger;
+  }
+
+  const merged = { ...previousLedger };
+  for (const [color, count] of nextEntries) {
+    merged[color] = (merged[color] ?? 0) + count;
+  }
+
+  return merged;
 }
 
 const seededUserPatternMetadata: PlayPatternMetadata[] = ([
@@ -158,6 +290,9 @@ const knownPatternMetadataByHash: Record<string, PlayPatternMetadata> = (() => {
       source: 'system',
       favoriteCount: Math.max(4, Math.floor(Object.keys(pattern.grid).length / 2) + 6),
       forkCount: Math.max(2, Math.floor(Object.keys(pattern.grid).length / 3) + 3),
+      tags: pattern.tags,
+      description: pattern.description,
+      referenceUrl: pattern.referenceUrl,
     };
   }
 
@@ -179,6 +314,22 @@ const knownPatternMetadataByHash: Record<string, PlayPatternMetadata> = (() => {
 function getGridSignature(grid: LifeGrid): string {
   const keys = Object.keys(grid).sort();
   return keys.map((key) => `${key}:${grid[key]}`).join('|');
+}
+
+function getDescriptiveTags(tags: string[], metadataValues: string[]): string[] {
+  const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const excludedValues = new Set(metadataValues.map(normalize).filter(Boolean));
+  const seenTags = new Set<string>();
+
+  return tags.filter((tag) => {
+    const normalizedTag = normalize(tag.trim());
+    if (!normalizedTag || excludedValues.has(normalizedTag) || seenTags.has(normalizedTag)) {
+      return false;
+    }
+
+    seenTags.add(normalizedTag);
+    return true;
+  });
 }
 
 function parseCoordinateKey(coordinate: string): ParsedCoordinate | null {
@@ -245,6 +396,56 @@ function getLiveCellCount(grid: LifeGrid): number {
   return Object.keys(grid).length;
 }
 
+function cloneGameRules(rules: GameRules): GameRules {
+  const defaults = Object.entries(DEFAULT_RULES) as Array<[GameRuleKey, GameRule]>;
+  const nextRules = Object.fromEntries(
+    defaults.map(([ruleKey, defaultRule]) => {
+      const sourceRule = rules[ruleKey] ?? defaultRule;
+      return [ruleKey, { ...defaultRule, ...sourceRule, id: defaultRule.id }];
+    }),
+  ) as unknown as GameRules;
+
+  if (rules.lifeLikeProfile) {
+    nextRules.lifeLikeProfile = {
+      birth: [...rules.lifeLikeProfile.birth],
+      survival: [...rules.lifeLikeProfile.survival],
+    };
+  }
+
+  return nextRules;
+}
+
+function areRuleConfigurationsEquivalent(left: GameRules, right: GameRules): boolean {
+  const defaults = Object.entries(DEFAULT_RULES) as Array<[GameRuleKey, GameRule]>;
+
+  const togglesMatch = defaults.every(([ruleKey]) => {
+    const leftRule = left[ruleKey];
+    const rightRule = right[ruleKey];
+    return Boolean(leftRule?.enabled) === Boolean(rightRule?.enabled);
+  });
+
+  const profilesMatch = JSON.stringify(left.lifeLikeProfile ?? null) === JSON.stringify(right.lifeLikeProfile ?? null);
+  return togglesMatch && profilesMatch;
+}
+
+function detectRulesetSelection(rules: GameRules): RulesetSelectionId {
+  for (const ruleset of RULESETS) {
+    if (!ruleset.implemented) {
+      continue;
+    }
+
+    if (areRuleConfigurationsEquivalent(rules, ruleset.rules)) {
+      return ruleset.id as RulesetSelectionId;
+    }
+  }
+
+  return 'custom';
+}
+
+function getImplementedRulesetById(rulesetId: string) {
+  return RULESETS.find((ruleset) => ruleset.id === rulesetId && ruleset.implemented);
+}
+
 function clearBoardStateOverlaySuppressionIfBoardExpanded(previousGrid: LifeGrid, nextGrid: LifeGrid, suppressRef: { current: boolean }) {
   if (getLiveCellCount(nextGrid) > getLiveCellCount(previousGrid)) {
     suppressRef.current = false;
@@ -283,6 +484,40 @@ function tintGridCells(grid: LifeGrid, color: string): LifeGrid {
   }
 
   return tintedGrid;
+}
+
+function getContiguousLiveRegionByColor(grid: LifeGrid, startCoordinate: string): string[] {
+  const startCell = grid[startCoordinate];
+  if (!startCell) {
+    return [];
+  }
+
+  const targetColor = getCellColor(startCell);
+  const queue: string[] = [startCoordinate];
+  const visited = new Set<string>();
+  const region: string[] = [];
+
+  while (queue.length > 0) {
+    const coordinate = queue.shift();
+    if (!coordinate || visited.has(coordinate)) {
+      continue;
+    }
+
+    visited.add(coordinate);
+    const cell = grid[coordinate];
+    if (!cell || getCellColor(cell) !== targetColor) {
+      continue;
+    }
+
+    region.push(coordinate);
+    for (const neighbor of getNeighborCoordinates(coordinate)) {
+      if (!visited.has(neighbor)) {
+        queue.push(neighbor);
+      }
+    }
+  }
+
+  return region;
 }
 
 function rotateGridAroundBoundsCenter(grid: LifeGrid, rotation: StampRotation): LifeGrid {
@@ -338,9 +573,49 @@ function getBoardIdFromURL(): string | null {
   return params.get('board');
 }
 
+function getCatalogPatternNameFromURL(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('catalog');
+}
+
+function updateCatalogPatternInURL(patternName: string | null): void {
+  const url = new URL(window.location.href);
+  if (patternName) {
+    url.searchParams.set('catalog', patternName);
+  } else {
+    url.searchParams.delete('catalog');
+  }
+  window.history.replaceState({}, '', url.toString());
+}
+
+function getInitialRulesLocked(): boolean {
+  const boardId = getBoardIdFromURL();
+  const patternHash = getPatternHashFromURL();
+  const routeKey = boardId ?? patternHash;
+  const savedBoard = routeKey
+    ? getSavedBoards().find((entry) => (entry.boardId ?? entry.hash) === routeKey)
+    : undefined;
+
+  if (savedBoard) {
+    return savedBoard.rulesLocked ?? true;
+  }
+
+  const routeGrid = getGridFromURL();
+  return routeGrid
+    ? patterns.some((pattern) => getGridSignature(pattern.grid) === getGridSignature(routeGrid))
+    : false;
+}
+
 function getEditModeFromURL(): boolean {
   const params = new URLSearchParams(window.location.search);
   return params.get('mode') === 'edit';
+}
+
+function getRulesetFromURL(): GameRules {
+  const params = new URLSearchParams(window.location.search);
+  const rulesetId = params.get('ruleset');
+  const ruleset = rulesetId ? getImplementedRulesetById(rulesetId) : undefined;
+  return cloneGameRules(ruleset?.rules ?? DEFAULT_RULES);
 }
 
 function isInteractiveKeyboardTarget(target: EventTarget | null): boolean {
@@ -378,18 +653,23 @@ function toCreatorSlug(name: string): string {
 
 function Home() {
   const navigate = useNavigate();
-  const [activeSidebarTab, setActiveSidebarTab] = useState<'patterns' | 'diagnostics' | 'info'>('diagnostics');
+  const { t } = useTranslation();
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'patterns' | 'diagnostics'>('diagnostics');
   const [boardNeedsInitialization, setBoardInitialization] = useState(true);
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(5);
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [isEditMode, setIsEditMode] = useState(() => getEditModeFromURL());
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isRemoveStarConfirmModalOpen, setIsRemoveStarConfirmModalOpen] = useState(false);
   const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
   const [isDraftSaveConfirmModalOpen, setIsDraftSaveConfirmModalOpen] = useState(false);
+  const [draftSaveModalMode, setDraftSaveModalMode] = useState<DraftSaveModalMode>('save');
+  const [isUnlockRulesModalOpen, setIsUnlockRulesModalOpen] = useState(false);
   const [draftSaveName, setDraftSaveName] = useState('');
   const [draftSaveCategory, setDraftSaveCategory] = useState('');
   const [draftSaveDescription, setDraftSaveDescription] = useState('');
+  const [draftSaveTags, setDraftSaveTags] = useState('');
   const [draftSaveVisibility, setDraftSaveVisibility] = useState<'public' | 'private'>('public');
   const [patternNameDraft, setPatternNameDraft] = useState('');
   const [nameModalMode, setNameModalMode] = useState<NameModalMode>('rename');
@@ -407,7 +687,11 @@ function Home() {
   const [selectedCellsGrid, setSelectedCellsGrid] = useState<LifeGrid | null>(null);
   const [selectionStartCoordinate, setSelectionStartCoordinate] = useState<string | null>(null);
   const [selectionEndCoordinate, setSelectionEndCoordinate] = useState<string | null>(null);
+  const [lastGenerationInteractions, setLastGenerationInteractions] = useState<GenerationInteractionMetrics>(EMPTY_GENERATION_INTERACTION_METRICS);
+  const [overcrowdingDeathLedgerByPressureColor, setOvercrowdingDeathLedgerByPressureColor] = useState<Record<string, number>>({});
   const [isStabilityOverlayEnabled, setIsStabilityOverlayEnabled] = useState(true);
+  const [isBirthDeathPreviewEnabled, setIsBirthDeathPreviewEnabled] = useState(true);
+  const [settingsHoverPopover, setSettingsHoverPopover] = useState<null | { text: string; left: number; top: number }>(null);
   const toastHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const maximizeControlsHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectionAnchorRef = useRef<string | null>(null);
@@ -415,20 +699,31 @@ function Home() {
   const liveCellStabilityTracker = useRef<{ lastLiveCells: number | null; streak: number }>({ lastLiveCells: null, streak: 0 });
   const [stats, setStats] = useState<GameStats>({ liveCells: 0, births: 0, deaths: 0 });
   const [boardStateOverlay, setBoardStateOverlay] = useState<'stability' | 'gameOver' | null>(null);
-  const [rules, setRules] = useState<GameRules>(DEFAULT_RULES);
+  const [rules, setRules] = useState<GameRules>(() => getRulesetFromURL());
+  const [isRulesLocked, setIsRulesLocked] = useState(getInitialRulesLocked);
+  const selectedRulesetId = detectRulesetSelection(rules);
+  const selectedRulesetDefinition = RULESETS.find((ruleset) => ruleset.id === selectedRulesetId);
+  const activeRulesetClassification = selectedRulesetId === 'custom'
+    ? t('diagnostics.rulesetCustomClassification')
+    : (selectedRulesetDefinition?.classification ?? t('diagnostics.rulesetCustomClassification'));
+  const activeRulesetName = selectedRulesetId === 'custom'
+    ? t('diagnostics.rulesetCustomOption')
+    : (selectedRulesetDefinition?.name ?? t('diagnostics.rulesetCustomOption'));
   const [selectedPaletteId, setSelectedPaletteId] = useState(DEFAULT_PALETTE_ID);
   const [drawColor, setDrawColor] = useState(() => getPaletteById(DEFAULT_PALETTE_ID).liveCell);
   const [activeEditTool, setActiveEditTool] = useState<EditTool>('pencil');
   const [stampPattern, setStampPattern] = useState<LifeGrid | null>(null);
   const [stampRotation, setStampRotation] = useState<StampRotation>(0);
+  const [rotateStampKeyPressToken, setRotateStampKeyPressToken] = useState(0);
   const [hoveredCoordinate, setHoveredCoordinate] = useState<string | null>(null);
   const [contextInsertCoordinate, setContextInsertCoordinate] = useState<string | null>(null);
+  const [centerCoordinateRequest, setCenterCoordinateRequest] = useState<CenterCoordinateRequest | null>(null);
   const [savedTemplateNames, setSavedTemplateNamesState] = useState<Record<string, string>>(() => getSavedTemplateNames());
   const [activePopularityModal, setActivePopularityModal] = useState<'stars' | 'forks' | null>(null);
   const selectedPalette = getPaletteById(selectedPaletteId);
   const rotatedStampPattern = stampPattern ? rotateGridAroundBoundsCenter(stampPattern, stampRotation) : null;
   const activeDrawColor = drawColor;
-  const { t } = useTranslation();
+  const tintedStampPreviewPattern = rotatedStampPattern ? tintGridCells(rotatedStampPattern, activeDrawColor) : null;
   const stampPatternName = stampPattern
     ? patterns.find((pattern) => getGridSignature(pattern.grid) === getGridSignature(stampPattern))?.name ?? t('patterns.custom')
     : '';
@@ -451,9 +746,16 @@ function Home() {
     return acc;
   }, {});
   const savedBoardForCurrent = savedBoardsByBoardId[effectivePatternHash];
+  const savedBoardForRoute = currentBoardId ? savedBoardsByBoardId[currentBoardId] : undefined;
   const savedBoardCategory = savedBoardForCurrent?.category?.trim() || null;
   const savedBoardDescription = savedBoardForCurrent?.description?.trim() || null;
-  const savedBoardVisibility = savedBoardForCurrent?.visibility ?? 'private';
+  const savedBoardTags = savedBoardForCurrent?.tags ?? [];
+  const catalogPatternName = getCatalogPatternNameFromURL();
+  const catalogPatternMetadata = catalogPatternName
+    ? Object.values(knownPatternMetadataByHash).find(
+        (pattern) => pattern.source === 'system' && pattern.name === catalogPatternName,
+      )
+    : undefined;
   const currentPatternMetadata = activeForkRecord
     ? {
         hash: activeForkRecord.hash,
@@ -467,7 +769,7 @@ function Home() {
         favoriteCount: 0,
         forkCount: getForkOrigins().filter((entry) => entry.parentHash === activeForkRecord.hash).length,
       }
-    : knownPatternMetadataByHash[effectivePatternHash];
+    : catalogPatternMetadata ?? knownPatternMetadataByHash[effectivePatternHash];
   useEffect(() => {
     ensureSeededSocialData(
       Object.values(knownPatternMetadataByHash).map((pattern) => ({
@@ -480,11 +782,21 @@ function Home() {
   }, []);
 
   const isSystemPattern = currentPatternMetadata?.source === 'system';
+  const isCurrentUserPattern = currentPatternMetadata?.source === 'user' && currentPatternMetadata.creatorName === storedProfileName;
+  const socialPatternHash = isSystemPattern ? currentPatternMetadata.hash : effectivePatternHash;
   const forkOrigin = activeForkRecord ?? getForkOrigin(effectivePatternHash);
   const currentGridSignature = getGridSignature(currentPattern);
   const presetTitle = presetTitleBySignature[currentGridSignature];
   const savedTitle = savedTemplateNames[effectivePatternHash];
   const isUnsavedDraftBoard = !currentBoardId && !savedTitle;
+  const isUnsavedEditableBoard = isUnsavedDraftBoard && !isSystemPattern;
+  const canManageGameRules = Boolean(
+    activeForkRecord ||
+    savedBoardForRoute ||
+    savedBoardForCurrent ||
+    (!currentPatternMetadata && isUnsavedDraftBoard) ||
+    isCurrentUserPattern
+  );
   const emptyBoardHash = encodeGridToBase64({});
   const isUnsavedEmptyBoard = isUnsavedDraftBoard && currentGridHash === emptyBoardHash && Object.keys(currentPattern).length === 0;
   const todayLabel = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date());
@@ -497,18 +809,40 @@ function Home() {
     new Set(Object.values(knownPatternMetadataByHash).map((pattern) => pattern.category).filter((category) => category.trim().length > 0)),
   ).sort((left, right) => left.localeCompare(right));
   const draftCategoryOptions = [...supportedDraftCategories, uncategorizedCategory];
-  const patternCategoryLabel = isUnsavedDraftBoard ? null : (savedBoardCategory || currentPatternMetadata?.category || t('playground.categoryUnknown'));
-  const patternCreatorLabel = isUnsavedDraftBoard
-    ? null
-    : currentPatternMetadata?.source === 'system'
+  const patternCategoryLabel = currentPatternMetadata
+    ? savedBoardCategory || currentPatternMetadata.category || t('playground.categoryUnknown')
+    : isUnsavedDraftBoard
+      ? null
+      : savedBoardCategory || t('playground.categoryUnknown');
+  const patternCreatorLabel = currentPatternMetadata
+    ? currentPatternMetadata.source === 'system'
       ? t('patternSource.system')
-      : currentPatternMetadata?.creatorName ?? t('patternSource.user');
-  const authorProfileHref = isUnsavedDraftBoard
-    ? null
-    : currentPatternMetadata?.source === 'system'
+      : currentPatternMetadata.creatorName ?? t('patternSource.user')
+    : isUnsavedDraftBoard
+      ? null
+      : t('patternSource.user');
+  const authorProfileHref = currentPatternMetadata
+    ? currentPatternMetadata.source === 'system'
       ? '/profile?creator=system'
-      : `/profile?creator=${encodeURIComponent(toCreatorSlug(currentPatternMetadata?.creatorName ?? 'user'))}`;
+      : `/profile?creator=${encodeURIComponent(toCreatorSlug(currentPatternMetadata.creatorName ?? 'user'))}`
+    : null;
   const categoryExploreHref = patternCategoryLabel ? `/explore?category=${encodeURIComponent(patternCategoryLabel)}` : null;
+  const rulesetExploreHref = `/explore?ruleset=${encodeURIComponent(selectedRulesetId)}`;
+  const forkParentHref = forkOrigin
+    ? (() => {
+        const params = new URLSearchParams({ pattern: forkOrigin.parentHash });
+        if (forkOrigin.parentSource === 'system') {
+          params.set('catalog', forkOrigin.parentTitle);
+        }
+        const parentRulesetId = patterns.find(
+          (pattern) => encodeGridToBase64(pattern.grid) === forkOrigin.parentHash,
+        )?.rulesetId;
+        if (parentRulesetId) {
+          params.set('ruleset', parentRulesetId);
+        }
+        return `/play?${params.toString()}`;
+      })()
+    : null;
   const infoDescriptionBase = currentPatternMetadata?.source === 'system' && patternCategoryLabel
     ? t('playground.infoDescriptionSystem', { category: patternCategoryLabel })
     : currentPatternMetadata?.creatorName && patternCategoryLabel && patternCreatorLabel
@@ -519,17 +853,44 @@ function Home() {
       ? `${infoDescriptionBase} ${t('playground.infoDescriptionForked', { name: forkOrigin.parentTitle })}`
       : infoDescriptionBase
     : '';
-  const effectiveDescription = !isUnsavedDraftBoard ? (savedBoardDescription || infoDescription) : '';
-  const visibilityLabel = savedBoardVisibility === 'public' ? t('playground.visibilityPublic') : t('playground.visibilityPrivate');
-  const favoriteRecordsForPattern = isUnsavedDraftBoard ? [] : getFavoriteBoards().filter((entry) => entry.hash === effectivePatternHash);
+  const effectiveDescription = savedBoardDescription || currentPatternMetadata?.description || (!isUnsavedDraftBoard ? infoDescription : '');
+  const infoAuthorValue = patternCreatorLabel ?? storedProfileName;
+  const infoCategoryValue = patternCategoryLabel ?? uncategorizedCategory;
+  const infoDescriptionValue = effectiveDescription || t('playground.infoDescriptionUser', { category: infoCategoryValue, creator: infoAuthorValue });
+  const infoSourceTag = currentPatternMetadata?.source === 'system' ? t('patternSource.system') : t('patternSource.user');
+  const infoVisibilityTag = isSystemPattern || savedBoardForCurrent?.visibility === 'public'
+    ? t('playground.visibilityPublic')
+    : t('playground.visibilityPrivate');
+  const candidateInfoTags = savedBoardTags.length > 0 ? savedBoardTags : currentPatternMetadata?.tags ?? [];
+  const infoTags = getDescriptiveTags(candidateInfoTags, [
+    infoCategoryValue,
+    infoSourceTag,
+    infoVisibilityTag,
+    infoAuthorValue,
+    activeRulesetName,
+    selectedRulesetId,
+  ]);
+
+  function getInfoTagExploreHref(tag: string): string {
+    if (tag === infoCategoryValue) {
+      return `/explore?category=${encodeURIComponent(infoCategoryValue)}`;
+    }
+
+    if (tag === infoSourceTag) {
+      return `/explore?source=${isSystemPattern ? 'system' : 'user'}`;
+    }
+
+    return `/explore?tag=${encodeURIComponent(tag)}`;
+  }
+  const favoriteRecordsForPattern = isUnsavedEditableBoard ? [] : getFavoriteBoards().filter((entry) => entry.hash === socialPatternHash);
   const patternStars = favoriteRecordsForPattern.length;
-  const patternForks = isUnsavedDraftBoard ? 0 : getForkOrigins().filter((entry) => entry.parentHash === effectivePatternHash).length;
+  const patternForks = isUnsavedEditableBoard ? 0 : getForkOrigins().filter((entry) => entry.parentHash === socialPatternHash).length;
   const isStarredByCurrentUser = favoriteRecordsForPattern.some((entry) => (entry.actorName || storedProfileName) === storedProfileName);
   const starredByUsers = getFavoriteBoards()
-    .filter((entry) => entry.hash === effectivePatternHash)
+    .filter((entry) => entry.hash === socialPatternHash)
     .map((entry) => entry.actorName || storedProfileName);
 
-  const forkOrigins = getForkOrigins().filter((entry) => entry.parentHash === effectivePatternHash);
+  const forkOrigins = getForkOrigins().filter((entry) => entry.parentHash === socialPatternHash);
   const forkRecordsFromStorage = forkOrigins.map((entry) => {
     const savedBoard = savedBoardsByBoardId[entry.hash];
     const boardHash = savedBoard?.hash ?? currentGridHash;
@@ -569,8 +930,24 @@ function Home() {
       setBoardInitialization(false);
       setGeneration(0);
       setStats(game.getStats());
+      setLastGenerationInteractions(EMPTY_GENERATION_INTERACTION_METRICS);
+      setOvercrowdingDeathLedgerByPressureColor({});
     }
   }, [boardNeedsInitialization, currentPattern, rules]);
+
+  useEffect(() => {
+    if (!currentBoardId) {
+      return;
+    }
+
+    const nextRules = savedBoardForRoute?.rules ? cloneGameRules(savedBoardForRoute.rules) : cloneGameRules(DEFAULT_RULES);
+    setRules(nextRules);
+    setIsRulesLocked(savedBoardForRoute?.rulesLocked ?? true);
+
+    if (game.setRules) {
+      game.setRules(nextRules);
+    }
+  }, [currentBoardId, savedBoardForRoute?.updatedAt]);
 
   useEffect(() => {
     if (boardNeedsInitialization) {
@@ -622,7 +999,13 @@ function Home() {
 
   function runGameInterval(speed = generationSpeed) {
     intervalID = setInterval(() => {
-      game.next();
+      const previousGrid = { ...game.getStatus() };
+      const nextGrid = game.next();
+      const generationInteractions = analyzeGenerationInteractions(previousGrid, nextGrid, rules);
+      setLastGenerationInteractions(generationInteractions);
+      setOvercrowdingDeathLedgerByPressureColor((previousLedger) =>
+        mergeColorCountLedger(previousLedger, generationInteractions.overcrowdingDeathsByPressureColor),
+      );
       setGeneration(game.getGenerations())
       setStats(game.getStats());
     }, getGenerationSpeed(speed))
@@ -635,6 +1018,7 @@ function Home() {
     if (updateUrl) {
       const currentGrid = game.getStatus();
       updateURLWithGrid(currentGrid);
+      updateCatalogPatternInURL(isSystemPattern ? currentPatternMetadata?.name ?? null : null);
     }
   }
 
@@ -712,6 +1096,13 @@ function Home() {
     setHoveredCoordinate(coordinate);
   }
 
+  function handleCenterCoordinateRequest(coordinate: string) {
+    setCenterCoordinateRequest((previous) => ({
+      coordinate,
+      requestKey: (previous?.requestKey ?? 0) + 1,
+    }));
+  }
+
   function handleContextCoordinateRequest(coordinate: string) {
     if (!isEditMode) {
       setSnackbarMessage(t('messages.enterEditModeToInsertPattern'));
@@ -736,7 +1127,13 @@ function Home() {
 
   function nextGeneration(_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     console.info('Next generation pushed')
-    game.next();
+    const previousGrid = { ...game.getStatus() };
+    const nextGrid = game.next();
+    const generationInteractions = analyzeGenerationInteractions(previousGrid, nextGrid, rules);
+    setLastGenerationInteractions(generationInteractions);
+    setOvercrowdingDeathLedgerByPressureColor((previousLedger) =>
+      mergeColorCountLedger(previousLedger, generationInteractions.overcrowdingDeathsByPressureColor),
+    );
     setGeneration(game.getGenerations())
     setStats(game.getStats());
   }
@@ -755,6 +1152,11 @@ function Home() {
 
   function resetBoard() {
     console.info("Reset board pushed.");
+    setRules(cloneGameRules(DEFAULT_RULES));
+    setIsRulesLocked(!isUnsavedEditableBoard);
+    if (game.setRules) {
+      game.setRules(cloneGameRules(DEFAULT_RULES));
+    }
     setUndoBoardSnapshot(null);
     setSelectedCellsGrid(null);
     setSelectionStartCoordinate(null);
@@ -777,8 +1179,19 @@ function Home() {
     setIsResetModalOpen(false);
   }
 
-  function loadCustomPattern(grid: LifeGrid) {
+  function loadCustomPattern(grid: LifeGrid, rulesetId = 'standard') {
     console.info("Loading custom pattern", grid);
+    const ruleset = getImplementedRulesetById(rulesetId);
+    const nextRules = cloneGameRules(ruleset?.rules ?? DEFAULT_RULES);
+    const systemPreset = patterns.find(
+      (pattern) => getGridSignature(pattern.grid) === getGridSignature(grid),
+    );
+    const isSystemPreset = Boolean(systemPreset);
+    setRules(nextRules);
+    setIsRulesLocked(isSystemPreset);
+    if (game.setRules) {
+      game.setRules(nextRules);
+    }
     setUndoBoardSnapshot(null);
     setSelectedCellsGrid(null);
     setSelectionStartCoordinate(null);
@@ -790,9 +1203,10 @@ function Home() {
     
     // Update URL when pattern is selected
     updateURLWithGrid(grid);
+    updateCatalogPatternInURL(systemPreset?.name ?? null);
   }
 
-  function handlePatternInputLoad(grid: LifeGrid) {
+  function handlePatternInputLoad(grid: LifeGrid, rulesetId?: string) {
     if (isEditMode && activeEditTool === 'stamp') {
       setStampPattern(grid);
       setSnackbarMessage(t('messages.stampPatternSelected'));
@@ -800,7 +1214,7 @@ function Home() {
       return;
     }
 
-    loadCustomPattern(grid);
+    loadCustomPattern(grid, rulesetId);
   }
 
   function handleStampPatternSelect(grid: LifeGrid) {
@@ -837,10 +1251,93 @@ function Home() {
   }
 
   function handleRulesChange(newRules: GameRules) {
+    if (isRulesLocked) {
+      return;
+    }
+
     console.info("Rules updated", newRules);
     setRules(newRules);
     if (game.setRules) {
       game.setRules(newRules);
+    }
+
+    if (savedBoardForCurrent) {
+      upsertSavedBoard(
+        savedBoardForCurrent.hash,
+        savedBoardForCurrent.title,
+        savedBoardForCurrent.boardId ?? savedBoardForCurrent.hash,
+        savedBoardForCurrent.category,
+        savedBoardForCurrent.description,
+        savedBoardForCurrent.visibility,
+        savedBoardForCurrent.tags,
+        newRules,
+        isRulesLocked,
+      );
+    }
+  }
+
+  function handleRulesetChange(rulesetId: string) {
+    if (isRulesLocked) {
+      return;
+    }
+
+    const ruleset = getImplementedRulesetById(rulesetId);
+    if (!ruleset) {
+      return;
+    }
+
+    const nextRules = cloneGameRules(ruleset.rules);
+    handleRulesChange(nextRules);
+    setSnackbarMessage(t('messages.rulesetApplied', { name: ruleset.name, classification: ruleset.classification }));
+    setSnackbarOpen(true);
+  }
+
+  function requestUnlockRules() {
+    setIsUnlockRulesModalOpen(true);
+  }
+
+  function closeUnlockRulesModal() {
+    setIsUnlockRulesModalOpen(false);
+  }
+
+  function confirmUnlockRules() {
+    setIsUnlockRulesModalOpen(false);
+    setIsRulesLocked(false);
+
+    if (savedBoardForCurrent) {
+      upsertSavedBoard(
+        savedBoardForCurrent.hash,
+        savedBoardForCurrent.title,
+        savedBoardForCurrent.boardId ?? savedBoardForCurrent.hash,
+        savedBoardForCurrent.category,
+        savedBoardForCurrent.description,
+        savedBoardForCurrent.visibility,
+        savedBoardForCurrent.tags,
+        rules,
+        false,
+      );
+    }
+  }
+
+  function lockRules() {
+    if (isUnsavedEditableBoard) {
+      return;
+    }
+
+    setIsRulesLocked(true);
+
+    if (savedBoardForCurrent) {
+      upsertSavedBoard(
+        savedBoardForCurrent.hash,
+        savedBoardForCurrent.title,
+        savedBoardForCurrent.boardId ?? savedBoardForCurrent.hash,
+        savedBoardForCurrent.category,
+        savedBoardForCurrent.description,
+        savedBoardForCurrent.visibility,
+        savedBoardForCurrent.tags,
+        rules,
+        true,
+      );
     }
   }
 
@@ -1009,6 +1506,19 @@ function Home() {
     suppressBoardStateOverlayRef.current = false;
   }
 
+  function showSettingsPopover(event: React.MouseEvent<HTMLSpanElement>, text: string) {
+    const iconBounds = event.currentTarget.getBoundingClientRect();
+    setSettingsHoverPopover({
+      text,
+      left: iconBounds.right + 8,
+      top: iconBounds.top + iconBounds.height / 2,
+    });
+  }
+
+  function hideSettingsPopover() {
+    setSettingsHoverPopover(null);
+  }
+
   useEffect(() => {
     if (snackbarOpen) {
       if (toastHideTimer.current) clearTimeout(toastHideTimer.current);
@@ -1041,8 +1551,7 @@ function Home() {
       if (event.code === 'Space') {
         event.preventDefault();
         if (isEditMode) {
-          setSnackbarMessage(t('messages.enterPlayModeToRun'));
-          setSnackbarOpen(true);
+          enterPlayMode();
           return;
         }
 
@@ -1050,13 +1559,26 @@ function Home() {
         return;
       }
 
+      if (event.key.toLowerCase() === 'm') {
+        event.preventDefault();
+        if (isEditMode) {
+          enterPlayMode();
+        } else {
+          enterEditMode();
+        }
+        return;
+      }
+
       const isIncreaseKey = event.code === 'NumpadAdd' || (event.code === 'Equal' && event.shiftKey) || event.key.toLowerCase() === 'x';
       const isDecreaseKey = event.code === 'Minus' || event.code === 'NumpadSubtract' || event.key.toLowerCase() === 'z';
 
       if (isEditMode && activeEditTool === 'stamp' && stampPattern) {
+        const key = event.key.toLowerCase();
+
         if (event.key === ']') {
           event.preventDefault();
           rotateStampPattern();
+          setRotateStampKeyPressToken((previous) => previous + 1);
           setSnackbarMessage(t('messages.stampRotationUpdated', { degrees: rotateStampRotationClockwise(stampRotation) }));
           setSnackbarOpen(true);
           return;
@@ -1065,7 +1587,17 @@ function Home() {
         if (event.key === '[') {
           event.preventDefault();
           rotateStampPatternCounterClockwise();
+          setRotateStampKeyPressToken((previous) => previous + 1);
           setSnackbarMessage(t('messages.stampRotationUpdated', { degrees: rotateStampRotationCounterClockwise(stampRotation) }));
+          setSnackbarOpen(true);
+          return;
+        }
+
+        if (key === 'r') {
+          event.preventDefault();
+          rotateStampPattern();
+          setRotateStampKeyPressToken((previous) => previous + 1);
+          setSnackbarMessage(t('messages.stampRotationUpdated', { degrees: rotateStampRotationClockwise(stampRotation) }));
           setSnackbarOpen(true);
           return;
         }
@@ -1127,17 +1659,6 @@ function Home() {
     setSavedTemplateNames(next);
   }
 
-  function copyPatternHash() {
-    navigator.clipboard.writeText(effectivePatternHash).then(() => {
-      setSnackbarMessage(t('messages.hashCopied'));
-      setSnackbarOpen(true);
-    }).catch((err) => {
-      console.error('Failed to copy hash:', err);
-      setSnackbarMessage(t('messages.hashCopyFailed'));
-      setSnackbarOpen(true);
-    });
-  }
-
   function saveTemplate(
     saveAs: boolean,
     options?: {
@@ -1145,6 +1666,7 @@ function Home() {
       category?: string;
       title?: string;
       description?: string;
+      tags?: string[];
       visibility?: 'public' | 'private';
     },
   ) {
@@ -1165,38 +1687,69 @@ function Home() {
       ...savedTemplateNames,
       [hash]: nextTitle,
     });
-    upsertSavedBoard(currentGridHash, nextTitle, hash, options?.category, options?.description, options?.visibility);
+    const shouldLockRules = isUnsavedEditableBoard ? true : isRulesLocked;
+    upsertSavedBoard(
+      currentGridHash,
+      nextTitle,
+      hash,
+      options?.category,
+      options?.description,
+      options?.visibility,
+      options?.tags,
+      rules,
+      shouldLockRules,
+    );
+    if (isUnsavedEditableBoard) {
+      setIsRulesLocked(true);
+    }
     trackRecentBoard(currentGridHash, nextTitle, hash);
     setSnackbarMessage(t('messages.templateSaved'));
     setSnackbarOpen(true);
   }
 
-  function openDraftSaveConfirmModal() {
-    if (!isUnsavedDraftBoard) return;
+  function openDraftSaveConfirmModal(mode: DraftSaveModalMode) {
+    setDraftSaveModalMode(mode);
     setDraftSaveName(headerTitle);
-    setDraftSaveCategory(uncategorizedCategory);
-    setDraftSaveDescription('');
-    setDraftSaveVisibility('public');
+    setDraftSaveCategory(savedBoardCategory || patternCategoryLabel || uncategorizedCategory);
+    setDraftSaveDescription(savedBoardDescription || '');
+    setDraftSaveTags(savedBoardTags.join(', '));
+    setDraftSaveVisibility(savedBoardForCurrent?.visibility ?? 'public');
     setIsDraftSaveConfirmModalOpen(true);
   }
 
   function closeDraftSaveConfirmModal() {
     setIsDraftSaveConfirmModalOpen(false);
+    setDraftSaveModalMode('save');
     setDraftSaveName('');
     setDraftSaveCategory(uncategorizedCategory);
     setDraftSaveDescription('');
+    setDraftSaveTags('');
     setDraftSaveVisibility('public');
   }
 
   function confirmDraftSave() {
     const normalizedName = draftSaveName.trim();
     const normalizedCategory = draftSaveCategory.trim();
+    const parsedTags = getDescriptiveTags(Array.from(new Set(
+      draftSaveTags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0),
+    )), [
+      normalizedCategory,
+      infoSourceTag,
+      draftSaveVisibility === 'public' ? t('playground.visibilityPublic') : t('playground.visibilityPrivate'),
+      infoAuthorValue,
+      activeRulesetName,
+      selectedRulesetId,
+    ]);
     if (!normalizedName || !normalizedCategory || !draftCategoryOptions.includes(normalizedCategory)) return;
     saveTemplate(false, {
       skipPrompt: true,
       title: normalizedName,
       category: normalizedCategory,
       description: draftSaveDescription.trim(),
+      tags: parsedTags,
       visibility: draftSaveVisibility,
     });
     closeDraftSaveConfirmModal();
@@ -1245,9 +1798,9 @@ function Home() {
         ...savedTemplateNames,
         [forkBoardId]: trimmed,
       });
-      upsertSavedBoard(currentGridHash, trimmed, forkBoardId);
+      upsertSavedBoard(currentGridHash, trimmed, forkBoardId, undefined, undefined, undefined, undefined, rules, isRulesLocked);
       upsertForkOrigin(forkBoardId, {
-        parentHash: effectivePatternHash,
+        parentHash: socialPatternHash,
         parentTitle: headerTitle,
         parentSource: (currentPatternMetadata?.source ?? 'user') as PatternSource,
         parentCreatorName: currentPatternMetadata?.creatorName,
@@ -1272,15 +1825,15 @@ function Home() {
       ...savedTemplateNames,
       [hash]: trimmed,
     });
-    upsertSavedBoard(currentGridHash, trimmed, hash);
+    upsertSavedBoard(currentGridHash, trimmed, hash, undefined, undefined, undefined, undefined, rules, isRulesLocked);
     trackRecentBoard(currentGridHash, trimmed, hash);
     setSnackbarMessage(t('messages.templateSaved'));
     setSnackbarOpen(true);
     closeEditNameModal();
   }
 
-  function toggleCurrentPatternStar() {
-    const hash = effectivePatternHash;
+  function commitCurrentPatternStarToggle() {
+    const hash = socialPatternHash;
     if (!hash) return;
 
     const nextStarred = toggleFavoriteBoard(hash, headerTitle, storedProfileName);
@@ -1288,6 +1841,24 @@ function Home() {
       t(nextStarred ? 'messages.patternFavorited' : 'messages.patternUnfavorited', { name: headerTitle }),
     );
     setSnackbarOpen(true);
+  }
+
+  function toggleCurrentPatternStar() {
+    if (isStarredByCurrentUser) {
+      setIsRemoveStarConfirmModalOpen(true);
+      return;
+    }
+
+    commitCurrentPatternStarToggle();
+  }
+
+  function cancelRemoveCurrentPatternStar() {
+    setIsRemoveStarConfirmModalOpen(false);
+  }
+
+  function confirmRemoveCurrentPatternStar() {
+    commitCurrentPatternStarToggle();
+    setIsRemoveStarConfirmModalOpen(false);
   }
 
   useEffect(() => {
@@ -1351,10 +1922,50 @@ function Home() {
     updateURLWithGrid(newGrid);
   }
 
+  function handleSelectionColorFill() {
+    if (!isEditMode || isGameRunning || isSystemPattern) return;
+
+    const currentGrid = game.getStatus();
+    const selectedCoordinates = selectedCellsGrid ? Object.keys(selectedCellsGrid) : [];
+    const fillCoordinates = selectedCoordinates.length > 0
+      ? selectedCoordinates
+      : (hoveredCoordinate ? getContiguousLiveRegionByColor(currentGrid, hoveredCoordinate) : []);
+
+    if (fillCoordinates.length === 0) {
+      return;
+    }
+
+    const nextGrid = { ...currentGrid };
+
+    for (const coordinate of fillCoordinates) {
+      nextGrid[coordinate] = activeDrawColor;
+    }
+
+    setUndoBoardSnapshot({ ...currentGrid });
+    clearBoardStateOverlaySuppressionIfBoardExpanded(currentGrid, nextGrid, suppressBoardStateOverlayRef);
+    if (!suppressBoardStateOverlayRef.current) {
+      setBoardStateOverlay(null);
+    }
+
+    setCurrentPattern(nextGrid);
+    setBoardInitialization(true);
+    updateURLWithGrid(nextGrid);
+
+    if (selectedCoordinates.length > 0) {
+      clearSelectionGrid();
+      setSnackbarMessage(t('messages.selectionColorFilled', { color: activeDrawColor }));
+    } else {
+      setSnackbarMessage(t('messages.areaColorFilled', { color: activeDrawColor }));
+    }
+
+    setSnackbarOpen(true);
+  }
+
   const gameStatus = game.getStatus ? game.getStatus() : {};
   const boardModified = getGridSignature(gameStatus) !== getGridSignature(currentPattern);
   const canSaveTemplate = !isSystemPattern && generation > 0 && boardModified;
   const gridJSON = JSON.stringify(gameStatus, null, 2);
+  const cellDataEntries = Object.entries(gameStatus);
   const liveColorCounts = Object.values(gameStatus).reduce<Record<string, number>>((accumulator, cellColor) => {
     if (typeof cellColor !== 'string') return accumulator;
     const normalized = cellColor.toLowerCase();
@@ -1365,6 +1976,18 @@ function Home() {
     .map(([color, count]) => ({ color, count }))
     .sort((left, right) => right.count - left.count);
   const maxLiveColorCount = liveColorLeaderboard[0]?.count || 0;
+  const overcrowdingPressureLeaderboard = Object.entries(overcrowdingDeathLedgerByPressureColor)
+    .map(([color, count]) => ({ color, count }))
+    .sort((left, right) => right.count - left.count);
+  const maxOvercrowdingPressureCount = overcrowdingPressureLeaderboard[0]?.count || 0;
+  const experimentalBirthLeaderboard = Object.entries(lastGenerationInteractions.experimentalBirthsByColor)
+    .map(([color, count]) => ({ color, count, tieBreakCount: lastGenerationInteractions.tieBreakBirthsByColor[color] ?? 0 }))
+    .sort((left, right) => right.count - left.count);
+  const maxExperimentalBirthCount = experimentalBirthLeaderboard[0]?.count || 0;
+  const hasExperimentalRulesEnabled =
+    rules.experimentalSpeciesCompetitionBirth.enabled ||
+    rules.experimentalSpeciesCompetitionDominantBirth.enabled ||
+    rules.experimentalSpeciesCompetitionTieBreakBirth.enabled;
   const selectionCount = selectionStartCoordinate && selectionEndCoordinate
     ? Object.keys(selectedCellsGrid ?? {}).length
     : 0;
@@ -1389,55 +2012,23 @@ function Home() {
                   <Pencil size={13} aria-hidden="true" />
                 </button>
               ) : null}
-                {!isUnsavedDraftBoard && patternCategoryLabel && patternCreatorLabel ? (
+                {!isEditMode && !isUnsavedDraftBoard && forkOrigin ? (
                   <div className="playground-header-meta-row" aria-label={t('playground.patternMetadata')}>
-                    {categoryExploreHref ? (
-                      <Link
-                        className="wm-badge wm-badge-neutral playground-header-meta-badge play-info-category-link"
-                        to={categoryExploreHref as string}
-                      >
-                        {t('playground.categoryBadge', { category: patternCategoryLabel })}
-                      </Link>
-                    ) : null}
-                    {authorProfileHref ? (
-                      <Link
-                        className="wm-badge wm-badge-neutral playground-header-meta-badge explore-pattern-owner-link play-info-author-link"
-                        to={authorProfileHref as string}
-                      >
-                        <span className="pattern-source-badge-content">
-                          <span>{t('playground.createdByLabel')}</span>
-                          {currentPatternMetadata?.source === 'system' ? <Cpu size={11} aria-hidden="true" /> : <User size={11} aria-hidden="true" />}
-                          <span>{patternCreatorLabel}</span>
-                        </span>
-                      </Link>
-                    ) : null}
-                    {forkOrigin ? (
-                      <span className="wm-badge wm-badge-neutral playground-header-meta-badge">
-                        {t('playground.forkedFrom', { name: forkOrigin.parentTitle })}
-                      </span>
-                    ) : null}
+                    <span className="wm-badge wm-badge-neutral playground-header-meta-badge">
+                      {t('playground.forkedFrom', { name: forkOrigin.parentTitle })}
+                    </span>
                   </div>
                 ) : null}
             </div>
           </div>
-          {isUnsavedEmptyBoard ? (
+          {isUnsavedEditableBoard ? (
             <div className="playground-header-unsaved-note-row">
               <span className="playground-header-unsaved-note">{t('playground.unsavedEmptyBoardNotice')}</span>
             </div>
           ) : null}
           <div className="playground-header-actions">
-            {!isUnsavedDraftBoard ? (
+            {!isUnsavedDraftBoard || isSystemPattern ? (
               <>
-                <button
-                  className="btn btn-sm btn-secondary-neutral"
-                  type="button"
-                  onClick={copyPatternHash}
-                  aria-label={t('playground.copyHash')}
-                  title={t('playground.copyHash')}
-                >
-                  <Copy size={12} />
-                  <span>{t('playground.copyHash')}</span>
-                </button>
                 <button
                   className="btn btn-sm btn-secondary-neutral"
                   type="button"
@@ -1467,7 +2058,7 @@ function Home() {
                 <button
                   className="btn btn-sm btn-primary"
                   type="button"
-                  onClick={openDraftSaveConfirmModal}
+                  onClick={() => openDraftSaveConfirmModal('save')}
                   aria-label={t('playground.save')}
                   title={t('playground.save')}
                 >
@@ -1521,12 +2112,235 @@ function Home() {
       </div>
 
       <div className="wm-sidebar-layout wm-sidebar-layout-stretch playground-content-row">
+        <div className="left-info-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider">
+          <div className="left-info-column-card-fill">
+            <div className="diagnostics-panel play-info-panel">
+              <section className="play-about-section" aria-label={t('playground.infoTitle')}>
+                <div className="play-about-header-row">
+                  <h4 className="diagnostics-section-heading">{t('playground.infoTitle')}</h4>
+                  {!isSystemPattern ? (
+                    <button
+                      className="control-tooltip-trigger play-about-settings-btn"
+                      type="button"
+                      onClick={() => openDraftSaveConfirmModal('edit')}
+                      aria-label={t('playground.editPatternInfo')}
+                      data-tooltip={t('playground.editPatternInfo')}
+                    >
+                      <Settings size={13} aria-hidden="true" />
+                    </button>
+                  ) : null}
+                </div>
+                <div className="play-about-content">
+                  <p className="play-about-description">{infoDescriptionValue}</p>
+                  {infoTags.length > 0 ? (
+                    <div className="play-about-tags" aria-label="Tags">
+                      {infoTags.map((tag) => (
+                        <Link key={tag} className="wm-badge wm-badge-neutral play-about-tag" to={getInfoTagExploreHref(tag)}>
+                          {tag}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                  {currentPatternMetadata?.referenceUrl ? (
+                    <a
+                      className="play-about-meta-value-link"
+                      href={currentPatternMetadata.referenceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Wikipedia
+                    </a>
+                  ) : null}
+                  <div className="play-about-meta-list">
+                    <div className="play-about-meta-item">
+                      <span className="play-about-meta-icon" aria-hidden="true">
+                        {currentPatternMetadata?.source === 'system' ? <Cpu size={12} /> : <User size={12} />}
+                      </span>
+                      <span className="play-about-meta-label">{t('playground.infoAuthorLabel')}</span>
+                      {authorProfileHref && patternCreatorLabel ? (
+                        <Link className="play-about-meta-value-link" to={authorProfileHref as string}>
+                          {patternCreatorLabel}
+                        </Link>
+                      ) : (
+                        <span className="play-about-meta-value">{infoAuthorValue}</span>
+                      )}
+                    </div>
+                    <div className="play-about-meta-item">
+                      <span className="play-about-meta-icon" aria-hidden="true"><Tag size={12} /></span>
+                      <span className="play-about-meta-label">{t('playground.infoCategoryLabel')}</span>
+                      {categoryExploreHref && patternCategoryLabel ? (
+                        <Link className="play-about-meta-value-link" to={categoryExploreHref as string}>
+                          {patternCategoryLabel}
+                        </Link>
+                      ) : (
+                        <span className="play-about-meta-value">{infoCategoryValue}</span>
+                      )}
+                    </div>
+                    <div className="play-about-meta-item">
+                      <span className="play-about-meta-icon" aria-hidden="true"><Settings size={12} /></span>
+                      <span className="play-about-meta-label">{t('diagnostics.rulesetLabel')}</span>
+                      <Link className="play-about-meta-value-link" to={rulesetExploreHref}>
+                        {activeRulesetName}
+                      </Link>
+                    </div>
+                    {!isUnsavedDraftBoard || isSystemPattern ? (
+                      <>
+                        <div className="play-about-meta-item">
+                          <span className="play-about-meta-icon" aria-hidden="true"><GitFork size={12} /></span>
+                          <span className="play-about-meta-label">{t('playground.infoForksMetaLabel')}</span>
+                          <button
+                            className="play-about-forks-count"
+                            type="button"
+                            onClick={() => setActivePopularityModal('forks')}
+                            aria-label={t('playground.viewForks')}
+                            title={t('playground.viewForks')}
+                          >
+                            {patternForks}
+                          </button>
+                        </div>
+                        {forkedByRecords.length > 0 ? (
+                          <ul className="play-about-forks-list" aria-label={t('playground.infoForksMetaLabel')}>
+                            {forkedByRecords.map((entry) => (
+                              <li key={entry.boardId}>
+                                <Link
+                                  className="play-about-fork-link"
+                                  to={getBoardHref(entry.boardHash, entry.boardId)}
+                                  onClick={() => trackRecentBoard(entry.boardHash, entry.pattern, entry.boardId)}
+                                >
+                                  <span>{entry.pattern}</span>
+                                  <span>{entry.forker}</span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </>
+                    ) : null}
+                    {forkOrigin && forkParentHref ? (
+                      <div className="play-about-meta-item">
+                        <span className="play-about-meta-icon" aria-hidden="true"><GitFork size={12} /></span>
+                        <span className="play-about-meta-label">{t('playground.infoForkedFromLabel')}</span>
+                        <Link className="play-about-meta-value-link" to={forkParentHref}>
+                          {forkOrigin.parentTitle}
+                        </Link>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </section>
+
+              <hr className="play-sidebar-section-divider" aria-hidden="true" />
+
+              {canManageGameRules ? (
+                <>
+                  <details className="diagnostics-section diagnostics-section-rules" open>
+                    <summary className="diagnostics-section-summary">
+                      <h4 className="diagnostics-section-heading">{t('rules.title')}</h4>
+                      <button
+                        type="button"
+                        className="diagnostics-rules-lock-icon-btn"
+                        disabled={isUnsavedEditableBoard}
+                        aria-label={isRulesLocked ? t('rules.unlockButton') : t('rules.lockButton')}
+                        title={isRulesLocked ? t('rules.unlockButton') : t('rules.lockButton')}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          if (isRulesLocked) {
+                            requestUnlockRules();
+                            return;
+                          }
+                          lockRules();
+                        }}
+                      >
+                        {isRulesLocked ? <Lock size={13} aria-hidden="true" /> : <LockOpen size={13} aria-hidden="true" />}
+                      </button>
+                    </summary>
+                    <div className="diagnostics-section-content">
+                      <RulesPanel
+                        rules={rules}
+                        onRulesChange={handleRulesChange}
+                        selectedRulesetId={selectedRulesetId}
+                        onRulesetChange={handleRulesetChange}
+                        disabled={isGameRunning}
+                        embedded={true}
+                        rulesLocked={isRulesLocked}
+                        activeRulesetClassification={activeRulesetClassification}
+                      />
+                    </div>
+                  </details>
+
+                  <hr className="play-sidebar-section-divider" aria-hidden="true" />
+                </>
+              ) : null}
+
+              <details className="diagnostics-section diagnostics-section-settings" open>
+                <summary className="diagnostics-section-summary">
+                  <h4 className="diagnostics-section-heading">{t('diagnostics.settings')}</h4>
+                </summary>
+                <div className="diagnostics-section-content">
+                  <div className="wm-toggle-list">
+                    <div className="settings-toggle-item">
+                      <span className="rules-checkbox-main">
+                        <label className="rules-checkbox-row">
+                          <input
+                            type="checkbox"
+                            className="rules-checkbox-input"
+                            checked={isStabilityOverlayEnabled}
+                            onChange={(event) => handleStabilityOverlayToggle(event.target.checked)}
+                          />
+                          <span className="rules-checkbox-label">{t('diagnostics.stabilityOverlayEnabled')}</span>
+                        </label>
+                        <span className="rules-popover-wrap">
+                          <span
+                            className="rules-popover-trigger"
+                            aria-label={t('diagnostics.stabilityOverlayDescription')}
+                            role="img"
+                            onMouseEnter={(event) => showSettingsPopover(event, t('diagnostics.stabilityOverlayDescription'))}
+                            onMouseLeave={hideSettingsPopover}
+                          >
+                            <span className="rules-popover-trigger-icon" aria-hidden="true">i</span>
+                          </span>
+                        </span>
+                      </span>
+                    </div>
+                    <div className="settings-toggle-item">
+                      <span className="rules-checkbox-main">
+                        <label className="rules-checkbox-row">
+                          <input
+                            type="checkbox"
+                            className="rules-checkbox-input"
+                            checked={isBirthDeathPreviewEnabled}
+                            onChange={(event) => setIsBirthDeathPreviewEnabled(event.target.checked)}
+                          />
+                          <span className="rules-checkbox-label">{t('diagnostics.birthDeathPreviewEnabled')}</span>
+                        </label>
+                        <span className="rules-popover-wrap">
+                          <span
+                            className="rules-popover-trigger"
+                            aria-label={t('diagnostics.birthDeathPreviewDescription')}
+                            role="img"
+                            onMouseEnter={(event) => showSettingsPopover(event, t('diagnostics.birthDeathPreviewDescription'))}
+                            onMouseLeave={hideSettingsPopover}
+                          >
+                            <span className="rules-popover-trigger-icon" aria-hidden="true">i</span>
+                          </span>
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+
         <div
           className={`left-column wm-sidebar-layout-main${isBoardMaximized ? ' board-maximized' : ''}`}
           onMouseMove={handleBoardMouseMove}
         >
         <Grid 
           game={game} 
+          centerCoordinateRequest={centerCoordinateRequest}
           onHoverCoordinateChange={handleHoverCoordinateChange}
           hoveredCoordinate={hoveredCoordinate}
           onContextCoordinateRequest={handleContextCoordinateRequest}
@@ -1537,13 +2351,16 @@ function Home() {
           onSelectionStart={handleSelectionStart}
           onSelectionChange={handleSelectionChange}
           onSelectionEnd={handleSelectionEnd}
+          selectionCount={selectionCount}
           palette={selectedPalette}
           isEditMode={isEditMode}
+          rules={rules}
           onCellPaint={handleCellPaint}
           activeDrawColor={activeDrawColor}
           activeEditTool={activeEditTool}
           stampPattern={rotatedStampPattern}
           onStampPatternAtCoordinate={handleStampPatternAtCoordinate}
+          showBirthDeathPreview={isBirthDeathPreviewEnabled}
           isBoardMaximized={isBoardMaximized}
           toggleBoardMaximized={toggleBoardMaximized}
           playOverlayContent={(
@@ -1571,10 +2388,12 @@ function Home() {
               activeEditTool={activeEditTool}
               onEditToolChange={handleEditToolChange}
               selectionCount={selectionCount}
+              onFillSelectionColor={handleSelectionColorFill}
               stampPattern={stampPattern}
-              stampPreviewPattern={rotatedStampPattern}
+              stampPreviewPattern={tintedStampPreviewPattern}
               stampPatternName={stampPatternName}
               stampRotation={stampRotation}
+              rotateStampKeyPressToken={rotateStampKeyPressToken}
               onRotateStamp={rotateStampPattern}
               onStampPatternSelect={handleStampPatternSelect}
             />
@@ -1610,76 +2429,13 @@ function Home() {
           <ThemeTabs
             options={[
               { value: 'diagnostics', label: 'State' },
-              { value: 'info', label: t('playground.infoTab') },
               { value: 'patterns', label: 'Patterns' },
             ]}
             activeValue={activeSidebarTab}
-            onChange={(value) => setActiveSidebarTab(value as 'patterns' | 'diagnostics' | 'info')}
+            onChange={(value) => setActiveSidebarTab(value as 'patterns' | 'diagnostics')}
             ariaLabel="Simulation panels"
           />
         </div>
-
-        {activeSidebarTab === 'info' && (
-          <div className="diagnostics-panel play-info-panel">
-            <h4 className="diagnostics-section-heading">{t('playground.infoTitle')}</h4>
-            {!isUnsavedDraftBoard ? (
-              <>
-                <article className="diagnostics-stat-card play-info-field">
-                  <p className="diagnostics-stat-label">{t('playground.infoAuthorLabel')}</p>
-                  {authorProfileHref && patternCreatorLabel ? (
-                    <Link className="wm-badge wm-badge-neutral explore-pattern-owner-link play-info-author-link" to={authorProfileHref as string}>
-                      <span className="pattern-source-badge-content">
-                        {currentPatternMetadata?.source === 'system' ? <Cpu size={11} aria-hidden="true" /> : <User size={11} aria-hidden="true" />}
-                        <span>{patternCreatorLabel}</span>
-                      </span>
-                    </Link>
-                  ) : null}
-                </article>
-                <article className="diagnostics-stat-card play-info-field">
-                  <p className="diagnostics-stat-label">{t('playground.infoCategoryLabel')}</p>
-                  {categoryExploreHref && patternCategoryLabel ? (
-                    <Link className="wm-badge wm-badge-neutral play-info-category-link" to={categoryExploreHref as string}>
-                      <span>{patternCategoryLabel}</span>
-                    </Link>
-                  ) : null}
-                </article>
-                <article className="diagnostics-stat-card play-info-field">
-                  <p className="diagnostics-stat-label">{t('playground.infoDescriptionLabel')}</p>
-                  <p className="play-info-field-value">{effectiveDescription}</p>
-                </article>
-                <article className="diagnostics-stat-card play-info-field">
-                  <p className="diagnostics-stat-label">{t('playground.infoVisibilityLabel')}</p>
-                  <p className="play-info-field-value">{visibilityLabel}</p>
-                </article>
-                <article className="diagnostics-stat-card play-info-field">
-                  <p className="diagnostics-stat-label">{t('playground.infoPopularityLabel')}</p>
-                  <div className="play-info-popularity-row">
-                    <button
-                      className="wm-badge wm-badge-neutral play-info-popularity-trigger"
-                      type="button"
-                      onClick={() => setActivePopularityModal('stars')}
-                    >
-                      <span className="pattern-source-badge-content">
-                        <Star size={11} aria-hidden="true" />
-                        <span>{t('playground.infoStarsLabel', { count: patternStars })}</span>
-                      </span>
-                    </button>
-                    <button
-                      className="wm-badge wm-badge-neutral play-info-popularity-trigger"
-                      type="button"
-                      onClick={() => setActivePopularityModal('forks')}
-                    >
-                      <span className="pattern-source-badge-content">
-                        <GitFork size={11} aria-hidden="true" />
-                        <span>{t('playground.infoForksLabel', { count: patternForks })}</span>
-                      </span>
-                    </button>
-                  </div>
-                </article>
-              </>
-            ) : null}
-          </div>
-        )}
 
         {activeSidebarTab === 'patterns' && (
           <div className="right-column-card-fill">
@@ -1740,43 +2496,58 @@ function Home() {
                     )}
                   </div>
                 </article>
-              </div>
-            </details>
-
-            <details className="diagnostics-section" open>
-              <summary className="diagnostics-section-summary">
-                <h4 className="diagnostics-section-heading">{t('rules.title')}</h4>
-              </summary>
-              <div className="diagnostics-section-content">
-                <RulesPanel
-                  rules={rules}
-                  onRulesChange={handleRulesChange}
-                  disabled={isGameRunning}
-                  embedded={true}
-                />
-              </div>
-            </details>
-
-            <details className="diagnostics-section" open>
-              <summary className="diagnostics-section-summary">
-                <h4 className="diagnostics-section-heading">{t('diagnostics.settings')}</h4>
-              </summary>
-              <div className="diagnostics-section-content">
-                <div className="wm-toggle-list">
-                  <div>
-                    <label className="wm-toggle">
-                      <input
-                        type="checkbox"
-                        className="wm-toggle-input"
-                        checked={isStabilityOverlayEnabled}
-                        onChange={(event) => handleStabilityOverlayToggle(event.target.checked)}
-                      />
-                      <span className="wm-toggle-track"><span className="wm-toggle-thumb"></span></span>
-                      <span className="wm-toggle-label">{t('diagnostics.stabilityOverlayEnabled')}</span>
-                    </label>
-                    <p className="wm-toggle-description">{t('diagnostics.stabilityOverlayDescription')}</p>
+                <article className="diagnostics-stat-card diagnostics-stat-card-generation-interactions">
+                  <p className="diagnostics-stat-label">{t('diagnostics.generationInteractions')}</p>
+                  <div className="diagnostics-color-leaderboard" role="list" aria-label={t('diagnostics.overcrowdingDeathsByOtherColor')}>
+                    <p className="diagnostics-color-leaderboard-heading">{t('diagnostics.overcrowdingDeathsByOtherColor')}</p>
+                    {overcrowdingPressureLeaderboard.length === 0 ? (
+                      <p className="diagnostics-color-leaderboard-empty">{t('diagnostics.noOvercrowdingDeathsByOtherColor')}</p>
+                    ) : (
+                      overcrowdingPressureLeaderboard.map(({ color, count }) => {
+                        const relativeWidth = maxOvercrowdingPressureCount > 0 ? Math.max(6, (count / maxOvercrowdingPressureCount) * 100) : 0;
+                        return (
+                          <div className="diagnostics-color-leaderboard-item" role="listitem" key={`overcrowding-${color}`}>
+                            <div className="diagnostics-color-leaderboard-item-header">
+                              <span className="diagnostics-color-chip" style={{ backgroundColor: color }} aria-hidden="true"></span>
+                              <span className="diagnostics-color-code">{color}</span>
+                              <span className="diagnostics-color-count">{t('diagnostics.overcrowdingDeathsCount', { count })}</span>
+                            </div>
+                            <div className="diagnostics-color-bar-track" aria-hidden="true">
+                              <div className="diagnostics-color-bar-fill" style={{ width: `${relativeWidth}%`, backgroundColor: color }}></div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
-                </div>
+                  <div className="diagnostics-color-leaderboard" role="list" aria-label={t('diagnostics.experimentalBirthsByColor')}>
+                    <p className="diagnostics-color-leaderboard-heading">{t('diagnostics.experimentalBirthsByColor')}</p>
+                    {!hasExperimentalRulesEnabled ? (
+                      <p className="diagnostics-color-leaderboard-empty">{t('diagnostics.experimentalRulesDisabled')}</p>
+                    ) : experimentalBirthLeaderboard.length === 0 ? (
+                      <p className="diagnostics-color-leaderboard-empty">{t('diagnostics.noExperimentalBirthsByColor')}</p>
+                    ) : (
+                      experimentalBirthLeaderboard.map(({ color, count, tieBreakCount }) => {
+                        const relativeWidth = maxExperimentalBirthCount > 0 ? Math.max(6, (count / maxExperimentalBirthCount) * 100) : 0;
+                        return (
+                          <div className="diagnostics-color-leaderboard-item" role="listitem" key={`experimental-birth-${color}`}>
+                            <div className="diagnostics-color-leaderboard-item-header">
+                              <span className="diagnostics-color-chip" style={{ backgroundColor: color }} aria-hidden="true"></span>
+                              <span className="diagnostics-color-code">{color}</span>
+                              <span className="diagnostics-color-count">
+                                {t('diagnostics.experimentalBirthsCount', { count })}
+                                {tieBreakCount > 0 ? ` (${t('diagnostics.tieBreakBirthsCount', { count: tieBreakCount })})` : ''}
+                              </span>
+                            </div>
+                            <div className="diagnostics-color-bar-track" aria-hidden="true">
+                              <div className="diagnostics-color-bar-fill" style={{ width: `${relativeWidth}%`, backgroundColor: color }}></div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </article>
               </div>
             </details>
 
@@ -1798,7 +2569,26 @@ function Home() {
                   >
                     {cellDataCopied ? 'Copied!' : 'Copy'}
                   </button>
-                  <pre className="code-block"><code className="language-json">{gridJSON}</code></pre>
+                  <pre className="code-block"><code className="language-json">{cellDataEntries.length === 0 ? '{\n}' : (
+                    <>
+                      <span>{'{\n'}</span>
+                      {cellDataEntries.map(([coordinate, cellColor], index) => (
+                        <span className="code-block-line" key={coordinate}>
+                          <span>{'  '}</span>
+                          <button
+                            className="diagnostics-coordinate-button"
+                            type="button"
+                            onClick={() => handleCenterCoordinateRequest(coordinate)}
+                          >
+                            &quot;{coordinate}&quot;
+                          </button>
+                          <span>: {JSON.stringify(cellColor)}{index < cellDataEntries.length - 1 ? ',' : ''}</span>
+                          {'\n'}
+                        </span>
+                      ))}
+                      <span>{'}'}</span>
+                    </>
+                  )}</code></pre>
                 </div>
               </div>
             </details>
@@ -1842,6 +2632,33 @@ function Home() {
               </button>
               <button className="btn btn-danger" type="button" onClick={confirmResetBoard}>
                 {t('dialogs.yesReset')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isRemoveStarConfirmModalOpen && (
+        <div className="wm-modal-overlay" onClick={cancelRemoveCurrentPatternStar}>
+          <div
+            className="wm-modal-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remove-star-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="wm-modal-header">
+              <h3 id="remove-star-modal-title" className="wm-modal-title">{t('playground.removeStarConfirmTitle')}</h3>
+            </div>
+            <div className="wm-modal-body">
+              <p>{t('playground.removeStarConfirmMessage', { name: headerTitle })}</p>
+            </div>
+            <div className="wm-modal-footer">
+              <button className="btn btn-secondary btn-outline" type="button" onClick={cancelRemoveCurrentPatternStar}>
+                {t('dialogs.cancel')}
+              </button>
+              <button className="btn btn-danger" type="button" onClick={confirmRemoveCurrentPatternStar}>
+                {t('playground.removeStarConfirmAction')}
               </button>
             </div>
           </div>
@@ -1899,9 +2716,11 @@ function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="wm-modal-header">
-              <h3 id="draft-save-modal-title" className="wm-modal-title">{t('playground.confirmDraftSaveTitle')}</h3>
+              <h3 id="draft-save-modal-title" className="wm-modal-title">
+                {t(draftSaveModalMode === 'edit' ? 'playground.confirmDraftEditTitle' : 'playground.confirmDraftSaveTitle')}
+              </h3>
             </div>
-            <div className="wm-modal-body">
+            <div className="wm-modal-body playground-board-form">
               <label htmlFor="draft-save-name-input" className="wm-input-label">{t('playground.patternName')}</label>
               <input
                 id="draft-save-name-input"
@@ -1932,6 +2751,15 @@ function Home() {
                 onChange={(e) => setDraftSaveDescription(e.target.value)}
                 placeholder={t('playground.confirmDraftSaveDescriptionPlaceholder')}
                 rows={3}
+              />
+              <label htmlFor="draft-save-tags-input" className="wm-input-label">{t('playground.confirmDraftSaveTagsLabel')}</label>
+              <input
+                id="draft-save-tags-input"
+                className="wm-input"
+                type="text"
+                value={draftSaveTags}
+                onChange={(e) => setDraftSaveTags(e.target.value)}
+                placeholder={t('playground.confirmDraftSaveTagsPlaceholder')}
               />
               <fieldset className="playground-visibility-toggle-group">
                 <legend className="wm-input-label">{t('playground.confirmDraftSaveVisibilityLabel')}</legend>
@@ -1968,6 +2796,33 @@ function Home() {
                 disabled={!draftSaveName.trim() || !draftSaveCategory.trim()}
               >
                 {t('playground.confirmDraftSaveAction')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isUnlockRulesModalOpen && (
+        <div className="wm-modal-overlay" onClick={closeUnlockRulesModal}>
+          <div
+            className="wm-modal-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="unlock-rules-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="wm-modal-header">
+              <h3 id="unlock-rules-modal-title" className="wm-modal-title">{t('rules.unlockConfirmTitle')}</h3>
+            </div>
+            <div className="wm-modal-body">
+              <p>{t('rules.unlockConfirmMessage')}</p>
+            </div>
+            <div className="wm-modal-footer">
+              <button className="btn btn-secondary btn-outline" type="button" onClick={closeUnlockRulesModal}>
+                {t('dialogs.cancel')}
+              </button>
+              <button className="btn btn-primary" type="button" onClick={confirmUnlockRules}>
+                {t('rules.unlockConfirmAction')}
               </button>
             </div>
           </div>
@@ -2100,6 +2955,16 @@ function Home() {
           </div>
         </div>
       )}
+      {settingsHoverPopover ? createPortal(
+        <span
+          className="rules-popover-floating"
+          role="tooltip"
+          style={{ left: `${settingsHoverPopover.left}px`, top: `${settingsHoverPopover.top}px` }}
+        >
+          {settingsHoverPopover.text}
+        </span>,
+        document.body,
+      ) : null}
     </div>
   );
 }

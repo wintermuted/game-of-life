@@ -130,7 +130,10 @@ function App() {
         <div className="docs-topbar-inner">
           <Link className="docs-topbar-brand" to="/" aria-label={t('nav.home')}>
             <img src={`${import.meta.env.BASE_URL}gol-mark.svg`} alt="" aria-hidden="true" className="docs-topbar-brand-icon" width="28" height="28" />
-            <h1>{t('app.title')}</h1>
+            <span className="docs-topbar-brand-title-wrap">
+              <h1>{t('app.title')}</h1>
+              <span className="wm-badge wm-badge-neutral docs-topbar-alpha-badge">Alpha</span>
+            </span>
           </Link>
           <nav className="docs-topbar-nav wm-app-nav-nowrap" aria-label="Primary navigation">
           <NavLink

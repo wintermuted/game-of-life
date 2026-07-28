@@ -12,6 +12,7 @@ function getCoordinate(rowIndex: number, cellSize: number) {
 
 interface Props {
   grid: LifeGrid;
+  birthDeathPreviewGrid?: LifeGrid | null;
   gridSize: number; // should only be even numbers (not used directly, calculated from cellSize)
   cellSize: number;
   onHoverCoordinateChange?: (coordinate: string | null) => void;
@@ -87,7 +88,39 @@ function getGridBounds(grid: LifeGrid): { minX: number; maxX: number; minY: numb
   );
 }
 
-function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPaintStart, selectionGrid = null, selectionStartCoordinate = null, selectionEndCoordinate = null, onSelectionStart, onSelectionChange, onSelectionEnd, grid, cellSize, offsetX = 0, offsetY = 0, palette, isEditMode = false, onCellPaint, activeDrawColor = DEFAULT_LIVE_CELL_COLOR, activeEditTool = 'pencil', stampPattern = null, onStampPatternAtCoordinate, onPanByDrag, onViewportMetricsChange }: Props) {
+function drawCrossHatchCell(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  strokeColor: string,
+  spacing = 4,
+) {
+  if (size <= 1) return;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, size, size);
+  ctx.clip();
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = 1;
+
+  for (let offset = -size; offset <= size * 2; offset += spacing) {
+    ctx.beginPath();
+    ctx.moveTo(x + offset, y);
+    ctx.lineTo(x + offset + size, y + size);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x + offset, y + size);
+    ctx.lineTo(x + offset + size, y);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPaintStart, selectionGrid = null, selectionStartCoordinate = null, selectionEndCoordinate = null, onSelectionStart, onSelectionChange, onSelectionEnd, grid, birthDeathPreviewGrid = null, cellSize, offsetX = 0, offsetY = 0, palette, isEditMode = false, onCellPaint, activeDrawColor = DEFAULT_LIVE_CELL_COLOR, activeEditTool = 'pencil', stampPattern = null, onStampPatternAtCoordinate, onPanByDrag, onViewportMetricsChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isPointerDownRef = useRef(false);
@@ -282,6 +315,9 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
       offsetX,
       offsetY
     );
+    const translatedBirthDeathPreviewGrid = birthDeathPreviewGrid
+      ? translateGridToViewport(birthDeathPreviewGrid, calculatedGridColumns, calculatedGridRows, offsetX, offsetY)
+      : null;
     const translatedSelectionGrid = selectionGrid
       ? translateGridToViewport(selectionGrid, calculatedGridColumns, calculatedGridRows, offsetX, offsetY)
       : null;
@@ -297,8 +333,9 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
     const selectionStrokeColor = isDark ? 'rgba(147, 197, 253, 0.96)' : 'rgba(29, 78, 216, 0.88)';
     const selectionRectStrokeColor = isDark ? 'rgba(147, 197, 253, 0.95)' : 'rgba(29, 78, 216, 0.95)';
     const selectionRectFillColor = isDark ? 'rgba(96, 165, 250, 0.08)' : 'rgba(37, 99, 235, 0.08)';
-    const stampPreviewFillColor = isDark ? 'rgba(248, 250, 252, 0.09)' : 'rgba(15, 23, 42, 0.07)';
-    const stampPreviewStrokeColor = isDark ? 'rgba(248, 250, 252, 0.96)' : 'rgba(30, 41, 59, 0.92)';
+    const stampPreviewHatchColor = isDark ? 'rgba(248, 250, 252, 0.42)' : 'rgba(15, 23, 42, 0.28)';
+    const previewBirthFillColor = isDark ? 'rgba(34, 197, 94, 0.38)' : 'rgba(34, 197, 94, 0.32)';
+    const previewDeathStrokeColor = isDark ? 'rgba(248, 113, 113, 0.98)' : 'rgba(220, 38, 38, 0.94)';
 
     // Draw all visible cells using the currently available canvas space.
     for (let columnIndex = 0; columnIndex < calculatedGridRows; columnIndex++) {
@@ -326,7 +363,44 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
       }
     }
 
-    if (hoveredCell) {
+    if (translatedBirthDeathPreviewGrid) {
+      const currentCellCoordinates = new Set(Object.keys(translatedGrid));
+      for (const coordinate of Object.keys(translatedBirthDeathPreviewGrid)) {
+        if (!currentCellCoordinates.has(coordinate)) {
+          const [rowString, columnString] = coordinate.split(',');
+          const rowIndex = Number(rowString);
+          const columnIndex = Number(columnString);
+          if (!Number.isFinite(rowIndex) || !Number.isFinite(columnIndex)) continue;
+
+          const x = getCoordinate(rowIndex, cellSize);
+          const y = getCoordinate(columnIndex, cellSize);
+          ctx.save();
+          ctx.fillStyle = previewBirthFillColor;
+          ctx.fillRect(x, y, cellSize, cellSize);
+          ctx.restore();
+        }
+      }
+
+      const nextCellCoordinates = new Set(Object.keys(translatedBirthDeathPreviewGrid));
+      for (const coordinate of Object.keys(translatedGrid)) {
+        if (!nextCellCoordinates.has(coordinate)) {
+          const [rowString, columnString] = coordinate.split(',');
+          const rowIndex = Number(rowString);
+          const columnIndex = Number(columnString);
+          if (!Number.isFinite(rowIndex) || !Number.isFinite(columnIndex)) continue;
+
+          const x = getCoordinate(rowIndex, cellSize);
+          const y = getCoordinate(columnIndex, cellSize);
+          ctx.save();
+          ctx.strokeStyle = previewDeathStrokeColor;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, cellSize - 1), Math.max(0, cellSize - 1));
+          ctx.restore();
+        }
+      }
+    }
+
+    if (isEditMode && hoveredCell) {
       const hoverX = getCoordinate(hoveredCell.canvasRowIndex, cellSize);
       const hoverY = getCoordinate(hoveredCell.canvasColumnIndex, cellSize);
       ctx.fillStyle = hoverFillColor;
@@ -364,19 +438,18 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
       const stampPreviewCells = getStampPreviewCanvasCells(hoveredCell);
 
       if (stampPreviewCells.length > 0) {
-        ctx.fillStyle = stampPreviewFillColor;
-        ctx.strokeStyle = stampPreviewStrokeColor;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([3, 2]);
-
         for (const previewCell of stampPreviewCells) {
           const previewX = getCoordinate(previewCell.rowIndex, cellSize);
           const previewY = getCoordinate(previewCell.columnIndex, cellSize);
-          ctx.fillRect(previewX, previewY, cellSize, cellSize);
-          ctx.strokeRect(previewX + 0.5, previewY + 0.5, Math.max(0, cellSize - 1), Math.max(0, cellSize - 1));
-        }
 
-        ctx.setLineDash([]);
+          ctx.save();
+          ctx.globalAlpha = 0.5;
+          ctx.fillStyle = activeDrawColor;
+          ctx.fillRect(previewX, previewY, cellSize, cellSize);
+          ctx.restore();
+
+          drawCrossHatchCell(ctx, previewX, previewY, cellSize, stampPreviewHatchColor, Math.max(3, Math.floor(cellSize / 3)));
+        }
       }
     }
 
@@ -417,6 +490,8 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
     isEditMode,
     activeEditTool,
     stampPattern,
+    activeDrawColor,
+    birthDeathPreviewGrid,
   ]);
 
   const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowDown, ArrowDownUp, ArrowUp, ArrowUpAZ, ChevronDown, Cpu, FolderTree, GitFork, LayoutGrid, Play, Rows3, Search, Star, User } from 'lucide-react';
-import { createLifeGrid, LifeGrid, patterns } from '@game-of-life/core';
+import { createLifeGrid, DEFAULT_RULES, GameRuleKey, GameRules, LifeGrid, patterns, RULESETS } from '@game-of-life/core';
 import PatternPreview from './PatternPreview';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
 import { encodeGridToBase64 } from '../util/urlState';
@@ -15,15 +15,19 @@ import {
   upsertForkOrigin,
   getSavedTemplateNames,
   getFavoriteBoards,
+  getSavedBoards,
   getStoredProfileUser,
+  hashToGrid,
 } from '../util/browserStorage';
 import { useTranslation } from 'react-i18next';
 
 type ExplorePattern = (typeof patterns)[number] & {
   source: 'system' | 'user';
   creatorName?: string;
+  visibility?: 'public' | 'private';
   favoriteCount: number;
   forkCount: number;
+  boardId?: string;
 };
 
 const seededUserPatterns: ExplorePattern[] = [
@@ -95,15 +99,19 @@ const seededUserPatterns: ExplorePattern[] = [
 
 const SYSTEM_AUTHOR_KEY = '__system__';
 const UNKNOWN_USER_AUTHOR_KEY = '__user__';
+const CUSTOM_RULESET_ID = 'custom';
 const DEFAULT_SORT_FIELD = 'favorites';
 const DEFAULT_SORT_DIRECTION = 'desc';
-const DEFAULT_GROUP_BY_CATEGORY = true;
+const DEFAULT_GROUP_MODE = 'none';
 const DEFAULT_VIEW_MODE = 'cards';
+
+type GroupMode = 'none' | 'category' | 'ruleset' | 'author';
 
 const VALID_SORT_FIELDS = new Set(['favorites', 'forks', 'name', 'user', 'category']);
 const VALID_SORT_DIRECTIONS = new Set(['asc', 'desc']);
 const VALID_SOURCES = new Set(['all', 'system', 'user']);
 const VALID_VIEW_MODES = new Set(['cards', 'table']);
+const VALID_GROUP_MODES = new Set<GroupMode>(['none', 'category', 'ruleset', 'author']);
 
 function readMultiValueParam(params: URLSearchParams, key: string): string[] {
   const values = params.getAll(key).flatMap((value) => value.split(','));
@@ -135,14 +143,6 @@ function sortByCountThenLabel<T extends string>(
 
     return getLabel(left).localeCompare(getLabel(right));
   });
-}
-
-function toCreatorSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-');
 }
 
 function getCurrentProfileName(): string {
@@ -181,6 +181,23 @@ function buildPatternMetrics(patternList: ExplorePattern[]): Record<string, { fa
   return metrics;
 }
 
+function detectPersistedRuleset(rules?: GameRules): string | undefined {
+  if (!rules) return undefined;
+
+  const matchingRuleset = RULESETS.find((ruleset) => {
+    if (!ruleset.implemented) return false;
+
+    const togglesMatch = (Object.keys(DEFAULT_RULES) as GameRuleKey[]).every((ruleKey) => {
+      const persistedEnabled = rules[ruleKey]?.enabled ?? DEFAULT_RULES[ruleKey].enabled;
+      return persistedEnabled === ruleset.rules[ruleKey].enabled;
+    });
+    const profilesMatch = JSON.stringify(rules.lifeLikeProfile ?? null) === JSON.stringify(ruleset.rules.lifeLikeProfile ?? null);
+    return togglesMatch && profilesMatch;
+  });
+
+  return matchingRuleset?.id ?? CUSTOM_RULESET_ID;
+}
+
 function Explore() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -193,26 +210,80 @@ function Explore() {
   const isApplyingQueryState = useRef(false);
   const currentProfileName = getCurrentProfileName();
   const [favoriteHashes, setFavoriteHashes] = useState<Set<string>>(() => getFavoriteHashesForActor(currentProfileName));
+  const [forkOrigins, setForkOrigins] = useState(() => getForkOrigins());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [selectedSource, setSelectedSource] = useState<'all' | 'system' | 'user'>('all');
   const [selectedAuthors, setSelectedAuthors] = useState<Set<string>>(new Set());
+  const [selectedRulesets, setSelectedRulesets] = useState<Set<string>>(new Set());
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [showDisabledCategories, setShowDisabledCategories] = useState(false);
+  const [showDisabledRulesets, setShowDisabledRulesets] = useState(false);
+  const [showDisabledTags, setShowDisabledTags] = useState(false);
+  const [showDisabledAuthors, setShowDisabledAuthors] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [forkedOnly, setForkedOnly] = useState(false);
   const [sortField, setSortField] = useState<'favorites' | 'forks' | 'name' | 'user' | 'category'>('favorites');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [groupByCategory, setGroupByCategory] = useState(true);
+  const [groupMode, setGroupMode] = useState<GroupMode>(DEFAULT_GROUP_MODE);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   const allPatterns = useMemo<ExplorePattern[]>(() => {
-    const systemPatterns = patterns.map((pattern) => ({
-      ...pattern,
-      source: 'system' as const,
-      favoriteCount: Math.max(4, Math.floor(Object.keys(pattern.grid).length / 2) + 6),
-      forkCount: Math.max(2, Math.floor(Object.keys(pattern.grid).length / 3) + 3),
-    }));
+    const savedMetadataByHash = new Map(getSavedBoards().map((record) => [record.hash, record]));
+    const systemPatterns = patterns.map((pattern) => {
+      const savedMetadata = savedMetadataByHash.get(encodeGridToBase64(pattern.grid));
+      return {
+        ...pattern,
+        rulesetId: pattern.rulesetId ?? detectPersistedRuleset(savedMetadata?.rules),
+        tags: savedMetadata?.tags?.length ? savedMetadata.tags : pattern.tags,
+        source: 'system' as const,
+        visibility: 'public' as const,
+        favoriteCount: Math.max(4, Math.floor(Object.keys(pattern.grid).length / 2) + 6),
+        forkCount: Math.max(2, Math.floor(Object.keys(pattern.grid).length / 3) + 3),
+      };
+    });
 
-    return [...systemPatterns, ...seededUserPatterns];
+    const userPatterns = seededUserPatterns.map((pattern) => {
+      const savedMetadata = savedMetadataByHash.get(encodeGridToBase64(pattern.grid));
+      return {
+        ...pattern,
+        rulesetId: detectPersistedRuleset(savedMetadata?.rules) ?? pattern.rulesetId,
+        tags: savedMetadata?.tags?.length ? savedMetadata.tags : pattern.tags,
+        visibility: savedMetadata?.visibility ?? 'public',
+      };
+    });
+
+    return [...systemPatterns, ...userPatterns];
   }, []);
+
+  const forkedPatterns = useMemo<ExplorePattern[]>(() => {
+    const parentPatternsByHash = new Map(allPatterns.map((pattern) => [encodeGridToBase64(pattern.grid), pattern]));
+    const savedBoardsById = new Map(getSavedBoards().map((record) => [record.boardId ?? record.hash, record]));
+
+    return forkOrigins.flatMap((forkOrigin) => {
+      const parentPattern = parentPatternsByHash.get(forkOrigin.parentHash);
+      if (!parentPattern) return [];
+
+      const savedBoard = savedBoardsById.get(forkOrigin.hash);
+      const savedGrid = savedBoard ? hashToGrid(savedBoard.hash) : null;
+      return [{
+        ...parentPattern,
+        name: savedBoard?.title || forkOrigin.forkedPatternTitle || `${forkOrigin.parentTitle} (${t('explore.forkSuffix')})`,
+        category: savedBoard?.category || parentPattern.category,
+        source: 'user' as const,
+        creatorName: forkOrigin.forkerName,
+        visibility: savedBoard?.visibility ?? 'public',
+        rulesetId: detectPersistedRuleset(savedBoard?.rules) ?? parentPattern.rulesetId,
+        tags: savedBoard?.tags?.length ? savedBoard.tags : parentPattern.tags,
+        favoriteCount: 0,
+        forkCount: 0,
+        boardId: forkOrigin.hash,
+        grid: savedGrid ?? parentPattern.grid,
+      }];
+    });
+  }, [allPatterns, forkOrigins, t]);
+
+  const browsablePatterns = forkedOnly ? forkedPatterns : allPatterns;
 
   const [patternMetrics, setPatternMetrics] = useState<Record<string, { favorites: number; forks: number }>>(() => {
     return buildPatternMetrics(allPatterns);
@@ -228,6 +299,10 @@ function Explore() {
 
     ensureSeededSocialData(catalog);
     setFavoriteHashes(getFavoriteHashesForActor(currentProfileName));
+    setForkOrigins((current) => {
+      const next = getForkOrigins();
+      return next.map((entry) => entry.hash).join('|') === current.map((entry) => entry.hash).join('|') ? current : next;
+    });
     setPatternMetrics(buildPatternMetrics(allPatterns));
   }, [allPatterns, currentProfileName]);
 
@@ -244,12 +319,24 @@ function Explore() {
     return ['all', ...Array.from(uniqueAuthorKeys)];
   }, [allPatterns]);
 
+  const rulesetOptions = useMemo(
+    () => [...RULESETS.filter((ruleset) => ruleset.implemented).map((ruleset) => ruleset.id), CUSTOM_RULESET_ID],
+    [],
+  );
+
+  const tagOptions = useMemo(
+    () => ['all', ...Array.from(new Set(allPatterns.flatMap((pattern) => getPatternTags(pattern))))],
+    [allPatterns, t],
+  );
+
   const parsedQueryState = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const search = params.get('q')?.trim() ?? '';
 
     const categories = readMultiValueParam(params, 'category').filter((category) => categoryOptions.includes(category));
     const authors = readMultiValueParam(params, 'author').filter((author) => authorOptions.includes(author));
+    const rulesets = readMultiValueParam(params, 'ruleset').filter((ruleset) => rulesetOptions.includes(ruleset));
+    const tags = readMultiValueParam(params, 'tag').filter((tag) => tagOptions.includes(tag));
 
     const sourceParam = params.get('source');
     const source = sourceParam && VALID_SOURCES.has(sourceParam) ? (sourceParam as 'all' | 'system' | 'user') : 'all';
@@ -271,24 +358,32 @@ function Explore() {
 
     const favoritesParam = params.get('favorites');
     const favoritesOnly = favoritesParam === '1' || favoritesParam === 'true';
+    const forkedParam = params.get('forked');
+    const forkedOnly = forkedParam === '1' || forkedParam === 'true';
 
-    const groupParam = params.get('groupByCategory');
-    const groupByCategory = groupParam === null
-      ? DEFAULT_GROUP_BY_CATEGORY
-      : !(groupParam === '0' || groupParam === 'false');
+    const groupParam = params.get('groupBy');
+    const legacyGroupParam = params.get('groupByCategory');
+    const groupMode = groupParam && VALID_GROUP_MODES.has(groupParam as GroupMode)
+      ? (groupParam as GroupMode)
+      : legacyGroupParam === '1' || legacyGroupParam === 'true'
+        ? 'category'
+        : DEFAULT_GROUP_MODE;
 
     return {
       search,
       categories,
       authors,
+      rulesets,
+      tags,
       source,
       sortField,
       sortDirection,
       viewMode,
       favoritesOnly,
-      groupByCategory,
+      forkedOnly,
+      groupMode,
     };
-  }, [authorOptions, categoryOptions, location.search]);
+  }, [authorOptions, categoryOptions, location.search, rulesetOptions, tagOptions]);
 
   useEffect(() => {
     isApplyingQueryState.current = true;
@@ -309,8 +404,20 @@ function Explore() {
       setSelectedAuthors(new Set(parsedQueryState.authors));
     }
 
+    if (!setsMatch(selectedRulesets, parsedQueryState.rulesets)) {
+      setSelectedRulesets(new Set(parsedQueryState.rulesets));
+    }
+
+    if (!setsMatch(selectedTags, parsedQueryState.tags)) {
+      setSelectedTags(new Set(parsedQueryState.tags));
+    }
+
     if (favoritesOnly !== parsedQueryState.favoritesOnly) {
       setFavoritesOnly(parsedQueryState.favoritesOnly);
+    }
+
+    if (forkedOnly !== parsedQueryState.forkedOnly) {
+      setForkedOnly(parsedQueryState.forkedOnly);
     }
 
     if (sortField !== parsedQueryState.sortField) {
@@ -321,8 +428,8 @@ function Explore() {
       setSortDirection(parsedQueryState.sortDirection);
     }
 
-    if (groupByCategory !== parsedQueryState.groupByCategory) {
-      setGroupByCategory(parsedQueryState.groupByCategory);
+    if (groupMode !== parsedQueryState.groupMode) {
+      setGroupMode(parsedQueryState.groupMode);
     }
 
     if (viewMode !== parsedQueryState.viewMode) {
@@ -337,10 +444,13 @@ function Explore() {
         setsMatch(selectedCategories, parsedQueryState.categories) &&
         selectedSource === parsedQueryState.source &&
         setsMatch(selectedAuthors, parsedQueryState.authors) &&
+        setsMatch(selectedRulesets, parsedQueryState.rulesets) &&
+        setsMatch(selectedTags, parsedQueryState.tags) &&
         favoritesOnly === parsedQueryState.favoritesOnly &&
+        forkedOnly === parsedQueryState.forkedOnly &&
         sortField === parsedQueryState.sortField &&
         sortDirection === parsedQueryState.sortDirection &&
-        groupByCategory === parsedQueryState.groupByCategory &&
+        groupMode === parsedQueryState.groupMode &&
         viewMode === parsedQueryState.viewMode;
 
       if (queryMatchesState) {
@@ -355,9 +465,13 @@ function Explore() {
     params.delete('category');
     params.delete('source');
     params.delete('author');
+    params.delete('ruleset');
+    params.delete('tag');
     params.delete('favorites');
+    params.delete('forked');
     params.delete('sort');
     params.delete('direction');
+    params.delete('groupBy');
     params.delete('groupByCategory');
     params.delete('view');
 
@@ -378,8 +492,20 @@ function Explore() {
       .sort((left, right) => left.localeCompare(right))
       .forEach((author) => params.append('author', author));
 
+    Array.from(selectedRulesets)
+      .sort((left, right) => left.localeCompare(right))
+      .forEach((ruleset) => params.append('ruleset', ruleset));
+
+    Array.from(selectedTags)
+      .sort((left, right) => left.localeCompare(right))
+      .forEach((tag) => params.append('tag', tag));
+
     if (favoritesOnly) {
       params.set('favorites', 'true');
+    }
+
+    if (forkedOnly) {
+      params.set('forked', 'true');
     }
 
     if (sortField !== DEFAULT_SORT_FIELD) {
@@ -390,8 +516,8 @@ function Explore() {
       params.set('direction', sortDirection);
     }
 
-    if (groupByCategory !== DEFAULT_GROUP_BY_CATEGORY) {
-      params.set('groupByCategory', String(groupByCategory));
+    if (groupMode !== DEFAULT_GROUP_MODE) {
+      params.set('groupBy', groupMode);
     }
 
     if (viewMode !== DEFAULT_VIEW_MODE) {
@@ -413,7 +539,8 @@ function Explore() {
     );
   }, [
     favoritesOnly,
-    groupByCategory,
+    forkedOnly,
+    groupMode,
     location.pathname,
     location.search,
     navigate,
@@ -421,16 +548,41 @@ function Explore() {
     searchQuery,
     selectedAuthors,
     selectedCategories,
+    selectedRulesets,
     selectedSource,
+    selectedTags,
     sortDirection,
     sortField,
     viewMode,
   ]);
 
+  function patternMatchesSearch(pattern: ExplorePattern, normalizedQuery: string): boolean {
+    if (!normalizedQuery) return true;
+
+    const sourceLabel = pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
+    const visibilityLabel = pattern.visibility === 'private'
+      ? t('playground.visibilityPrivate')
+      : t('playground.visibilityPublic');
+    const searchableValues = [
+      pattern.name,
+      pattern.category,
+      getRulesetLabel(getPatternRulesetId(pattern)),
+      sourceLabel,
+      visibilityLabel,
+      ...(pattern.tags ?? []),
+    ];
+
+    return searchableValues.some((value) => value.toLowerCase().includes(normalizedQuery));
+  }
+
+  function patternMatchesSelectedTags(pattern: ExplorePattern): boolean {
+    return selectedTags.size === 0 || getPatternTags(pattern).some((tag) => selectedTags.has(tag));
+  }
+
   const filteredPatterns = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    const filtered = allPatterns.filter((pattern) => {
+    const filtered = browsablePatterns.filter((pattern) => {
       if (selectedCategories.size > 0 && !selectedCategories.has(pattern.category)) {
         return false;
       }
@@ -443,15 +595,19 @@ function Explore() {
         return false;
       }
 
+      if (selectedRulesets.size > 0 && !selectedRulesets.has(getPatternRulesetId(pattern))) {
+        return false;
+      }
+
+      if (!patternMatchesSelectedTags(pattern)) {
+        return false;
+      }
+
       if (favoritesOnly && !favoriteHashes.has(getPatternHash(pattern.grid))) {
         return false;
       }
 
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      return pattern.name.toLowerCase().includes(normalizedQuery) || pattern.category.toLowerCase().includes(normalizedQuery);
+      return patternMatchesSearch(pattern, normalizedQuery);
     });
 
     return [...filtered].sort((leftPattern, rightPattern) => {
@@ -488,12 +644,12 @@ function Explore() {
 
       return leftPattern.name.localeCompare(rightPattern.name);
     });
-  }, [allPatterns, favoriteHashes, favoritesOnly, patternMetrics, searchQuery, selectedAuthors, selectedCategories, selectedSource, sortDirection, sortField, t]);
+  }, [browsablePatterns, favoriteHashes, favoritesOnly, patternMetrics, searchQuery, selectedAuthors, selectedCategories, selectedRulesets, selectedSource, selectedTags, sortDirection, sortField, t]);
 
   const categoryCountBase = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    return allPatterns.filter((pattern) => {
+    return browsablePatterns.filter((pattern) => {
       if (selectedSource !== 'all' && pattern.source !== selectedSource) {
         return false;
       }
@@ -502,17 +658,19 @@ function Explore() {
         return false;
       }
 
+      if (selectedRulesets.size > 0 && !selectedRulesets.has(getPatternRulesetId(pattern))) {
+        return false;
+      }
+
+      if (!patternMatchesSelectedTags(pattern)) return false;
+
       if (favoritesOnly && !favoriteHashes.has(getPatternHash(pattern.grid))) {
         return false;
       }
 
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      return pattern.name.toLowerCase().includes(normalizedQuery) || pattern.category.toLowerCase().includes(normalizedQuery);
+      return patternMatchesSearch(pattern, normalizedQuery);
     });
-  }, [allPatterns, favoriteHashes, favoritesOnly, searchQuery, selectedAuthors, selectedSource]);
+  }, [browsablePatterns, favoriteHashes, favoritesOnly, searchQuery, selectedAuthors, selectedRulesets, selectedSource, selectedTags]);
 
   const categoryCounts = useMemo(() => {
     const next: Record<string, number> = {
@@ -526,48 +684,10 @@ function Explore() {
     return next;
   }, [categoryCountBase]);
 
-  const sourceCountBase = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    return allPatterns.filter((pattern) => {
-      if (selectedCategories.size > 0 && !selectedCategories.has(pattern.category)) {
-        return false;
-      }
-
-      if (selectedAuthors.size > 0 && !selectedAuthors.has(getPatternAuthorKey(pattern))) {
-        return false;
-      }
-
-      if (favoritesOnly && !favoriteHashes.has(getPatternHash(pattern.grid))) {
-        return false;
-      }
-
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      return pattern.name.toLowerCase().includes(normalizedQuery) || pattern.category.toLowerCase().includes(normalizedQuery);
-    });
-  }, [allPatterns, favoriteHashes, favoritesOnly, searchQuery, selectedAuthors, selectedCategories]);
-
-  const sourceCounts = useMemo(() => {
-    const next: Record<'all' | 'system' | 'user', number> = {
-      all: sourceCountBase.length,
-      system: 0,
-      user: 0,
-    };
-
-    for (const pattern of sourceCountBase) {
-      next[pattern.source] += 1;
-    }
-
-    return next;
-  }, [sourceCountBase]);
-
   const authorCountBase = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    return allPatterns.filter((pattern) => {
+    return browsablePatterns.filter((pattern) => {
       if (selectedCategories.size > 0 && !selectedCategories.has(pattern.category)) {
         return false;
       }
@@ -576,17 +696,19 @@ function Explore() {
         return false;
       }
 
+      if (selectedRulesets.size > 0 && !selectedRulesets.has(getPatternRulesetId(pattern))) {
+        return false;
+      }
+
+      if (!patternMatchesSelectedTags(pattern)) return false;
+
       if (favoritesOnly && !favoriteHashes.has(getPatternHash(pattern.grid))) {
         return false;
       }
 
-      if (!normalizedQuery) {
-        return true;
-      }
-
-      return pattern.name.toLowerCase().includes(normalizedQuery) || pattern.category.toLowerCase().includes(normalizedQuery);
+      return patternMatchesSearch(pattern, normalizedQuery);
     });
-  }, [allPatterns, favoriteHashes, favoritesOnly, searchQuery, selectedCategories, selectedSource]);
+  }, [browsablePatterns, favoriteHashes, favoritesOnly, searchQuery, selectedCategories, selectedRulesets, selectedSource, selectedTags]);
 
   const authorCounts = useMemo(() => {
     const next: Record<string, number> = {
@@ -601,35 +723,134 @@ function Explore() {
     return next;
   }, [authorCountBase]);
 
+  const rulesetCountBase = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return browsablePatterns.filter((pattern) => {
+      if (selectedCategories.size > 0 && !selectedCategories.has(pattern.category)) return false;
+      if (selectedSource !== 'all' && pattern.source !== selectedSource) return false;
+      if (selectedAuthors.size > 0 && !selectedAuthors.has(getPatternAuthorKey(pattern))) return false;
+      if (!patternMatchesSelectedTags(pattern)) return false;
+      if (favoritesOnly && !favoriteHashes.has(getPatternHash(pattern.grid))) return false;
+      return patternMatchesSearch(pattern, normalizedQuery);
+    });
+  }, [browsablePatterns, favoriteHashes, favoritesOnly, searchQuery, selectedAuthors, selectedCategories, selectedSource, selectedTags, t]);
+
+  const rulesetCounts = useMemo(() => {
+    const next: Record<string, number> = { all: rulesetCountBase.length };
+    for (const pattern of rulesetCountBase) {
+      const rulesetId = getPatternRulesetId(pattern);
+      next[rulesetId] = (next[rulesetId] ?? 0) + 1;
+    }
+    return next;
+  }, [rulesetCountBase]);
+
+  const tagCountBase = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return browsablePatterns.filter((pattern) => {
+      if (selectedCategories.size > 0 && !selectedCategories.has(pattern.category)) return false;
+      if (selectedSource !== 'all' && pattern.source !== selectedSource) return false;
+      if (selectedAuthors.size > 0 && !selectedAuthors.has(getPatternAuthorKey(pattern))) return false;
+      if (selectedRulesets.size > 0 && !selectedRulesets.has(getPatternRulesetId(pattern))) return false;
+      if (favoritesOnly && !favoriteHashes.has(getPatternHash(pattern.grid))) return false;
+      return patternMatchesSearch(pattern, normalizedQuery);
+    });
+  }, [browsablePatterns, favoriteHashes, favoritesOnly, searchQuery, selectedAuthors, selectedCategories, selectedRulesets, selectedSource, t]);
+
+  const tagCounts = useMemo(() => {
+    const next: Record<string, number> = { all: tagCountBase.length };
+    for (const pattern of tagCountBase) {
+      for (const tag of getPatternTags(pattern)) {
+        next[tag] = (next[tag] ?? 0) + 1;
+      }
+    }
+    return next;
+  }, [tagCountBase, t]);
+
   const sortedCategoryOptions = useMemo(
     () => sortByCountThenLabel(categoryOptions.filter((category) => category !== 'all'), categoryCounts, (category) => category),
     [categoryCounts, categoryOptions],
   );
 
-  const sortedSourceOptions = useMemo(
-    () => sortByCountThenLabel(['system', 'user'], sourceCounts, (source) => (source === 'system' ? t('patternSource.system') : t('patternSource.user'))),
-    [sourceCounts, t],
+  const disabledCategoryOptions = sortedCategoryOptions.filter(
+    (category) => (categoryCounts[category] ?? 0) === 0 && !selectedCategories.has(category),
   );
+  const visibleCategoryOptions = showDisabledCategories
+    ? sortedCategoryOptions
+    : sortedCategoryOptions.filter((category) => !disabledCategoryOptions.includes(category));
 
   const sortedAuthorOptions = useMemo(
     () => sortByCountThenLabel(authorOptions.filter((author) => author !== 'all'), authorCounts, (author) => getAuthorLabel(author)),
     [authorCounts, authorOptions, t],
   );
 
+  const sortedRulesetOptions = useMemo(
+    () => sortByCountThenLabel(rulesetOptions, rulesetCounts, (ruleset) => getRulesetLabel(ruleset)),
+    [rulesetCounts, rulesetOptions, t],
+  );
+
+  const sortedTagOptions = useMemo(
+    () => sortByCountThenLabel(tagOptions.filter((tag) => tag !== 'all'), tagCounts, (tag) => tag),
+    [tagCounts, tagOptions],
+  );
+
+  const disabledRulesetOptions = sortedRulesetOptions.filter(
+    (rulesetId) => (rulesetCounts[rulesetId] ?? 0) === 0 && !selectedRulesets.has(rulesetId),
+  );
+  const visibleRulesetOptions = showDisabledRulesets
+    ? sortedRulesetOptions
+    : sortedRulesetOptions.filter((rulesetId) => !disabledRulesetOptions.includes(rulesetId));
+  const disabledTagOptions = sortedTagOptions.filter(
+    (tag) => (tagCounts[tag] ?? 0) === 0 && !selectedTags.has(tag),
+  );
+  const visibleTagOptions = showDisabledTags
+    ? sortedTagOptions
+    : sortedTagOptions.filter((tag) => !disabledTagOptions.includes(tag));
+  const disabledAuthorOptions = sortedAuthorOptions.filter(
+    (author) => (authorCounts[author] ?? 0) === 0 && !selectedAuthors.has(author),
+  );
+  const visibleAuthorOptions = showDisabledAuthors
+    ? sortedAuthorOptions
+    : sortedAuthorOptions.filter((author) => !disabledAuthorOptions.includes(author));
+
+  const hasAvailableCategories = sortedCategoryOptions.some((category) => (categoryCounts[category] ?? 0) > 0);
+  const hasAvailableRulesets = sortedRulesetOptions.some((rulesetId) => (rulesetCounts[rulesetId] ?? 0) > 0);
+  const hasAvailableTags = sortedTagOptions.some((tag) => (tagCounts[tag] ?? 0) > 0);
+  const hasAvailableAuthors = sortedAuthorOptions.some((author) => (authorCounts[author] ?? 0) > 0);
+
   const groupedPatterns = useMemo(() => {
-    if (!groupByCategory) {
+    if (filteredPatterns.length === 0) {
+      return [];
+    }
+
+    if (groupMode === 'none') {
       return [[t('explore.allPatternsGroupLabel'), filteredPatterns]] as const;
     }
 
     const grouped = new Map<string, ExplorePattern[]>();
     for (const pattern of filteredPatterns) {
-      const current = grouped.get(pattern.category) ?? [];
+      const groupLabel = groupMode === 'category'
+        ? pattern.category
+        : groupMode === 'ruleset'
+          ? getRulesetLabel(getPatternRulesetId(pattern))
+          : getAuthorLabel(getPatternAuthorKey(pattern));
+      const current = grouped.get(groupLabel) ?? [];
       current.push(pattern);
-      grouped.set(pattern.category, current);
+      grouped.set(groupLabel, current);
     }
 
     return Array.from(grouped.entries());
-  }, [filteredPatterns, groupByCategory, t]);
+  }, [filteredPatterns, groupMode, t]);
+
+  const groupOptions: { value: GroupMode; label: string; icon: typeof FolderTree }[] = [
+    { value: 'none', label: t('explore.groupNone'), icon: Rows3 },
+    { value: 'category', label: t('explore.groupCategory'), icon: FolderTree },
+    { value: 'ruleset', label: t('explore.groupRuleset'), icon: Cpu },
+    { value: 'author', label: t('explore.groupAuthor'), icon: User },
+  ];
+  const selectedGroupOption = groupOptions.find((option) => option.value === groupMode) ?? groupOptions[0];
+  const SelectedGroupIcon = selectedGroupOption.icon;
 
   const sortFieldLabel =
     sortField === 'favorites'
@@ -715,6 +936,19 @@ function Explore() {
     return encodeGridToBase64(patternGrid);
   }
 
+  function getPatternPlayUrl(pattern: ExplorePattern): string {
+    const params = new URLSearchParams({ pattern: getPatternHash(pattern.grid) });
+    if (pattern.boardId) {
+      params.set('board', pattern.boardId);
+    } else if (pattern.source === 'system') {
+      params.set('catalog', pattern.name);
+    }
+    if (pattern.rulesetId && RULESETS.some((ruleset) => ruleset.id === pattern.rulesetId && ruleset.implemented)) {
+      params.set('ruleset', pattern.rulesetId);
+    }
+    return `/play?${params.toString()}`;
+  }
+
   function handleTableSort(nextField: 'name' | 'user' | 'category' | 'forks' | 'favorites'): void {
     if (sortField === nextField) {
       setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'));
@@ -756,8 +990,213 @@ function Explore() {
     return authorKey;
   }
 
+  function getPatternRulesetId(pattern: ExplorePattern): string {
+    if (pattern.rulesetId) return pattern.rulesetId;
+    return pattern.source === 'system' ? 'standard' : CUSTOM_RULESET_ID;
+  }
+
+  function getRulesetLabel(rulesetId: string): string {
+    if (rulesetId === CUSTOM_RULESET_ID) return t('explore.rulesetCustom');
+    if (rulesetId === 'standard') return t('diagnostics.rulesetStandardOption');
+    if (rulesetId === 'highlife') return t('diagnostics.rulesetHighlifeOption');
+    const ruleset = RULESETS.find((candidate) => candidate.id === rulesetId);
+    return ruleset ? `${ruleset.name} (${ruleset.classification})` : rulesetId;
+  }
+
+  function getPatternTags(pattern: ExplorePattern): string[] {
+    const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const sourceLabel = pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
+    const visibilityLabel = pattern.visibility === 'private'
+      ? t('playground.visibilityPrivate')
+      : t('playground.visibilityPublic');
+    const rulesetId = getPatternRulesetId(pattern);
+    const excludedValues = new Set([
+      pattern.category,
+      sourceLabel,
+      visibilityLabel,
+      pattern.creatorName ?? '',
+      rulesetId,
+      getRulesetLabel(rulesetId),
+    ].map(normalize).filter(Boolean));
+    const seenTags = new Set<string>();
+
+    return (pattern.tags ?? []).filter((tag) => {
+      const normalizedTag = normalize(tag.trim());
+      if (!normalizedTag || excludedValues.has(normalizedTag) || seenTags.has(normalizedTag)) {
+        return false;
+      }
+
+      seenTags.add(normalizedTag);
+      return true;
+    }).slice(0, 3);
+  }
+
+  function renderSourceBadge(pattern: ExplorePattern) {
+    const sourceLabel = pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
+    const displayLabel = pattern.source === 'user' ? pattern.creatorName ?? sourceLabel : sourceLabel;
+    const SourceIcon = pattern.source === 'user' ? User : Cpu;
+
+    return (
+      <button
+        className="wm-badge wm-badge-neutral explore-filter-badge"
+        type="button"
+        aria-label={`${t('explore.sourceFilterLabel')}: ${sourceLabel}`}
+        onClick={() => setSelectedSource(pattern.source)}
+      >
+        <span className="pattern-source-badge-content">
+          <SourceIcon size={11} aria-hidden="true" />
+          <span>{displayLabel}</span>
+        </span>
+      </button>
+    );
+  }
+
+  function renderPatternBadges(pattern: ExplorePattern) {
+    const tags = getPatternTags(pattern);
+    const rulesetId = getPatternRulesetId(pattern);
+
+    return (
+      <div className="explore-pattern-detail-rows">
+        <div className="explore-pattern-category-row">
+          <button
+            className="wm-badge wm-badge-neutral explore-filter-badge"
+            type="button"
+            aria-label={`${t('explore.categoryFilterLabel')}: ${pattern.category}`}
+            onClick={() => setSelectedCategories(new Set([pattern.category]))}
+          >
+            {pattern.category}
+          </button>
+        </div>
+        <div className="explore-pattern-ruleset-row">
+          <button
+            className="wm-badge wm-badge-neutral explore-pattern-ruleset-badge explore-filter-badge"
+            type="button"
+            aria-label={`${t('explore.rulesetFilterLabel')}: ${getRulesetLabel(rulesetId)}`}
+            onClick={() => setSelectedRulesets(new Set([rulesetId]))}
+          >
+            {getRulesetLabel(rulesetId)}
+          </button>
+        </div>
+        {tags.length > 0 ? (
+          <div className="explore-pattern-tag-row">
+            {tags.map((tag) => (
+              <button
+                key={tag}
+                className="wm-badge wm-badge-neutral explore-pattern-tag explore-filter-badge"
+                type="button"
+                aria-label={`${t('explore.tagFilterLabel')}: ${tag}`}
+                onClick={() => setSelectedTags(new Set([tag]))}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  function renderRulesetFilter() {
+    return (
+      <details className="explore-filter-section" open>
+        <summary className="explore-filter-section-summary">{t('explore.rulesetFilterLabel')}</summary>
+        <div className="explore-checkbox-list" role="group" aria-label={t('explore.rulesetFilterLabel')}>
+          {!hasAvailableRulesets ? <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p> : null}
+          {hasAvailableRulesets ? ['all', ...visibleRulesetOptions].map((rulesetId) => {
+            const checked = rulesetId === 'all' ? selectedRulesets.size === 0 : selectedRulesets.has(rulesetId);
+            const disabled = rulesetId !== 'all' && (rulesetCounts[rulesetId] ?? 0) === 0 && !checked;
+
+            return (
+              <label key={rulesetId} className="explore-checkbox-item explore-checkbox-item-with-count">
+                <span className="explore-checkbox-item-main">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={disabled}
+                    onChange={(event) => {
+                      if (rulesetId === 'all') {
+                        if (event.target.checked) setSelectedRulesets(new Set());
+                        return;
+                      }
+
+                      setSelectedRulesets((current) => {
+                        const next = new Set(current);
+                        if (event.target.checked) next.add(rulesetId);
+                        else next.delete(rulesetId);
+                        return next;
+                      });
+                    }}
+                  />
+                  <span>{rulesetId === 'all' ? t('explore.rulesetAll') : getRulesetLabel(rulesetId)}</span>
+                </span>
+                <span className="wm-badge wm-badge-neutral explore-filter-option-count">{rulesetCounts[rulesetId] ?? 0}</span>
+              </label>
+            );
+          }) : null}
+          {hasAvailableRulesets && disabledRulesetOptions.length > 0 ? (
+            <button className="explore-filter-more-btn" type="button" onClick={() => setShowDisabledRulesets((current) => !current)}>
+              {showDisabledRulesets
+                ? t('explore.showFewerFilterOptions')
+                : t('explore.showMoreFilterOptions', { count: disabledRulesetOptions.length })}
+            </button>
+          ) : null}
+        </div>
+      </details>
+    );
+  }
+
+  function renderTagFilter() {
+    return (
+      <details className="explore-filter-section" open>
+        <summary className="explore-filter-section-summary">{t('explore.tagFilterLabel')}</summary>
+        <div className="explore-checkbox-list" role="group" aria-label={t('explore.tagFilterLabel')}>
+          {!hasAvailableTags ? <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p> : null}
+          {hasAvailableTags ? ['all', ...visibleTagOptions].map((tag) => {
+            const checked = tag === 'all' ? selectedTags.size === 0 : selectedTags.has(tag);
+            const disabled = tag !== 'all' && (tagCounts[tag] ?? 0) === 0 && !checked;
+
+            return (
+              <label key={tag} className="explore-checkbox-item explore-checkbox-item-with-count">
+                <span className="explore-checkbox-item-main">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={disabled}
+                    onChange={(event) => {
+                      if (tag === 'all') {
+                        if (event.target.checked) setSelectedTags(new Set());
+                        return;
+                      }
+
+                      setSelectedTags((current) => {
+                        const next = new Set(current);
+                        if (event.target.checked) next.add(tag);
+                        else next.delete(tag);
+                        return next;
+                      });
+                    }}
+                  />
+                  <span>{tag === 'all' ? t('explore.tagAll') : tag}</span>
+                </span>
+                <span className="wm-badge wm-badge-neutral explore-filter-option-count">{tagCounts[tag] ?? 0}</span>
+              </label>
+            );
+          }) : null}
+          {hasAvailableTags && disabledTagOptions.length > 0 ? (
+            <button className="explore-filter-more-btn" type="button" onClick={() => setShowDisabledTags((current) => !current)}>
+              {showDisabledTags
+                ? t('explore.showFewerFilterOptions')
+                : t('explore.showMoreFilterOptions', { count: disabledTagOptions.length })}
+            </button>
+          ) : null}
+        </div>
+      </details>
+    );
+  }
+
   function handleFork(pattern: ExplorePattern): void {
     const hash = getPatternHash(pattern.grid);
+    const forkBoardId = `${hash}-fork-${Date.now().toString(36)}`;
     const patternName = pattern.name;
     const forkTitle = `${patternName} (${t('explore.forkSuffix')})`;
     const currentTemplateNames = getSavedTemplateNames();
@@ -766,8 +1205,8 @@ function Explore() {
       ...currentTemplateNames,
       [hash]: forkTitle,
     });
-    upsertSavedBoard(hash, forkTitle);
-    upsertForkOrigin(`${hash}-fork-${Date.now().toString(36)}`, {
+    upsertSavedBoard(hash, forkTitle, forkBoardId);
+    upsertForkOrigin(forkBoardId, {
       parentHash: hash,
       parentTitle: pattern.name,
       parentSource: pattern.source,
@@ -776,6 +1215,7 @@ function Explore() {
       forkedPatternTitle: forkTitle,
     });
     trackRecentBoard(hash, forkTitle);
+    setForkOrigins(getForkOrigins());
     setPatternMetrics(buildPatternMetrics(allPatterns));
     showToast(t('messages.patternForked', { name: patternName }));
   }
@@ -828,10 +1268,34 @@ function Explore() {
                 </div>
               </div>
 
+              <div className="explore-filters-meta-row">
+                <p className="profile-persistence-note">{t('explore.resultsCount', { count: filteredCount })}</p>
+                <button
+                  className="btn btn-sm btn-secondary-neutral"
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategories(new Set());
+                    setSelectedSource('all');
+                    setSelectedAuthors(new Set());
+                    setSelectedRulesets(new Set());
+                    setSelectedTags(new Set());
+                    setSortField('favorites');
+                    setSortDirection('desc');
+                    setGroupMode(DEFAULT_GROUP_MODE);
+                    setFavoritesOnly(false);
+                    setForkedOnly(false);
+                  }}
+                >
+                  {t('explore.clearFilters')}
+                </button>
+              </div>
+
               <details className="explore-filter-section" open>
                 <summary className="explore-filter-section-summary">{t('explore.categoryFilterLabel')}</summary>
                 <div className="explore-checkbox-list" role="group" aria-label={t('explore.categoryFilterLabel')}>
-                  {['all', ...sortedCategoryOptions].map((category) => {
+                  {!hasAvailableCategories ? <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p> : null}
+                  {hasAvailableCategories ? ['all', ...visibleCategoryOptions].map((category) => {
                     const checked = category === 'all' ? selectedCategories.size === 0 : selectedCategories.has(category);
                     const disabled = category !== 'all' && (categoryCounts[category] ?? 0) === 0 && !checked;
 
@@ -866,58 +1330,30 @@ function Explore() {
                         <span className="wm-badge wm-badge-neutral explore-filter-option-count">{categoryCounts[category] ?? 0}</span>
                       </label>
                     );
-                  })}
+                  }) : null}
+                  {hasAvailableCategories && disabledCategoryOptions.length > 0 ? (
+                    <button
+                      className="explore-filter-more-btn"
+                      type="button"
+                      onClick={() => setShowDisabledCategories((current) => !current)}
+                    >
+                      {showDisabledCategories
+                        ? t('explore.showFewerFilterOptions')
+                        : t('explore.showMoreFilterOptions', { count: disabledCategoryOptions.length })}
+                    </button>
+                  ) : null}
                 </div>
               </details>
 
-              <details className="explore-filter-section" open>
-                <summary className="explore-filter-section-summary">{t('explore.sourceFilterLabel')}</summary>
-                <div className="explore-checkbox-list" role="group" aria-label={t('explore.sourceFilterLabel')}>
-                  {(['all', ...sortedSourceOptions] as const).map((source) => {
-                    const checked = selectedSource === source;
-                    const disabled = source !== 'all' && sourceCounts[source] === 0 && !checked;
-                    const label =
-                      source === 'all'
-                        ? t('explore.sourceAll')
-                        : source === 'system'
-                          ? t('patternSource.system')
-                          : t('patternSource.user');
+              {renderRulesetFilter()}
 
-                    return (
-                      <label key={source} className="explore-checkbox-item explore-checkbox-item-with-count">
-                        <span className="explore-checkbox-item-main">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            disabled={disabled}
-                            onChange={(event) => {
-                              if (source === 'all') {
-                                if (event.target.checked) {
-                                  setSelectedSource('all');
-                                }
-                                return;
-                              }
-
-                              if (event.target.checked) {
-                                setSelectedSource(source);
-                              } else {
-                                setSelectedSource('all');
-                              }
-                            }}
-                          />
-                          <span>{label}</span>
-                        </span>
-                        <span className="wm-badge wm-badge-neutral explore-filter-option-count">{sourceCounts[source]}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </details>
+              {renderTagFilter()}
 
               <details className="explore-filter-section" open>
                 <summary className="explore-filter-section-summary">{t('explore.authorFilterLabel')}</summary>
                 <div className="explore-checkbox-list" role="group" aria-label={t('explore.authorFilterLabel')}>
-                  {['all', ...sortedAuthorOptions].map((authorKey) => {
+                  {!hasAvailableAuthors ? <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p> : null}
+                  {hasAvailableAuthors ? ['all', ...visibleAuthorOptions].map((authorKey) => {
                     const checked = authorKey === 'all' ? selectedAuthors.size === 0 : selectedAuthors.has(authorKey);
                     const disabled = authorKey !== 'all' && (authorCounts[authorKey] ?? 0) === 0 && !checked;
 
@@ -952,44 +1388,19 @@ function Explore() {
                         <span className="wm-badge wm-badge-neutral explore-filter-option-count">{authorCounts[authorKey] ?? 0}</span>
                       </label>
                     );
-                  })}
+                  }) : null}
+                  {hasAvailableAuthors && disabledAuthorOptions.length > 0 ? (
+                    <button className="explore-filter-more-btn" type="button" onClick={() => setShowDisabledAuthors((current) => !current)}>
+                      {showDisabledAuthors
+                        ? t('explore.showFewerFilterOptions')
+                        : t('explore.showMoreFilterOptions', { count: disabledAuthorOptions.length })}
+                    </button>
+                  ) : null}
                 </div>
               </details>
 
-              <details className="explore-filter-section" open>
-                <summary className="explore-filter-section-summary">{t('explore.favoritesOnly')}</summary>
-                <div className="explore-checkbox-list">
-                  <label className="explore-checkbox-item">
-                    <input
-                      type="checkbox"
-                      checked={favoritesOnly}
-                      onChange={(event) => setFavoritesOnly(event.target.checked)}
-                    />
-                    <span>{t('explore.favoritesOnly')}</span>
-                  </label>
-                </div>
-              </details>
             </div>
 
-            <div className="explore-filters-meta-row">
-              <p className="profile-persistence-note">{t('explore.resultsCount', { count: filteredCount })}</p>
-              <button
-                className="btn btn-sm btn-secondary-neutral"
-                type="button"
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedCategories(new Set());
-                  setSelectedSource('all');
-                  setSelectedAuthors(new Set());
-                  setSortField('favorites');
-                  setSortDirection('desc');
-                  setGroupByCategory(true);
-                  setFavoritesOnly(false);
-                }}
-              >
-                {t('explore.clearFilters')}
-              </button>
-            </div>
           </section>
         </aside>
 
@@ -1015,13 +1426,38 @@ function Explore() {
                 </button>
               </div>
 
+              <div className="explore-group-select-wrap">
+                <SelectedGroupIcon className="explore-group-select-icon" size={12} aria-hidden="true" />
+                <select
+                  className="wm-select explore-group-select"
+                  aria-label={t('explore.groupByLabel')}
+                  value={groupMode}
+                  onChange={(event) => setGroupMode(event.target.value as GroupMode)}
+                >
+                  {groupOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
               <button
-                className={`btn btn-sm btn-secondary-neutral explore-group-toggle${groupByCategory ? ' is-active' : ''}`}
+                className={`btn btn-sm btn-secondary-neutral explore-boolean-toggle${favoritesOnly ? ' is-active' : ''}`}
                 type="button"
-                onClick={() => setGroupByCategory((current) => !current)}
+                aria-pressed={favoritesOnly}
+                onClick={() => setFavoritesOnly((current) => !current)}
               >
-                <FolderTree size={12} aria-hidden="true" />
-                <span>{t('explore.groupByCategory')}</span>
+                <Star size={12} fill={favoritesOnly ? 'currentColor' : 'none'} aria-hidden="true" />
+                <span>{t('explore.favoritesOnly')}</span>
+              </button>
+
+              <button
+                className={`btn btn-sm btn-secondary-neutral explore-boolean-toggle${forkedOnly ? ' is-active' : ''}`}
+                type="button"
+                aria-pressed={forkedOnly}
+                onClick={() => setForkedOnly((current) => !current)}
+              >
+                <GitFork size={12} aria-hidden="true" />
+                <span>{t('explore.forkedOnly')}</span>
               </button>
             </div>
 
@@ -1071,7 +1507,31 @@ function Explore() {
             </div>
           </section>
 
-          {groupedPatterns.length === 0 ? <p className="profile-persistence-note">{t('explore.noResults')}</p> : null}
+          {groupedPatterns.length === 0 ? (
+            <div className="explore-empty-state">
+              <Search size={24} aria-hidden="true" />
+              <div>
+                <h2>{t('explore.noResultsTitle')}</h2>
+                <p>{t('explore.noResults')}</p>
+              </div>
+              <button
+                className="btn btn-sm btn-secondary-neutral"
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategories(new Set());
+                  setSelectedSource('all');
+                  setSelectedAuthors(new Set());
+                  setSelectedRulesets(new Set());
+                  setSelectedTags(new Set());
+                  setFavoritesOnly(false);
+                  setForkedOnly(false);
+                }}
+              >
+                {t('explore.clearFilters')}
+              </button>
+            </div>
+          ) : null}
 
           {groupedPatterns.map(([category, categoryPatterns]) => (
             <section
@@ -1093,7 +1553,7 @@ function Explore() {
                       <article key={`${pattern.category}-${pattern.name}`} className="card card-body explore-pattern-card">
                         <Link
                           className="explore-card-preview-link"
-                          to={`/play?pattern=${hash}`}
+                          to={getPatternPlayUrl(pattern)}
                           onClick={() => trackRecentBoard(hash, pattern.name)}
                         >
                           <div className="profile-board-preview">
@@ -1105,42 +1565,17 @@ function Explore() {
                           <div className="profile-board-meta-title-row">
                             <Link
                               className="explore-card-title-link"
-                              to={`/play?pattern=${hash}`}
+                              to={getPatternPlayUrl(pattern)}
                               onClick={() => trackRecentBoard(hash, pattern.name)}
                             >
                               <h3>{pattern.name}</h3>
                             </Link>
-                            {pattern.source === 'user' ? (
-                              <Link
-                                className="wm-badge wm-badge-neutral explore-pattern-owner-link"
-                                to={`/profile?creator=${encodeURIComponent(toCreatorSlug(pattern.creatorName ?? 'user'))}`}
-                              >
-                                <span className="pattern-source-badge-content">
-                                  <User size={11} aria-hidden="true" />
-                                  <span>{pattern.creatorName ?? t('patternSource.user')}</span>
-                                </span>
-                              </Link>
-                            ) : (
-                              <span className="wm-badge wm-badge-neutral">
-                                <span className="pattern-source-badge-content">
-                                  <Cpu size={11} aria-hidden="true" />
-                                  <span>{t('patternSource.system')}</span>
-                                </span>
-                              </span>
-                            )}
+                            {renderSourceBadge(pattern)}
                           </div>
-                          <p>{t('explore.categoryLabel', { category: pattern.category })}</p>
+                          {renderPatternBadges(pattern)}
                         </div>
 
                         <div className="explore-pattern-actions">
-                          <Link
-                            className="btn btn-sm btn-secondary-neutral explore-action-btn"
-                            to={`/play?pattern=${hash}`}
-                            onClick={() => trackRecentBoard(hash, pattern.name)}
-                          >
-                            <Play size={13} aria-hidden="true" />
-                            {t('explore.playPattern')}
-                          </Link>
                           <button
                             className="btn btn-sm btn-secondary-neutral explore-action-btn"
                             type="button"
@@ -1166,11 +1601,13 @@ function Explore() {
                 </div>
               ) : (
                 <div className="explore-patterns-table-wrap">
-                  <table className={`explore-patterns-table${groupByCategory ? ' is-grouped' : ''}`}>
+                  <table className={`explore-patterns-table${groupMode !== 'none' ? ' is-grouped' : ''}`}>
                     <colgroup>
                       <col className="explore-col-pattern" />
                       <col className="explore-col-source" />
-                      {!groupByCategory ? <col className="explore-col-category" /> : null}
+                      <col className="explore-col-category" />
+                      <col className="explore-col-ruleset" />
+                      <col className="explore-col-tags" />
                       <col className="explore-col-forks" />
                       <col className="explore-col-stars" />
                       <col className="explore-col-actions" />
@@ -1223,31 +1660,31 @@ function Explore() {
                             </button>
                           </div>
                         </th>
-                        {!groupByCategory ? (
-                          <th>
-                            <div className="explore-table-sort-head">
-                              <button
-                                type="button"
-                                className={`explore-table-sort-btn${sortField === 'category' ? ' is-active' : ''}`}
-                                onClick={() => handleTableSort('category')}
-                              >
-                                <span>{t('explore.tableCategory')}</span>
-                              </button>
-                              <button
-                                type="button"
-                                className={`explore-table-sort-dir-btn${sortField === 'category' ? ' is-active' : ''}`}
-                                aria-label={`${t('explore.sortDirectionLabel')} - ${t('explore.tableCategory')}`}
-                                onClick={() => handleTableSortDirection('category')}
-                              >
-                                {sortField === 'category' ? (
-                                  sortDirection === 'asc' ? <ArrowUp size={12} aria-hidden="true" /> : <ArrowDown size={12} aria-hidden="true" />
-                                ) : (
-                                  <ArrowDownUp size={12} aria-hidden="true" />
-                                )}
-                              </button>
-                            </div>
-                          </th>
-                        ) : null}
+                        <th>
+                          <div className="explore-table-sort-head">
+                            <button
+                              type="button"
+                              className={`explore-table-sort-btn${sortField === 'category' ? ' is-active' : ''}`}
+                              onClick={() => handleTableSort('category')}
+                            >
+                              <span>{t('explore.tableCategory')}</span>
+                            </button>
+                            <button
+                              type="button"
+                              className={`explore-table-sort-dir-btn${sortField === 'category' ? ' is-active' : ''}`}
+                              aria-label={`${t('explore.sortDirectionLabel')} - ${t('explore.tableCategory')}`}
+                              onClick={() => handleTableSortDirection('category')}
+                            >
+                              {sortField === 'category' ? (
+                                sortDirection === 'asc' ? <ArrowUp size={12} aria-hidden="true" /> : <ArrowDown size={12} aria-hidden="true" />
+                              ) : (
+                                <ArrowDownUp size={12} aria-hidden="true" />
+                              )}
+                            </button>
+                          </div>
+                        </th>
+                        <th>{t('explore.tableRuleset')}</th>
+                        <th>{t('explore.tableTags')}</th>
                         <th>
                           <div className="explore-table-sort-head">
                             <button
@@ -1308,7 +1745,7 @@ function Explore() {
                             <td>
                               <Link
                                 className="explore-table-pattern-link"
-                                to={`/play?pattern=${hash}`}
+                                to={getPatternPlayUrl(pattern)}
                                 onClick={() => trackRecentBoard(hash, pattern.name)}
                               >
                                 <div className="explore-table-pattern-cell">
@@ -1318,26 +1755,43 @@ function Explore() {
                               </Link>
                             </td>
                             <td>
-                              {pattern.source === 'user' ? (
-                                <Link
-                                  className="wm-badge wm-badge-neutral explore-pattern-owner-link"
-                                  to={`/profile?creator=${encodeURIComponent(toCreatorSlug(pattern.creatorName ?? 'user'))}`}
-                                >
-                                  <span className="pattern-source-badge-content">
-                                    <User size={11} aria-hidden="true" />
-                                    <span>{pattern.creatorName ?? t('patternSource.user')}</span>
-                                  </span>
-                                </Link>
-                              ) : (
-                                <span className="wm-badge wm-badge-neutral">
-                                  <span className="pattern-source-badge-content">
-                                    <Cpu size={11} aria-hidden="true" />
-                                    <span>{t('patternSource.system')}</span>
-                                  </span>
-                                </span>
-                              )}
+                              {renderSourceBadge(pattern)}
                             </td>
-                            {!groupByCategory ? <td>{pattern.category}</td> : null}
+                            <td>
+                              <button
+                                className="wm-badge wm-badge-neutral explore-filter-badge"
+                                type="button"
+                                aria-label={`${t('explore.categoryFilterLabel')}: ${pattern.category}`}
+                                onClick={() => setSelectedCategories(new Set([pattern.category]))}
+                              >
+                                {pattern.category}
+                              </button>
+                            </td>
+                            <td className="explore-table-ruleset-cell">
+                              <button
+                                className="wm-badge wm-badge-neutral explore-pattern-ruleset-badge explore-filter-badge"
+                                type="button"
+                                aria-label={`${t('explore.rulesetFilterLabel')}: ${getRulesetLabel(getPatternRulesetId(pattern))}`}
+                                onClick={() => setSelectedRulesets(new Set([getPatternRulesetId(pattern)]))}
+                              >
+                                {getRulesetLabel(getPatternRulesetId(pattern))}
+                              </button>
+                            </td>
+                            <td className="explore-table-tags-cell">
+                              <div className="explore-pattern-tag-row">
+                                {getPatternTags(pattern).map((tag) => (
+                                  <button
+                                    key={tag}
+                                    className="wm-badge wm-badge-neutral explore-pattern-tag explore-filter-badge"
+                                    type="button"
+                                    aria-label={`${t('explore.tagFilterLabel')}: ${tag}`}
+                                    onClick={() => setSelectedTags(new Set([tag]))}
+                                  >
+                                    {tag}
+                                  </button>
+                                ))}
+                              </div>
+                            </td>
                             <td>
                               <button
                                 className="btn btn-sm btn-secondary-neutral explore-action-btn"
@@ -1364,7 +1818,7 @@ function Explore() {
                               <div className="explore-pattern-actions explore-table-actions">
                                 <Link
                                   className="btn btn-sm btn-secondary-neutral explore-action-btn"
-                                  to={`/play?pattern=${hash}`}
+                                  to={getPatternPlayUrl(pattern)}
                                   onClick={() => trackRecentBoard(hash, pattern.name)}
                                 >
                                   <Play size={13} aria-hidden="true" />

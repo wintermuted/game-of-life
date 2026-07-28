@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { patterns, LifeGrid, Pattern } from '@game-of-life/core';
-import { ChevronRight, Eraser, Hand, Link, Minus, Pause, Pencil, Play, Plus, RotateCcw, RotateCw, Stamp } from 'lucide-react';
+import { ArrowRightLeft, ChevronRight, Eraser, Filter, Hand, Link, Minus, PaintBucket, Pause, Pencil, Play, Plus, RotateCcw, RotateCw, Stamp } from 'lucide-react';
 import { Square } from 'lucide-react';
 import PatternPreview from './PatternPreview';
 import { getPaletteById } from '../constants/colors';
@@ -10,6 +10,8 @@ const GENERATION_SPEED_MIN = 1;
 const GENERATION_SPEED_MAX = 10;
 const SYSTEM_DRAW_COLORS = ['#22c55e', '#39d353', '#3b82f6', '#f97316', '#ef4444', '#eab308', '#a855f7', '#06b6d4'];
 const DEFAULT_CUSTOM_COLORS = ['#ffffff', '#000000', '#f43f5e', '#14b8a6'];
+const STAMP_MENU_BOTTOM_CLEARANCE_PX = 10;
+const STAMP_MENU_SCROLL_OFFSET_PX = 46;
 const PALETTE_ID_BY_SYSTEM_COLOR: Record<string, string> = {
   '#22c55e': 'classic',
   '#39d353': 'github',
@@ -41,10 +43,12 @@ interface Props {
   activeEditTool?: 'pencil' | 'eraser' | 'selection' | 'grab' | 'stamp';
   onEditToolChange?: (tool: 'pencil' | 'eraser' | 'selection' | 'grab' | 'stamp') => void;
   selectionCount?: number;
+  onFillSelectionColor?: () => void;
   stampPattern?: LifeGrid | null;
   stampPreviewPattern?: LifeGrid | null;
   stampPatternName?: string;
   stampRotation?: 0 | 90 | 180 | 270;
+  rotateStampKeyPressToken?: number;
   onRotateStamp?: () => void;
   onStampPatternSelect?: (grid: LifeGrid) => void;
 }
@@ -76,8 +80,10 @@ function GridControls({
   stampPreviewPattern = null,
   stampPatternName = '',
   stampRotation = 0,
+  rotateStampKeyPressToken = 0,
   onRotateStamp,
   onStampPatternSelect,
+  onFillSelectionColor,
 }: Props) {
   const { t } = useTranslation();
   const toggleLabel = isGameRunning ? t('controls.pause') : t('controls.start');
@@ -94,6 +100,7 @@ function GridControls({
   const currentSpeedLabel = t('controls.generationSpeedValue', { level: generationSpeed });
   const colorPaletteLabel = showPlayControls ? t('controls.drawColor') : t('colors.title');
   const modeToggleLabel = isEditMode ? t('nav.play') : t('controls.edit');
+  const modeToggleHotkeyLabel = t('controls.modeToggleHotkey');
   const pencilLabel = t('controls.pencil');
   const eraserLabel = t('controls.eraser');
   const customColorLabel = t('controls.customColor');
@@ -102,11 +109,14 @@ function GridControls({
   const systemColorsLabel = t('controls.systemColors');
   const customColorsLabel = t('controls.customColors');
   const selectionLabel = t('controls.selection');
+  const fillSelectionLabel = t('controls.fillSelection');
   const grabPanLabel = t('controls.grabPan');
   const stampLabel = t('controls.stamp');
   const stampPatternsLabel = t('controls.stampPatterns');
   const currentStampSelectionLabel = t('controls.currentStampSelection');
   const searchStampPatternsLabel = t('controls.searchStampPatterns');
+  const filterStampCategoryLabel = t('controls.filterStampCategory');
+  const allStampCategoriesLabel = t('controls.allStampCategories');
   const rotateStampLabel = t('controls.rotateStamp');
   const stampRotationLabel = t('controls.stampRotation', { degrees: stampRotation });
   const rotateStampHotkeyLabel = t('controls.rotateStampHotkey');
@@ -116,6 +126,64 @@ function GridControls({
   const [customColorSlots, setCustomColorSlots] = useState<string[]>(() => [selectedDrawColor, ...DEFAULT_CUSTOM_COLORS].slice(0, 4));
   const [activeCustomSlotIndex, setActiveCustomSlotIndex] = useState(0);
   const [stampSearchQuery, setStampSearchQuery] = useState('');
+  const [selectedStampCategory, setSelectedStampCategory] = useState<string>('all');
+  const [isRotateStampKeyPressed, setIsRotateStampKeyPressed] = useState(false);
+  const [stampMenuMaxHeight, setStampMenuMaxHeight] = useState<number | null>(null);
+  const [isStampMenuOpen, setIsStampMenuOpen] = useState(false);
+  const stampMenuRef = useRef<HTMLDetailsElement | null>(null);
+  const stampMenuPanelRef = useRef<HTMLDivElement | null>(null);
+
+  const updateStampMenuMaxHeight = useCallback(() => {
+    const stampMenuElement = stampMenuRef.current;
+    const stampMenuPanelElement = stampMenuPanelRef.current;
+
+    if (!stampMenuElement || !stampMenuPanelElement || !stampMenuElement.open) {
+      return;
+    }
+
+    const boardStageElement = stampMenuElement.closest('.grid-stage') as HTMLElement | null;
+    if (!boardStageElement) {
+      return;
+    }
+
+    const boardStageRect = boardStageElement.getBoundingClientRect();
+    const panelRect = stampMenuPanelElement.getBoundingClientRect();
+    const availableHeight = Math.floor(boardStageRect.bottom - STAMP_MENU_BOTTOM_CLEARANCE_PX - panelRect.top);
+
+    if (availableHeight <= 0) {
+      return;
+    }
+
+    setStampMenuMaxHeight(availableHeight);
+  }, []);
+
+  useEffect(() => {
+    if (!isStampMenuOpen) {
+      return;
+    }
+
+    const handleWindowResize = () => {
+      updateStampMenuMaxHeight();
+    };
+
+    requestAnimationFrame(() => {
+      updateStampMenuMaxHeight();
+    });
+
+    window.addEventListener('resize', handleWindowResize);
+    return () => {
+      window.removeEventListener('resize', handleWindowResize);
+    };
+  }, [isStampMenuOpen, updateStampMenuMaxHeight]);
+
+  useEffect(() => {
+    if (rotateStampKeyPressToken <= 0) return;
+
+    setIsRotateStampKeyPressed(true);
+    const timer = setTimeout(() => setIsRotateStampKeyPressed(false), 140);
+
+    return () => clearTimeout(timer);
+  }, [rotateStampKeyPressToken]);
 
   useEffect(() => {
     setCustomHexValue(selectedDrawColor);
@@ -161,21 +229,83 @@ function GridControls({
     closeClosestStampMenu(event.currentTarget);
   }
 
+  function closeClosestStampCategoryMenu(target: EventTarget | null) {
+    if (!(target instanceof HTMLElement)) return;
+    const menu = target.closest('.grid-controls-stamp-category-filter') as HTMLDetailsElement | null;
+    if (menu) {
+      menu.open = false;
+    }
+  }
+
+  function highlightSearchMatch(text: string): React.ReactNode {
+    const query = stampSearchQuery.trim();
+    if (!query) {
+      return text;
+    }
+
+    const normalizedText = text.toLowerCase();
+    const normalizedQuery = query.toLowerCase();
+    const parts: React.ReactNode[] = [];
+    let searchFrom = 0;
+
+    while (searchFrom < text.length) {
+      const matchIndex = normalizedText.indexOf(normalizedQuery, searchFrom);
+      if (matchIndex === -1) {
+        parts.push(text.slice(searchFrom));
+        break;
+      }
+
+      if (matchIndex > searchFrom) {
+        parts.push(text.slice(searchFrom, matchIndex));
+      }
+
+      const matchEnd = matchIndex + query.length;
+      parts.push(
+        <mark className="grid-controls-stamp-hit" key={`${text}-${matchIndex}-${matchEnd}`}>
+          {text.slice(matchIndex, matchEnd)}
+        </mark>,
+      );
+      searchFrom = matchEnd;
+    }
+
+    return parts;
+  }
+
+  const stampCategoryOptions = ['all', ...Array.from(new Set(patterns.map((pattern) => pattern.category))).sort((a, b) => a.localeCompare(b))];
+  const visibleStampCategoryOptions = stampCategoryOptions.filter((categoryOption) => categoryOption !== selectedStampCategory);
+  const normalizedStampSearchQuery = stampSearchQuery.trim().toLowerCase();
+  const stampMenuScrollMaxHeight = stampMenuMaxHeight !== null
+    ? Math.max(112, stampMenuMaxHeight - STAMP_MENU_SCROLL_OFFSET_PX)
+    : undefined;
+
   const filteredStampPatterns = patterns.filter((pattern) => {
     const signature = getGridSignature(pattern.grid);
     if (signature === activeStampSignature) {
       return false;
     }
 
-    if (!stampSearchQuery.trim()) {
+    if (selectedStampCategory !== 'all' && pattern.category !== selectedStampCategory) {
+      return false;
+    }
+
+    if (!normalizedStampSearchQuery) {
       return true;
     }
 
-    const query = stampSearchQuery.trim().toLowerCase();
     const name = pattern.name.toLowerCase();
     const category = pattern.category.toLowerCase();
-    return name.includes(query) || category.includes(query);
+    return name.includes(normalizedStampSearchQuery) || category.includes(normalizedStampSearchQuery);
   });
+
+  useEffect(() => {
+    if (!isStampMenuOpen) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      updateStampMenuMaxHeight();
+    });
+  }, [filteredStampPatterns.length, isStampMenuOpen, selectedPattern, updateStampMenuMaxHeight]);
 
   useEffect(() => {
     setCustomColorSlots((previous) => {
@@ -257,14 +387,15 @@ function GridControls({
             <>
               <div className="grid-controls-section grid-controls-section-mode-toggle">
                 <div className="grid-controls-actions-row">
-                  <span className="control-tooltip-trigger" data-tooltip={modeToggleLabel}>
+                  <span className="control-tooltip-trigger" data-tooltip={`${modeToggleLabel} (${modeToggleHotkeyLabel})`}>
                     <button
-                      className={`btn btn-sm ${isEditMode ? 'btn-primary' : 'btn-secondary-neutral'}`}
+                      className={`btn btn-sm ${isEditMode ? 'btn-primary' : 'btn-secondary-neutral'} grid-controls-mode-button`}
                       type="button"
                       onClick={isEditMode ? onEnterPlayMode : onEnterEditMode}
                       aria-label={modeToggleLabel}
                       disabled={!isEditMode && isSystemPattern}
                     >
+                      <ArrowRightLeft size={12} aria-hidden="true" />
                       <span>{modeToggleLabel}</span>
                     </button>
                   </span>
@@ -275,6 +406,30 @@ function GridControls({
                 <>
                   <div className="grid-controls-section grid-controls-section-start">
                     <div className="grid-controls-actions-row">
+                      <span className="control-tooltip-trigger" data-tooltip={grabPanLabel}>
+                        <button
+                          className={`btn btn-sm ${activeEditTool === 'grab' ? 'btn-primary' : 'btn-secondary-neutral'}`}
+                          type="button"
+                          onClick={() => onEditToolChange?.('grab')}
+                          aria-label={grabPanLabel}
+                        >
+                          <Hand size={12} />
+                        </button>
+                      </span>
+                      <span className="control-tooltip-trigger" data-tooltip={selectionLabel}>
+                        <button
+                          className={`btn btn-sm ${isEditMode && activeEditTool === 'selection' ? 'btn-primary' : 'btn-secondary-neutral'}`}
+                          type="button"
+                          onClick={() => {
+                            onEnterEditMode?.();
+                            onEditToolChange?.('selection');
+                          }}
+                          aria-label={selectionLabel}
+                          disabled={isSystemPattern}
+                        >
+                          <Square size={12} />
+                        </button>
+                      </span>
                       <div className="btn-group">
                         <span className="control-tooltip-trigger" data-tooltip={toggleLabel}>
                           <button
@@ -310,16 +465,6 @@ function GridControls({
                           </button>
                         </span>
                       </div>
-                      <span className="control-tooltip-trigger" data-tooltip={grabPanLabel}>
-                        <button
-                          className={`btn btn-sm ${activeEditTool === 'grab' ? 'btn-primary' : 'btn-secondary-neutral'}`}
-                          type="button"
-                          onClick={() => onEditToolChange?.('grab')}
-                          aria-label={grabPanLabel}
-                        >
-                          <Hand size={12} />
-                        </button>
-                      </span>
                     </div>
                   </div>
 
@@ -360,15 +505,24 @@ function GridControls({
               {isEditMode && (
                 <div className="grid-controls-section grid-controls-section-inline-edit">
                   <div className="grid-controls-actions-row">
-                    <span className="control-tooltip-trigger" data-tooltip={undoLabel}>
+                    <span className="control-tooltip-trigger" data-tooltip={grabPanLabel}>
                       <button
-                        className="btn btn-sm btn-secondary-neutral"
+                        className={`btn btn-sm ${activeEditTool === 'grab' ? 'btn-primary' : 'btn-secondary-neutral'}`}
                         type="button"
-                        onClick={onUndoBoardChange}
-                        disabled={!canUndoBoardChange}
-                        aria-label={undoLabel}
+                        onClick={() => onEditToolChange?.('grab')}
+                        aria-label={grabPanLabel}
                       >
-                        <RotateCcw size={12} />
+                        <Hand size={12} />
+                      </button>
+                    </span>
+                    <span className="control-tooltip-trigger" data-tooltip={selectionLabel}>
+                      <button
+                        className={`btn btn-sm ${activeEditTool === 'selection' ? 'btn-primary' : 'btn-secondary-neutral'}`}
+                        type="button"
+                        onClick={() => onEditToolChange?.('selection')}
+                        aria-label={selectionLabel}
+                      >
+                        <Square size={12} />
                       </button>
                     </span>
                     <div className="grid-controls-edit-tool-group">
@@ -467,29 +621,20 @@ function GridControls({
                         </div>
                       </details>
                     </div>
-                    <span className="control-tooltip-trigger" data-tooltip={selectionLabel}>
-                      <button
-                        className={`btn btn-sm ${activeEditTool === 'selection' ? 'btn-primary' : 'btn-secondary-neutral'}`}
-                        type="button"
-                        onClick={() => onEditToolChange?.('selection')}
-                        aria-label={selectionLabel}
-                      >
-                        <Square size={12} />
-                      </button>
-                    </span>
-                    <span className="control-tooltip-trigger" data-tooltip={grabPanLabel}>
-                      <button
-                        className={`btn btn-sm ${activeEditTool === 'grab' ? 'btn-primary' : 'btn-secondary-neutral'}`}
-                        type="button"
-                        onClick={() => onEditToolChange?.('grab')}
-                        aria-label={grabPanLabel}
-                      >
-                        <Hand size={12} />
-                      </button>
-                    </span>
                     <div className="grid-controls-stamp-group">
                       <span className="grid-controls-stamp-preview-trigger">
-                        <details className="grid-controls-stamp-menu" aria-label={stampPatternsLabel}>
+                        <details
+                          className="grid-controls-stamp-menu"
+                          aria-label={stampPatternsLabel}
+                          ref={stampMenuRef}
+                          onToggle={(event) => {
+                            const nextOpen = event.currentTarget.open;
+                            setIsStampMenuOpen(nextOpen);
+                            if (!nextOpen) {
+                              setStampMenuMaxHeight(null);
+                            }
+                          }}
+                        >
                           <summary
                             className={`btn btn-sm ${activeEditTool === 'stamp' ? 'btn-primary' : 'btn-secondary-neutral'} grid-controls-stamp-menu-trigger grid-controls-edit-tool-button grid-controls-edit-tool-button-left`}
                             aria-label={stampLabel}
@@ -512,58 +657,98 @@ function GridControls({
                               </span>
                             </span>
                           )}
-                          <div className="grid-controls-stamp-menu-panel">
-                            <p className="grid-controls-color-picker-title">{stampPatternsLabel}</p>
-                            <input
-                              className="grid-controls-stamp-search"
-                              type="search"
-                              value={stampSearchQuery}
-                              onChange={(event) => setStampSearchQuery(event.target.value)}
-                              placeholder={searchStampPatternsLabel}
-                              aria-label={searchStampPatternsLabel}
-                            />
-                            <div className="grid-controls-stamp-menu-list" role="menu" aria-label={stampPatternsLabel}>
-                              {filteredStampPatterns.map((pattern) => {
-                                const signature = getGridSignature(pattern.grid);
-                                const isActive = activeStampSignature === signature;
-                                return (
-                                  <button
-                                    key={pattern.name}
-                                    className={`grid-controls-stamp-menu-item${isActive ? ' is-active' : ''}`}
-                                    type="button"
-                                    role="menuitem"
-                                    onClick={(event) => handleStampPatternSelection(event, pattern)}
-                                  >
-                                    <PatternPreview grid={pattern.grid} size={34} palette={selectedPalette} />
+                          <div
+                            className="grid-controls-stamp-menu-panel"
+                            ref={stampMenuPanelRef}
+                            style={stampMenuMaxHeight !== null ? { maxHeight: `${stampMenuMaxHeight}px` } : undefined}
+                          >
+                            <div className="grid-controls-stamp-search-row">
+                              <input
+                                className="grid-controls-stamp-search"
+                                type="search"
+                                value={stampSearchQuery}
+                                onChange={(event) => setStampSearchQuery(event.target.value)}
+                                placeholder={searchStampPatternsLabel}
+                                aria-label={searchStampPatternsLabel}
+                              />
+                              <details className="grid-controls-stamp-category-filter">
+                                <summary
+                                  className={`grid-controls-stamp-category-filter-trigger${selectedStampCategory !== 'all' ? ' is-active' : ''}`}
+                                  aria-label={filterStampCategoryLabel}
+                                  title={filterStampCategoryLabel}
+                                >
+                                  <Filter size={12} aria-hidden="true" />
+                                </summary>
+                                <div className="grid-controls-stamp-category-filter-menu" role="menu" aria-label={filterStampCategoryLabel}>
+                                  {visibleStampCategoryOptions.map((categoryOption) => {
+                                    const optionLabel = categoryOption === 'all' ? allStampCategoriesLabel : categoryOption;
+
+                                    return (
+                                      <button
+                                        key={categoryOption}
+                                        className="grid-controls-stamp-category-filter-item"
+                                        type="button"
+                                        role="menuitem"
+                                        onClick={(event) => {
+                                          setSelectedStampCategory(categoryOption);
+                                          closeClosestStampCategoryMenu(event.currentTarget);
+                                        }}
+                                      >
+                                        {optionLabel}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </details>
+                            </div>
+                            <div
+                              className="grid-controls-stamp-menu-scroll"
+                              style={stampMenuScrollMaxHeight ? { maxHeight: `${stampMenuScrollMaxHeight}px` } : undefined}
+                            >
+                              <div className="grid-controls-stamp-menu-list" role="menu" aria-label={stampPatternsLabel}>
+                                {filteredStampPatterns.map((pattern) => {
+                                  const signature = getGridSignature(pattern.grid);
+                                  const isActive = activeStampSignature === signature;
+                                  const formattedPatternName = formatPatternTitle(pattern.name);
+                                  return (
+                                    <button
+                                      key={pattern.name}
+                                      className={`grid-controls-stamp-menu-item${isActive ? ' is-active' : ''}`}
+                                      type="button"
+                                      role="menuitem"
+                                      onClick={(event) => handleStampPatternSelection(event, pattern)}
+                                    >
+                                      <PatternPreview grid={pattern.grid} size={34} palette={selectedPalette} />
+                                      <span className="grid-controls-stamp-menu-item-meta">
+                                        <span>{highlightSearchMatch(formattedPatternName)}</span>
+                                        <span className="grid-controls-stamp-menu-category">{highlightSearchMatch(pattern.category)}</span>
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                                {filteredStampPatterns.length === 0 && (
+                                  <p className="grid-controls-stamp-search-empty">{t('controls.noStampPatternsFound')}</p>
+                                )}
+                              </div>
+                              {selectedPattern && (
+                                <div className="grid-controls-stamp-menu-current" aria-live="polite">
+                                  <p className="grid-controls-stamp-menu-current-label">{currentStampSelectionLabel}</p>
+                                  <div className="grid-controls-stamp-menu-item is-active">
+                                    <PatternPreview grid={stampPreviewPattern ?? selectedPattern.grid} size={34} palette={selectedPalette} />
                                     <span className="grid-controls-stamp-menu-item-meta">
-                                      <span>{formatPatternTitle(pattern.name)}</span>
-                                      <span className="grid-controls-stamp-menu-category">{pattern.category}</span>
+                                      <span>{formatPatternTitle(stampTooltipName)}</span>
+                                      <span className="grid-controls-stamp-menu-category">{selectedPattern.category}</span>
                                     </span>
-                                  </button>
-                                );
-                              })}
-                              {filteredStampPatterns.length === 0 && (
-                                <p className="grid-controls-stamp-search-empty">{t('controls.noStampPatternsFound')}</p>
+                                  </div>
+                                </div>
                               )}
                             </div>
-                            {selectedPattern && (
-                              <div className="grid-controls-stamp-menu-current" aria-live="polite">
-                                <p className="grid-controls-stamp-menu-current-label">{currentStampSelectionLabel}</p>
-                                <div className="grid-controls-stamp-menu-item is-active">
-                                  <PatternPreview grid={stampPreviewPattern ?? selectedPattern.grid} size={34} palette={selectedPalette} />
-                                  <span className="grid-controls-stamp-menu-item-meta">
-                                    <span>{formatPatternTitle(stampTooltipName)}</span>
-                                    <span className="grid-controls-stamp-menu-category">{selectedPattern.category}</span>
-                                  </span>
-                                </div>
-                              </div>
-                            )}
                           </div>
                         </details>
                       </span>
                       <span className="control-tooltip-trigger" data-tooltip={`${rotateStampLabel} (${rotateStampHotkeyLabel})`}>
                         <button
-                          className="btn btn-sm btn-secondary-neutral grid-controls-edit-tool-button grid-controls-edit-tool-button-right"
+                            className={`btn btn-sm ${activeEditTool === 'stamp' ? 'btn-primary' : 'btn-secondary-neutral'} grid-controls-edit-tool-button grid-controls-edit-tool-button-right grid-controls-stamp-rotate${isRotateStampKeyPressed ? ' is-key-pressed' : ''}`}
                           type="button"
                           onClick={onRotateStamp}
                           aria-label={rotateStampLabel}
@@ -572,6 +757,16 @@ function GridControls({
                         </button>
                       </span>
                     </div>
+                    <span className="control-tooltip-trigger" data-tooltip={fillSelectionLabel}>
+                      <button
+                        className="btn btn-sm btn-secondary-neutral"
+                        type="button"
+                        onClick={() => onFillSelectionColor?.()}
+                        aria-label={fillSelectionLabel}
+                      >
+                        <PaintBucket size={12} />
+                      </button>
+                    </span>
                     <span className="control-tooltip-trigger" data-tooltip={eraserLabel}>
                       <button
                         className={`btn btn-sm ${activeEditTool === 'eraser' ? 'btn-primary' : 'btn-secondary-neutral'}`}
@@ -580,6 +775,17 @@ function GridControls({
                         aria-label={eraserLabel}
                       >
                         <Eraser size={12} />
+                      </button>
+                    </span>
+                    <span className="control-tooltip-trigger" data-tooltip={undoLabel}>
+                      <button
+                        className="btn btn-sm btn-secondary-neutral"
+                        type="button"
+                        onClick={onUndoBoardChange}
+                        disabled={!canUndoBoardChange}
+                        aria-label={undoLabel}
+                      >
+                        <RotateCcw size={12} />
                       </button>
                     </span>
                   </div>

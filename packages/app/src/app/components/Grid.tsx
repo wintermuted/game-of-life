@@ -1,5 +1,5 @@
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Game, getCellColor, isLiveCell, LifeGrid } from "@game-of-life/core";
+import { Game, getCellColor, isLiveCell, LifeGrid, GameRules, calculateNextGeneration, DEFAULT_RULES } from "@game-of-life/core";
 import '../styles/Grid.css';
 import CanvasGrid from './CanvasGrid';
 import { ColorPalette } from '../constants/colors';
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 interface Props {
   game: Game;
+  centerCoordinateRequest?: { coordinate: string; requestKey: number } | null;
   onHoverCoordinateChange?: (coordinate: string | null) => void;
   hoveredCoordinate?: string | null;
   onContextCoordinateRequest?: (coordinate: string) => void;
@@ -22,11 +23,13 @@ interface Props {
   selectionCount?: number;
   palette?: ColorPalette;
   isEditMode?: boolean;
+  rules?: GameRules;
   onCellPaint?: (coordinate: string, nextCellColor: string | null) => void;
   activeDrawColor?: string;
   activeEditTool?: 'pencil' | 'eraser' | 'selection' | 'grab' | 'stamp';
   stampPattern?: LifeGrid | null;
   onStampPatternAtCoordinate?: (coordinate: string) => void;
+  showBirthDeathPreview?: boolean;
   isBoardMaximized?: boolean;
   toggleBoardMaximized?: () => void;
   playOverlayContent?: ReactNode;
@@ -37,11 +40,12 @@ const DEFAULT_CELL_SIZE = 7;
 const MIN_CELL_SIZE = 2;
 const MAX_CELL_SIZE = 20;
 const ZOOM_STEP = 1;
-const MINIMAP_SIZE = 140;
+const MINIMAP_SIZE = 152;
 const MINIMAP_PADDING = 6;
-const MINIMAP_PAN_SENSITIVITY = 0.15;
+const MINIMAP_PAN_SENSITIVITY = 0.075;
 const MINIMAP_MAX_HALF_WORLD = 500;
 const MINIMAP_ZOOM_FACTOR = 8 / 3;
+const MINIMAP_FOLLOW_PADDING = 2;
 const MAX_BOARD_OFFSET = 20000;
 const MAX_MINIMAP_COORDINATE = 1000000;
 
@@ -62,6 +66,11 @@ interface ViewportMetrics {
   rows: number;
   offsetX: number;
   offsetY: number;
+}
+
+interface MinimapCenter {
+  x: number;
+  y: number;
 }
 
 function parseCoordinateKey(coordinate: string): ParsedCoordinate | null {
@@ -129,6 +138,7 @@ const IconZoomOut = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="
 
 function Grid({
   game,
+  centerCoordinateRequest = null,
   onHoverCoordinateChange,
   hoveredCoordinate = null,
   onContextCoordinateRequest,
@@ -142,11 +152,13 @@ function Grid({
   selectionCount = 0,
   palette,
   isEditMode = false,
+  rules = DEFAULT_RULES,
   onCellPaint,
   activeDrawColor,
   activeEditTool,
   stampPattern = null,
   onStampPatternAtCoordinate,
+  showBirthDeathPreview = true,
   isBoardMaximized = false,
   toggleBoardMaximized,
   playOverlayContent,
@@ -158,6 +170,7 @@ function Grid({
   const [isMiniMapPanning, setIsMiniMapPanning] = useState(false);
   const isMiniMapPanningRef = useRef(false);
   const miniMapBoundsRef = useRef<Bounds | null>(null);
+  const miniMapCenterRef = useRef<MinimapCenter>({ x: 0, y: 0 });
   const miniMapBoundsViewportKeyRef = useRef<string | null>(null);
   const { mode } = useThemeMode();
   const { t } = useTranslation();
@@ -165,6 +178,7 @@ function Grid({
   if (!game) return null;
 
   const gameStatus = game.getStatus ? game.getStatus() : {};
+  const birthDeathPreviewGrid = showBirthDeathPreview ? calculateNextGeneration(gameStatus, rules) : null;
 
   const handlePanUp = () => setOffsetY(prev => clampBoardOffset(prev - PAN_AMOUNT));
   const handlePanDown = () => setOffsetY(prev => clampBoardOffset(prev + PAN_AMOUNT));
@@ -182,9 +196,27 @@ function Grid({
   const zoomInLabel = t('controls.zoomIn');
   const maximizeViewLabel = t('controls.maximizeBoard');
   const restoreViewLabel = t('controls.restoreBoard');
+  const cursorLabel = t('controls.hoveredCell');
   const hoveredCellValue = hoveredCoordinate ?? t('controls.hoveredCellNone');
   const miniMapLabel = t('controls.miniMap');
   const miniMapViewportLabel = t('controls.miniMapViewport');
+  const selectedLiveCellsLabel = t('controls.liveCellsSelected', { count: selectionCount });
+
+  const viewportCenter = useMemo(() => {
+    if (!viewportMetrics) {
+      return { x: 0, y: 0 };
+    }
+
+    const halfCols = Math.floor(viewportMetrics.columns / 2);
+    const halfRows = Math.floor(viewportMetrics.rows / 2);
+    const centerX = ((viewportMetrics.columns - 1) / 2) - halfCols + viewportMetrics.offsetX;
+    const centerY = (halfRows - 1) - ((viewportMetrics.rows - 1) / 2) - viewportMetrics.offsetY;
+
+    return {
+      x: Math.round(centerX),
+      y: Math.round(centerY),
+    };
+  }, [viewportMetrics]);
 
   const miniMapGeometry = useMemo(() => {
     if (!viewportMetrics) return null;
@@ -205,32 +237,64 @@ function Grid({
     const viewportCenterX = (viewportBounds.minX + viewportBounds.maxX) / 2;
     const viewportCenterY = (viewportBounds.minY + viewportBounds.maxY) / 2;
 
-    const minHalfWidthFromViewportRaw = Math.ceil(
-      Math.max(Math.abs(viewportBounds.minX), Math.abs(viewportBounds.maxX), 1)
+    const viewportHalfWidth = viewportMetrics.columns / 2;
+    const viewportHalfHeight = viewportMetrics.rows / 2;
+
+    const minHalfWidthFromViewport = Math.min(
+      Math.ceil(viewportHalfWidth * MINIMAP_ZOOM_FACTOR) + MINIMAP_FOLLOW_PADDING,
+      MINIMAP_MAX_HALF_WORLD,
     );
-    const minHalfHeightFromViewportRaw = Math.ceil(
-      Math.max(Math.abs(viewportBounds.minY), Math.abs(viewportBounds.maxY), 1)
+    const minHalfHeightFromViewport = Math.min(
+      Math.ceil(viewportHalfHeight * MINIMAP_ZOOM_FACTOR) + MINIMAP_FOLLOW_PADDING,
+      MINIMAP_MAX_HALF_WORLD,
     );
+
+    const applyFollowAxis = (
+      currentCenter: number,
+      viewportCenter: number,
+      halfWorld: number,
+      viewportHalf: number,
+    ): number => {
+      const visibleHalfWorld = Math.max(viewportHalf, halfWorld / MINIMAP_ZOOM_FACTOR);
+      const followThreshold = Math.max(0, visibleHalfWorld - viewportHalf - MINIMAP_FOLLOW_PADDING);
+
+      if (viewportCenter > currentCenter + followThreshold) {
+        return viewportCenter - followThreshold;
+      }
+
+      if (viewportCenter < currentCenter - followThreshold) {
+        return viewportCenter + followThreshold;
+      }
+
+      return currentCenter;
+    };
+
+    const previousCenter = miniMapCenterRef.current;
+    let nextCenterX = applyFollowAxis(previousCenter.x, viewportCenterX, minHalfWidthFromViewport, viewportHalfWidth);
+    let nextCenterY = applyFollowAxis(previousCenter.y, viewportCenterY, minHalfHeightFromViewport, viewportHalfHeight);
+
     const minHalfWidthFromLiveRaw = liveBounds
-      ? Math.ceil(Math.max(Math.abs(liveBounds.minX), Math.abs(liveBounds.maxX)))
+      ? Math.ceil(Math.max(Math.abs(liveBounds.minX - nextCenterX), Math.abs(liveBounds.maxX - nextCenterX)))
       : 0;
     const minHalfHeightFromLiveRaw = liveBounds
-      ? Math.ceil(Math.max(Math.abs(liveBounds.minY), Math.abs(liveBounds.maxY)))
+      ? Math.ceil(Math.max(Math.abs(liveBounds.minY - nextCenterY), Math.abs(liveBounds.maxY - nextCenterY)))
       : 0;
 
-    const minHalfWidthFromViewport = Math.min(minHalfWidthFromViewportRaw, MINIMAP_MAX_HALF_WORLD);
-    const minHalfHeightFromViewport = Math.min(minHalfHeightFromViewportRaw, MINIMAP_MAX_HALF_WORLD);
     const minHalfWidthFromLive = Math.min(minHalfWidthFromLiveRaw, MINIMAP_MAX_HALF_WORLD);
     const minHalfHeightFromLive = Math.min(minHalfHeightFromLiveRaw, MINIMAP_MAX_HALF_WORLD);
 
     const halfWorldWidth = Math.max(minHalfWidthFromViewport, minHalfWidthFromLive) + 2;
     const halfWorldHeight = Math.max(minHalfHeightFromViewport, minHalfHeightFromLive) + 2;
 
+    nextCenterX = applyFollowAxis(nextCenterX, viewportCenterX, halfWorldWidth, viewportHalfWidth);
+    nextCenterY = applyFollowAxis(nextCenterY, viewportCenterY, halfWorldHeight, viewportHalfHeight);
+    miniMapCenterRef.current = { x: nextCenterX, y: nextCenterY };
+
     const nextContentBounds: Bounds = {
-      minX: -halfWorldWidth,
-      maxX: halfWorldWidth,
-      minY: -halfWorldHeight,
-      maxY: halfWorldHeight,
+      minX: nextCenterX - halfWorldWidth,
+      maxX: nextCenterX + halfWorldWidth,
+      minY: nextCenterY - halfWorldHeight,
+      maxY: nextCenterY + halfWorldHeight,
     };
 
     if (!miniMapBoundsRef.current || miniMapBoundsViewportKeyRef.current !== viewportKey) {
@@ -310,6 +374,18 @@ function Grid({
     });
   }, []);
 
+  const centerViewportOnWorldCoordinate = useCallback((targetX: number, targetY: number) => {
+    if (!viewportMetrics) return;
+
+    const halfCols = Math.floor(viewportMetrics.columns / 2);
+    const halfRows = Math.floor(viewportMetrics.rows / 2);
+    const nextOffsetX = Math.round(targetX + halfCols - ((viewportMetrics.columns - 1) / 2));
+    const nextOffsetY = Math.round((halfRows - 1) - ((viewportMetrics.rows - 1) / 2) - targetY);
+
+    setOffsetX(clampBoardOffset(nextOffsetX));
+    setOffsetY(clampBoardOffset(nextOffsetY));
+  }, [viewportMetrics]);
+
   const panViewportToWorldCoordinate = useCallback((targetX: number, targetY: number) => {
     if (!viewportMetrics) return;
 
@@ -331,6 +407,15 @@ function Grid({
     setOffsetX((previous) => clampBoardOffset(previous));
     setOffsetY((previous) => clampBoardOffset(previous));
   }, []);
+
+  useEffect(() => {
+    if (!centerCoordinateRequest) return;
+
+    const parsed = parseCoordinateKey(centerCoordinateRequest.coordinate);
+    if (!parsed) return;
+
+    centerViewportOnWorldCoordinate(parsed.x, parsed.y);
+  }, [centerCoordinateRequest, centerViewportOnWorldCoordinate]);
 
   const handleMiniMapPointer = useCallback((clientX: number, clientY: number, svg: SVGSVGElement) => {
     if (!miniMapGeometry) return;
@@ -437,131 +522,162 @@ function Grid({
           activeEditTool={activeEditTool}
           stampPattern={stampPattern}
           onStampPatternAtCoordinate={onStampPatternAtCoordinate}
+          birthDeathPreviewGrid={birthDeathPreviewGrid}
           onPanByDrag={handlePanByDrag}
           onViewportMetricsChange={handleViewportMetricsChange}
         />
         {miniMapGeometry && (
           <div className="grid-overlay-minimap" aria-label={miniMapLabel} role="img">
-            <svg
-              width={MINIMAP_SIZE}
-              height={MINIMAP_SIZE}
-              viewBox={`0 0 ${MINIMAP_SIZE} ${MINIMAP_SIZE}`}
-              className={`grid-overlay-minimap-canvas${isMiniMapPanning ? ' grid-overlay-minimap-canvas-panning' : ''}`}
-              onMouseDown={handleMiniMapMouseDown}
-              onMouseMove={handleMiniMapMouseMove}
-              onMouseUp={handleMiniMapPanEnd}
-              onMouseLeave={handleMiniMapPanEnd}
-            >
-              {Object.keys(gameStatus).map((coordinate) => {
-                const parsed = parseCoordinateKey(coordinate);
-                if (!parsed) return null;
+            <div className="grid-overlay-minimap-frame">
+              <svg
+                width={MINIMAP_SIZE}
+                height={MINIMAP_SIZE}
+                viewBox={`0 0 ${MINIMAP_SIZE} ${MINIMAP_SIZE}`}
+                className={`grid-overlay-minimap-canvas${isMiniMapPanning ? ' grid-overlay-minimap-canvas-panning' : ''}`}
+                onMouseDown={handleMiniMapMouseDown}
+                onMouseMove={handleMiniMapMouseMove}
+                onMouseUp={handleMiniMapPanEnd}
+                onMouseLeave={handleMiniMapPanEnd}
+              >
+                {Object.keys(gameStatus).map((coordinate) => {
+                  const parsed = parseCoordinateKey(coordinate);
+                  if (!parsed) return null;
 
-                if (
-                  parsed.x < miniMapGeometry.contentBounds.minX ||
-                  parsed.x > miniMapGeometry.contentBounds.maxX ||
-                  parsed.y < miniMapGeometry.contentBounds.minY ||
-                  parsed.y > miniMapGeometry.contentBounds.maxY
-                ) {
-                  return null;
-                }
+                  if (
+                    parsed.x < miniMapGeometry.contentBounds.minX ||
+                    parsed.x > miniMapGeometry.contentBounds.maxX ||
+                    parsed.y < miniMapGeometry.contentBounds.minY ||
+                    parsed.y > miniMapGeometry.contentBounds.maxY
+                  ) {
+                    return null;
+                  }
 
-                const rawCellValue = gameStatus[coordinate];
-                if (!isLiveCell(rawCellValue)) return null;
+                  const rawCellValue = gameStatus[coordinate];
+                  if (!isLiveCell(rawCellValue)) return null;
 
-                const { miniX, miniY } = miniMapGeometry.worldToMiniMap(parsed.x, parsed.y);
-                return (
-                  <rect
-                    key={coordinate}
-                    x={miniX}
-                    y={miniY}
-                    width={miniMapGeometry.cellPixelSize}
-                    height={miniMapGeometry.cellPixelSize}
-                    fill={getCellColor(rawCellValue)}
+                  const { miniX, miniY } = miniMapGeometry.worldToMiniMap(parsed.x, parsed.y);
+                  return (
+                    <rect
+                      key={coordinate}
+                      x={miniX}
+                      y={miniY}
+                      width={miniMapGeometry.cellPixelSize}
+                      height={miniMapGeometry.cellPixelSize}
+                      fill={getCellColor(rawCellValue)}
+                    />
+                  );
+                })}
+                {/* Grid origin lines (x=0 and y=0) */}
+                {miniMapGeometry.contentBounds.minX <= 0 && miniMapGeometry.contentBounds.maxX >= 0 && (
+                  <line
+                    x1={miniMapGeometry.worldToMiniMap(0, miniMapGeometry.contentBounds.minY).miniX}
+                    y1={MINIMAP_PADDING}
+                    x2={miniMapGeometry.worldToMiniMap(0, miniMapGeometry.contentBounds.minY).miniX}
+                    y2={MINIMAP_SIZE - MINIMAP_PADDING}
+                    className="grid-overlay-minimap-origin-line"
                   />
-                );
-              })}
-              {/* Grid origin lines (x=0 and y=0) */}
-              {miniMapGeometry.contentBounds.minX <= 0 && miniMapGeometry.contentBounds.maxX >= 0 && (
-                <line
-                  x1={miniMapGeometry.worldToMiniMap(0, miniMapGeometry.contentBounds.minY).miniX}
-                  y1={MINIMAP_PADDING}
-                  x2={miniMapGeometry.worldToMiniMap(0, miniMapGeometry.contentBounds.minY).miniX}
-                  y2={MINIMAP_SIZE - MINIMAP_PADDING}
-                  className="grid-overlay-minimap-origin-line"
+                )}
+                {miniMapGeometry.contentBounds.minY <= 0 && miniMapGeometry.contentBounds.maxY >= 0 && (
+                  <line
+                    x1={MINIMAP_PADDING}
+                    y1={miniMapGeometry.worldToMiniMap(miniMapGeometry.contentBounds.minX, 0).miniY}
+                    x2={MINIMAP_SIZE - MINIMAP_PADDING}
+                    y2={miniMapGeometry.worldToMiniMap(miniMapGeometry.contentBounds.minX, 0).miniY}
+                    className="grid-overlay-minimap-origin-line"
+                  />
+                )}
+                <rect
+                  x={miniMapGeometry.viewportX}
+                  y={miniMapGeometry.viewportY}
+                  width={miniMapGeometry.viewportWidth}
+                  height={miniMapGeometry.viewportHeight}
+                  className="grid-overlay-minimap-viewport"
+                  aria-label={miniMapViewportLabel}
                 />
-              )}
-              {miniMapGeometry.contentBounds.minY <= 0 && miniMapGeometry.contentBounds.maxY >= 0 && (
-                <line
-                  x1={MINIMAP_PADDING}
-                  y1={miniMapGeometry.worldToMiniMap(miniMapGeometry.contentBounds.minX, 0).miniY}
-                  x2={MINIMAP_SIZE - MINIMAP_PADDING}
-                  y2={miniMapGeometry.worldToMiniMap(miniMapGeometry.contentBounds.minX, 0).miniY}
-                  className="grid-overlay-minimap-origin-line"
-                />
-              )}
-              <rect
-                x={miniMapGeometry.viewportX}
-                y={miniMapGeometry.viewportY}
-                width={miniMapGeometry.viewportWidth}
-                height={miniMapGeometry.viewportHeight}
-                className="grid-overlay-minimap-viewport"
-                aria-label={miniMapViewportLabel}
-              />
-            </svg>
-            <div className="grid-overlay-minimap-stats">
-              <div className="grid-overlay-minimap-stat-line">
-                Center: ({Math.round(offsetX)}, {Math.round(offsetY)})
+              </svg>
+
+              <span className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-up" data-tooltip={panUpLabel}>
+                <button className="grid-overlay-btn" aria-label={panUpLabel} onClick={handlePanUp} type="button"><IconUp /></button>
+              </span>
+              <span className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-left" data-tooltip={panLeftLabel}>
+                <button className="grid-overlay-btn" aria-label={panLeftLabel} onClick={handlePanLeft} type="button"><IconLeft /></button>
+              </span>
+              <span className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-right" data-tooltip={panRightLabel}>
+                <button className="grid-overlay-btn" aria-label={panRightLabel} onClick={handlePanRight} type="button"><IconRight /></button>
+              </span>
+              <span className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-down" data-tooltip={panDownLabel}>
+                <button className="grid-overlay-btn" aria-label={panDownLabel} onClick={handlePanDown} type="button"><IconDown /></button>
+              </span>
+            </div>
+            <div className="grid-overlay-minimap-zoom-row" role="group" aria-label="Minimap view controls">
+              <div className="grid-overlay-minimap-zoom-group" role="group" aria-label="Minimap zoom controls">
+                <span className="control-tooltip-trigger" data-tooltip={zoomOutLabel}>
+                  <button
+                    className="grid-overlay-btn"
+                    aria-label={zoomOutLabel}
+                    onClick={handleZoomOut}
+                    disabled={cellSize <= MIN_CELL_SIZE}
+                    type="button"
+                  >
+                    <IconZoomOut />
+                  </button>
+                </span>
+                <span className="grid-overlay-btn grid-overlay-btn-static grid-overlay-minimap-zoom-value" aria-live="polite">
+                  {cellSize}
+                </span>
+                <span className="control-tooltip-trigger" data-tooltip={zoomInLabel}>
+                  <button
+                    className="grid-overlay-btn"
+                    aria-label={zoomInLabel}
+                    onClick={handleZoomIn}
+                    disabled={cellSize >= MAX_CELL_SIZE}
+                    type="button"
+                  >
+                    <IconZoomIn />
+                  </button>
+                </span>
               </div>
-              <div className="grid-overlay-minimap-stat-line">
-                Zoom: {cellSize}
+              <div className="grid-overlay-minimap-actions-right">
+                <span className="control-tooltip-trigger" data-tooltip={centerViewLabel}>
+                  <button
+                    className="grid-overlay-btn"
+                    aria-label={centerViewLabel}
+                    onClick={handleCenter}
+                    type="button"
+                  >
+                    <IconCenter />
+                  </button>
+                </span>
+                {toggleBoardMaximized && (
+                  <span className="control-tooltip-trigger" data-tooltip={isBoardMaximized ? restoreViewLabel : maximizeViewLabel}>
+                    <button
+                      className="grid-overlay-btn"
+                      aria-label={isBoardMaximized ? restoreViewLabel : maximizeViewLabel}
+                      onClick={toggleBoardMaximized}
+                      type="button"
+                    >
+                      {isBoardMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                    </button>
+                  </span>
+                )}
               </div>
             </div>
           </div>
         )}
+        {selectionCount > 0 && (
+          <div className="grid-overlay-selection-banner" aria-live="polite">
+            <span>{selectedLiveCellsLabel}</span>
+          </div>
+        )}
         <div className="grid-overlay-readout grid-overlay-readout-bottom-right" aria-live="polite">
-          {selectionCount > 0 && (
-            <span className="grid-overlay-readout-count">{t('controls.selectionCount', { count: selectionCount })}</span>
-          )}
-          <span className="grid-overlay-readout-coordinates">{hoveredCellValue}</span>
+          <span className="grid-overlay-readout-coordinates">Center: ({viewportCenter.x}, {viewportCenter.y})</span>
+          <span className="grid-overlay-readout-coordinates">{cursorLabel}: {hoveredCellValue}</span>
         </div>
         {playOverlayContent && (
-          <div className="grid-overlay-controls grid-overlay-controls-bottom-left">
+          <div className="grid-overlay-controls grid-overlay-controls-top-left">
             {playOverlayContent}
           </div>
         )}
-        <div className="grid-overlay-controls">
-          {/* Pan Up */}
-          <div className="grid-overlay-row grid-overlay-row-center">
-            <span className="control-tooltip-trigger" data-tooltip={panUpLabel}><button className="grid-overlay-btn" aria-label={panUpLabel} onClick={handlePanUp} type="button"><IconUp /></button></span>
-          </div>
-          {/* Pan Left/Center/Right */}
-          <div className="grid-overlay-row">
-            <span className="control-tooltip-trigger" data-tooltip={panLeftLabel}><button className="grid-overlay-btn" aria-label={panLeftLabel} onClick={handlePanLeft} type="button"><IconLeft /></button></span>
-            <span className="control-tooltip-trigger" data-tooltip={centerViewLabel}><button className="grid-overlay-btn" aria-label={centerViewLabel} onClick={handleCenter} type="button"><IconCenter /></button></span>
-            <span className="control-tooltip-trigger" data-tooltip={panRightLabel}><button className="grid-overlay-btn" aria-label={panRightLabel} onClick={handlePanRight} type="button"><IconRight /></button></span>
-          </div>
-          {/* Pan Down */}
-          <div className="grid-overlay-row grid-overlay-row-center">
-            <span className="control-tooltip-trigger" data-tooltip={panDownLabel}><button className="grid-overlay-btn" aria-label={panDownLabel} onClick={handlePanDown} type="button"><IconDown /></button></span>
-          </div>
-          {/* Divider */}
-          <div className="grid-overlay-divider" />
-          {/* Zoom */}
-          <div className="grid-overlay-row">
-            <span className="control-tooltip-trigger" data-tooltip={zoomOutLabel}><button className="grid-overlay-btn" aria-label={zoomOutLabel} onClick={handleZoomOut} disabled={cellSize <= MIN_CELL_SIZE} type="button"><IconZoomOut /></button></span>
-            {toggleBoardMaximized && (
-              <span className="control-tooltip-trigger" data-tooltip={isBoardMaximized ? restoreViewLabel : maximizeViewLabel}><button
-                className="grid-overlay-btn"
-                aria-label={isBoardMaximized ? restoreViewLabel : maximizeViewLabel}
-                onClick={toggleBoardMaximized}
-                type="button"
-              >
-                {isBoardMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-              </button></span>
-            )}
-            <span className="control-tooltip-trigger" data-tooltip={zoomInLabel}><button className="grid-overlay-btn" aria-label={zoomInLabel} onClick={handleZoomIn} disabled={cellSize >= MAX_CELL_SIZE} type="button"><IconZoomIn /></button></span>
-          </div>
-        </div>
       </div>
     </div>
   );

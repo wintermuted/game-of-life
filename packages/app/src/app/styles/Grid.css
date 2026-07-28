@@ -68,17 +68,58 @@
   background: var(--grid-overlay-bg);
 }
 
-.grid-overlay-controls-bottom-left {
-  top: auto;
+.grid-overlay-controls-top-left {
   right: auto;
-  bottom: 8px;
   left: 8px;
+}
+
+.grid-overlay-controls .GridControls {
+  width: 2.5rem;
+  min-width: 2.5rem;
+}
+
+.grid-overlay-controls .grid-controls-form-play .controls-main-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+}
+
+.grid-overlay-controls .grid-controls-form-play .grid-controls-section {
+  width: 100%;
+}
+
+.grid-overlay-controls .grid-controls-form-play .grid-controls-actions-row {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  row-gap: 0.45rem;
+}
+
+.grid-overlay-selection-banner {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0.22rem 0.58rem;
+  border: 1px solid var(--grid-overlay-border);
+  border-radius: 999px;
+  background: var(--grid-overlay-bg);
+  color: var(--grid-overlay-button-color);
+  font-family: var(--wm-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.76rem;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .grid-overlay-readout {
   position: absolute;
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.45rem;
   min-height: 28px;
   padding: 0.18rem 0.5rem;
@@ -98,14 +139,84 @@
 
 .grid-overlay-minimap {
   position: absolute;
-  top: 8px;
+  top: auto;
+  bottom: 8px;
   left: 8px;
   display: flex;
   flex-direction: column;
-  padding: 6px;
-  border: 1px solid var(--grid-overlay-border);
-  border-radius: 8px;
-  background: var(--grid-overlay-bg);
+  width: 152px;
+}
+
+.grid-overlay-minimap-frame {
+  position: relative;
+  width: 152px;
+  height: 152px;
+}
+
+.grid-overlay-minimap-zoom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2rem;
+  margin-top: 0.3rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.grid-overlay-minimap-zoom-row .control-tooltip-trigger {
+  display: block;
+}
+
+.grid-overlay-minimap-zoom-row .grid-overlay-btn {
+  height: 1.4rem;
+}
+
+.grid-overlay-minimap-zoom-group {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.grid-overlay-minimap-zoom-group .control-tooltip-trigger {
+  display: inline-flex;
+}
+
+.grid-overlay-minimap-zoom-group .grid-overlay-btn,
+.grid-overlay-minimap-zoom-group .grid-overlay-btn-static {
+  min-width: 1.35rem;
+  border-radius: 0;
+}
+
+.grid-overlay-minimap-zoom-group .control-tooltip-trigger:first-child .grid-overlay-btn {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.grid-overlay-minimap-zoom-group .control-tooltip-trigger:last-child .grid-overlay-btn {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.grid-overlay-minimap-actions-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: auto;
+}
+
+.grid-overlay-btn-static {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.grid-overlay-minimap-zoom-value {
+  min-width: 1.65rem;
+  text-align: center;
+  color: var(--grid-overlay-text);
+  font-family: var(--wm-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.68rem;
+  line-height: 1;
 }
 
 .grid-overlay-minimap-canvas {
@@ -114,6 +225,55 @@
   border-radius: 5px;
   background: var(--grid-minimap-bg);
   cursor: grab;
+}
+
+.grid-overlay-minimap-pan-btn {
+  position: absolute;
+  z-index: 2;
+}
+
+.grid-overlay-minimap-frame .grid-overlay-minimap-pan-btn.control-tooltip-trigger {
+  position: absolute;
+  display: block;
+}
+
+.grid-overlay-minimap-pan-btn .grid-overlay-btn {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--grid-overlay-bg) 54%, transparent);
+  border-color: color-mix(in srgb, var(--grid-overlay-border) 72%, transparent);
+  opacity: 0.78;
+  backdrop-filter: blur(2px);
+}
+
+.grid-overlay-minimap-pan-btn .grid-overlay-btn:hover,
+.grid-overlay-minimap-pan-btn .grid-overlay-btn:focus-visible {
+  opacity: 0.96;
+}
+
+.grid-overlay-minimap-pan-up {
+  top: 0.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.grid-overlay-minimap-pan-left {
+  left: 0.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.grid-overlay-minimap-pan-right {
+  right: 0.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.grid-overlay-minimap-pan-down {
+  bottom: 0.2rem;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .grid-overlay-minimap-canvas.grid-overlay-minimap-canvas-panning {

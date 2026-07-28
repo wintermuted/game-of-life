@@ -1,4 +1,4 @@
-import { LifeGrid } from '@game-of-life/core';
+import { GameRules, LifeGrid } from '@game-of-life/core';
 import { decodeBase64ToGrid } from './urlState';
 
 export type BrowserStorageMode = 'local' | 'session';
@@ -9,7 +9,10 @@ export interface SavedBoardRecord {
   title: string;
   category?: string;
   description?: string;
+  tags?: string[];
   visibility?: 'public' | 'private';
+  rules?: GameRules;
+  rulesLocked?: boolean;
   updatedAt: number;
 }
 
@@ -159,13 +162,19 @@ function normalizeBoardId(boardId: string | undefined, hash: string): string {
 function sanitizeSavedBoardRecord(record: SavedBoardRecord): SavedBoardRecord {
   const normalizedCategory = record.category?.trim();
   const normalizedDescription = record.description?.trim();
+  const normalizedTags = Array.isArray(record.tags)
+    ? Array.from(new Set(record.tags.map((tag) => tag.trim()).filter((tag) => tag.length > 0)))
+    : undefined;
   return {
     ...record,
     boardId: normalizeBoardId(record.boardId, record.hash),
     title: record.title.trim(),
     category: normalizedCategory && normalizedCategory.length > 0 ? normalizedCategory : undefined,
     description: normalizedDescription && normalizedDescription.length > 0 ? normalizedDescription : undefined,
+    tags: normalizedTags && normalizedTags.length > 0 ? normalizedTags : undefined,
     visibility: record.visibility === 'public' ? 'public' : 'private',
+    rules: record.rules,
+    rulesLocked: record.rulesLocked ?? true,
   };
 }
 
@@ -210,6 +219,9 @@ export function upsertSavedBoard(
   category?: string,
   description?: string,
   visibility?: 'public' | 'private',
+  tags?: string[],
+  rules?: GameRules,
+  rulesLocked?: boolean,
 ): void {
   const normalizedTitle = title.trim();
   if (!hash || !normalizedTitle) return;
@@ -221,14 +233,23 @@ export function upsertSavedBoard(
   const normalizedDescription = description?.trim();
   const existingCategory = index >= 0 ? current[index].category : undefined;
   const existingDescription = index >= 0 ? current[index].description : undefined;
+  const existingTags = index >= 0 ? current[index].tags : undefined;
   const existingVisibility = index >= 0 ? current[index].visibility : undefined;
+  const existingRules = index >= 0 ? current[index].rules : undefined;
+  const existingRulesLocked = index >= 0 ? current[index].rulesLocked : undefined;
+  const normalizedTags = Array.isArray(tags)
+    ? Array.from(new Set(tags.map((tag) => tag.trim()).filter((tag) => tag.length > 0)))
+    : undefined;
   const updated: SavedBoardRecord = {
     hash,
     boardId: normalizedBoardId,
     title: normalizedTitle,
     category: normalizedCategory && normalizedCategory.length > 0 ? normalizedCategory : existingCategory,
     description: normalizedDescription && normalizedDescription.length > 0 ? normalizedDescription : existingDescription,
+    tags: normalizedTags !== undefined ? normalizedTags : existingTags,
     visibility: visibility ?? existingVisibility ?? 'private',
+    rules: rules ?? existingRules,
+    rulesLocked: rulesLocked ?? existingRulesLocked ?? true,
     updatedAt: Date.now(),
   };
 
