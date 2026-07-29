@@ -1,41 +1,46 @@
 import gameOfLife, { calculateStats } from "./game";
+import { createLifeGrid } from './cells';
+
+function toBooleanGrid(grid: Record<string, unknown>): Record<string, true> {
+  return Object.fromEntries(Object.keys(grid).map((coordinate) => [coordinate, true]));
+}
 
 describe('any live cell with fewer than two live neighbors dies, as if by underpopulation', () => {
   test('zero neighbors', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true
-    };
+    });
   
     const next = gameOfLife(base);
   
-    expect(next).toStrictEqual({})
+    expect(toBooleanGrid(next)).toStrictEqual({})
   });
 
   test('one neighbor', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true
-    };
+    });
   
     const next = gameOfLife(base);
   
-    expect(next).toStrictEqual({})
+    expect(toBooleanGrid(next)).toStrictEqual({})
   });
 })
 
 describe('Any live cell with two or three live neighbours lives on to the next generation.', () => {
   test('two neighbors', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true
-    };
+    });
   
     const next = gameOfLife(base);
 
     expect(next["0,0"]).toBeDefined();
   
-    expect(next).toStrictEqual({
+    expect(toBooleanGrid(next)).toStrictEqual({
       "0,0": true,
       "0,1": true,
       "1,0": true,
@@ -44,16 +49,16 @@ describe('Any live cell with two or three live neighbours lives on to the next g
   });
 
   test('three neighbors', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true,
       "1,1": true
-    };
+    });
   
     const next = gameOfLife(base);
   
-    expect(next).toStrictEqual({
+    expect(toBooleanGrid(next)).toStrictEqual({
       "0,0": true,
       "0,1": true,
       "1,0": true,
@@ -64,17 +69,17 @@ describe('Any live cell with two or three live neighbours lives on to the next g
 
 describe('Any live cell with more than three live neighbours dies, as if by overpopulation.', () => {
   test('four neighbors', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true,
       "1,1": true,
       "-1,0": true
-    };
+    });
   
     const next = gameOfLife(base);
   
-    expect(next).toStrictEqual({
+    expect(toBooleanGrid(next)).toStrictEqual({
       "-1,0": true,
       "-1,1": true,
       "0,-1": true,
@@ -84,18 +89,18 @@ describe('Any live cell with more than three live neighbours dies, as if by over
   });
 
   test('five neighbors', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true,
       "1,1": true,
       "-1,0": true,
       "0,-1": true
-    };
+    });
   
     const next = gameOfLife(base);
   
-    expect(next).toStrictEqual({
+    expect(toBooleanGrid(next)).toStrictEqual({
       "-1,-1": true,
       "-1,0": true,
       "-1,1": true,
@@ -106,7 +111,7 @@ describe('Any live cell with more than three live neighbours dies, as if by over
   });
 
   test('six neighbors', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true,
@@ -114,11 +119,11 @@ describe('Any live cell with more than three live neighbours dies, as if by over
       "-1,0": true,
       "0,-1": true,
       "-1,-1": true
-    };
+    });
   
     const next = gameOfLife(base);
   
-    expect(next).toStrictEqual({
+    expect(toBooleanGrid(next)).toStrictEqual({
       "-1,-1": true,
       "1,1": true,
       "-1,1": true,
@@ -127,7 +132,7 @@ describe('Any live cell with more than three live neighbours dies, as if by over
   });
 
   test('seven neighbors', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true,
@@ -136,11 +141,11 @@ describe('Any live cell with more than three live neighbours dies, as if by over
       "0,-1": true,
       "-1,-1": true,
       "-1,1": true,
-    };
+    });
   
     const next = gameOfLife(base);
   
-    expect(next).toStrictEqual({
+    expect(toBooleanGrid(next)).toStrictEqual({
       "-1,-1": true,
         "-1,1": true,
        "-2,0": true,
@@ -151,7 +156,7 @@ describe('Any live cell with more than three live neighbours dies, as if by over
   });
 
   test('eight neighbors', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true,
@@ -161,11 +166,11 @@ describe('Any live cell with more than three live neighbours dies, as if by over
       "-1,-1": true,
       "-1,1": true,
       "1,-1": true,
-    };
+    });
   
     const next = gameOfLife(base);
   
-    expect(next).toStrictEqual({
+    expect(toBooleanGrid(next)).toStrictEqual({
       "-1,-1": true,
       "-1,1": true,
      "-2,0": true,
@@ -180,15 +185,15 @@ describe('Any live cell with more than three live neighbours dies, as if by over
 
 describe('Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.', () => {
   test('three neighbors', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,1": true,
       "1,0": true,
       "1,1": true,
-    };
+    });
   
     const next = gameOfLife(base);
   
-    expect(next).toStrictEqual({
+    expect(toBooleanGrid(next)).toStrictEqual({
       "0,0": true,
       "0,1": true,
       "1,0": true,
@@ -201,10 +206,10 @@ describe('Any dead cell with exactly three live neighbours becomes a live cell, 
 
 describe('calculateStats', () => {
   test('calculates stats for all deaths', () => {
-    const previous = {
+    const previous = createLifeGrid({
       "0,0": true,
       "0,1": true
-    };
+    });
     
     const next = {};
     
@@ -220,11 +225,11 @@ describe('calculateStats', () => {
   test('calculates stats for all births', () => {
     const previous = {};
     
-    const next = {
+    const next = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true
-    };
+    });
     
     const stats = calculateStats(previous, next);
     
@@ -236,18 +241,18 @@ describe('calculateStats', () => {
   });
 
   test('calculates stats for mixed births and deaths', () => {
-    const previous = {
+    const previous = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true
-    };
+    });
     
-    const next = {
+    const next = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true,
       "1,1": true
-    };
+    });
     
     const stats = calculateStats(previous, next);
     
@@ -259,18 +264,18 @@ describe('calculateStats', () => {
   });
 
   test('calculates stats when some cells survive and some die', () => {
-    const previous = {
+    const previous = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true,
       "2,0": true
-    };
+    });
     
-    const next = {
+    const next = createLifeGrid({
       "0,0": true,
       "1,0": true,
       "1,1": true
-    };
+    });
     
     const stats = calculateStats(previous, next);
     

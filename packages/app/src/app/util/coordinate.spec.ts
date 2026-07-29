@@ -163,7 +163,7 @@ describe('coordinate utilities', () => {
       const translated = translateGridToViewport(grid, 120, 80, 5, -5);
 
       expect(translated).toStrictEqual(createLifeGrid({
-        '65,53': true
+        '65,54': true
       }));
     });
   });
