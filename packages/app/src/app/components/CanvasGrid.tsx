@@ -153,6 +153,13 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
 
     updateCanvasSize();
 
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateCanvasSize);
+      return () => {
+        window.removeEventListener('resize', updateCanvasSize);
+      };
+    }
+
     const resizeObserver = new ResizeObserver(() => {
       updateCanvasSize();
     });
