@@ -1,4 +1,4 @@
-Conway's Game of Life
+Game of Life
 -----
 
 [![Unit Tests](https://github.com/wintermuted/game-of-life/actions/workflows/run-tests.yml/badge.svg)](https://github.com/wintermuted/game-of-life/actions/workflows/run-tests.yml)
