@@ -1,6 +1,17 @@
 /* App base resets — DS CSS handles theme vars and component styles */
+html,
+body,
+#root {
+  height: 100%;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+html,
+body {
+  overflow: hidden;
 }
 
 body {
@@ -12,6 +23,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--wm-color-bg);
   color: var(--wm-color-text);
+}
+
+#root {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 code {

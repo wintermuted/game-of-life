@@ -1,4 +1,5 @@
 import { calculateNextGeneration, calculateStats, DEFAULT_RULES } from "../core/game";
+import { createLiveCell } from "../core/cells";
 import { LifeGrid, GameStats, GameRules } from "../interfaces";
 
 class Game {
@@ -18,8 +19,8 @@ class Game {
     this.rules = rules;
   }
 
-  add(coordinate: string) {
-    this.grid[coordinate] = true;
+  add(coordinate: string, color?: string) {
+    this.grid[coordinate] = createLiveCell(color);
   }
 
   getGenerations() {

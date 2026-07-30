@@ -1,9 +1,9 @@
-import { patterns, Pattern, LifeGrid } from '@game-of-life/core';
+import { patterns, Pattern, LifeGrid, RULESETS } from '@game-of-life/core';
 import PatternPreview from './PatternPreview';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
 
 interface Props {
-  onSelectPattern: (grid: LifeGrid) => void;
+  onSelectPattern: (grid: LifeGrid, rulesetId?: string) => void;
   disabled?: boolean;
   selectedPaletteId?: string;
 }
@@ -21,8 +21,13 @@ function PatternSelector({ onSelectPattern, disabled = false, selectedPaletteId 
 
   function handlePatternClick(pattern: Pattern) {
     if (!disabled) {
-      onSelectPattern(pattern.grid);
+      onSelectPattern(pattern.grid, pattern.rulesetId);
     }
+  }
+
+  function getRulesetName(pattern: Pattern): string {
+    const rulesetId = pattern.rulesetId ?? 'standard';
+    return RULESETS.find((ruleset) => ruleset.id === rulesetId)?.name ?? rulesetId;
   }
 
   return (
@@ -44,6 +49,7 @@ function PatternSelector({ onSelectPattern, disabled = false, selectedPaletteId 
                 {formatPatternTitle(pattern.name)}
               </div>
               <span className="badge pattern-selector-badge">{pattern.category}</span>
+              <span className="badge pattern-selector-badge">{getRulesetName(pattern)}</span>
             </div>
           </button>
         </li>

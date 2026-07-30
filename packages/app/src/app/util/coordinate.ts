@@ -1,72 +1,51 @@
 import { toNumber, forEach } from "lodash";
-import { LifeGrid } from "@game-of-life/core";
+import { getCellColor, isLiveCell, LifeGrid } from "@game-of-life/core";
 import { ColorPalette } from "../constants/colors";
 
 export function handleXCoord(x: string, gridSize: number, offsetX: number = 0) {
   const xNumber = toNumber(x);
-
-  if (xNumber >= 0) {
-    return xNumber + (gridSize / 2) - offsetX;
-  } else if (xNumber < 0) {
-    return (gridSize / 2) + xNumber - offsetX;
-  } else {
-    return xNumber;
-  }
+  const half = Math.floor(gridSize / 2);
+  return xNumber + half - offsetX;
 }
 
 export function handleYCoord(y: string, gridSize: number, offsetY: number = 0) {
   const yNumber = toNumber(y);
-
-  return (gridSize / 2) - 1 - yNumber - offsetY;
+  const half = Math.floor(gridSize / 2);
+  return half - 1 - yNumber - offsetY;
 }
 
-export function translateGrid (grid: LifeGrid, gridSize: number, offsetX: number = 0, offsetY: number = 0): LifeGrid {
+export function translateGridToViewport(
+  grid: LifeGrid,
+  gridWidth: number,
+  gridHeight: number,
+  offsetX: number = 0,
+  offsetY: number = 0
+): LifeGrid {
   const translatedGrid: LifeGrid = {} as LifeGrid;
 
-  forEach(grid, (_entry, key) => {
-      const [x, y] = key.split(",")
-      const xOffset = handleXCoord(x, gridSize, offsetX);
-      const yOffset = handleYCoord(y, gridSize, offsetY);
-      const newKey = `${xOffset},${yOffset}`;
-      translatedGrid[newKey] = true;
+  forEach(grid, (entry, key) => {
+    const [x, y] = key.split(',');
+    const xOffset = handleXCoord(x, gridWidth, offsetX);
+    const yOffset = handleYCoord(y, gridHeight, offsetY);
+    const newKey = `${xOffset},${yOffset}`;
+    translatedGrid[newKey] = entry;
   });
 
   return translatedGrid;
 }
 
-export function getCenterPointSquares(columnIndex: number, rowIndex: number, gridSize: number) {
-  const halfGridSize = (gridSize / 2);
-  const halfGridSizeMinusOne = halfGridSize - 1;
-
-  const nwQuad = columnIndex === halfGridSizeMinusOne && rowIndex === halfGridSizeMinusOne;
-  const swQuad = columnIndex === halfGridSize && rowIndex === halfGridSizeMinusOne;
-  const neQuad = columnIndex === halfGridSizeMinusOne && rowIndex === halfGridSize;
-  const seQuad = columnIndex === halfGridSize && rowIndex === halfGridSize;
-  return { nwQuad, swQuad, neQuad, seQuad };
+export function translateGrid (grid: LifeGrid, gridSize: number, offsetX: number = 0, offsetY: number = 0): LifeGrid {
+  return translateGridToViewport(grid, gridSize, gridSize, offsetX, offsetY);
 }
 
 export function getCellFillColor(
-  isAlive: boolean, 
-  rowIndex: number, 
-  columnIndex: number, 
-  gridSize: number,
-  palette?: ColorPalette,
+  cellColor: string | undefined,
+  _palette?: ColorPalette,
   isDark?: boolean
 ): string {
-  const { nwQuad, swQuad, neQuad, seQuad } = getCenterPointSquares(columnIndex, rowIndex, gridSize);
-  const centerCells = nwQuad || swQuad || neQuad || seQuad;
-  
-  if (palette) {
-    const dead = isDark ? palette.deadCellDark : palette.deadCell;
-    const center = isDark ? palette.centerCellDark : palette.centerCell;
-    const defaultCells = centerCells ? center : dead;
-    return isAlive ? palette.liveCell : defaultCells;
+  if (isLiveCell(cellColor)) {
+    return getCellColor(cellColor);
   }
-  
-  // Fallback colors
-  const defaultCells = centerCells
-    ? (isDark ? '#3a3a3a' : '#888')
-    : (isDark ? '#1e1e1e' : '#CCC');
-  const color = isAlive ? 'green' : defaultCells;
-  return color;
+
+  return isDark ? '#161b22' : '#ebedf0';
 }

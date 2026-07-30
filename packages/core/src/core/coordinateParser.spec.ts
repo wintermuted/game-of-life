@@ -1,6 +1,10 @@
 import { parseCoordinates } from './coordinateParser';
 import { LifeGrid } from '../interfaces';
 
+function toBooleanGrid(grid: LifeGrid): Record<string, true> {
+  return Object.fromEntries(Object.keys(grid).map((coordinate) => [coordinate, true]));
+}
+
 describe('parseCoordinates', () => {
   describe('JSON format', () => {
     test('parses valid JSON format', () => {
@@ -10,7 +14,7 @@ describe('parseCoordinates', () => {
         "0,1": true,
         "1,1": true
       };
-      expect(parseCoordinates(input)).toStrictEqual(expected);
+      expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
 
     test('parses JSON with negative coordinates', () => {
@@ -19,7 +23,7 @@ describe('parseCoordinates', () => {
         "-1,0": true,
         "0,-1": true
       };
-      expect(parseCoordinates(input)).toStrictEqual(expected);
+      expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
 
     test('throws error for invalid JSON', () => {
@@ -46,7 +50,7 @@ describe('parseCoordinates', () => {
         "0,1": true,
         "1,1": true
       };
-      expect(parseCoordinates(input)).toStrictEqual(expected);
+      expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
 
     test('parses newline-separated coordinates', () => {
@@ -56,7 +60,7 @@ describe('parseCoordinates', () => {
         "0,1": true,
         "1,1": true
       };
-      expect(parseCoordinates(input)).toStrictEqual(expected);
+      expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
 
     test('parses comma-separated coordinates', () => {
@@ -66,7 +70,7 @@ describe('parseCoordinates', () => {
         "0,1": true,
         "1,1": true
       };
-      expect(parseCoordinates(input)).toStrictEqual(expected);
+      expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
 
     test('parses mixed separators', () => {
@@ -76,7 +80,7 @@ describe('parseCoordinates', () => {
         "0,1": true,
         "1,1": true
       };
-      expect(parseCoordinates(input)).toStrictEqual(expected);
+      expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
 
     test('parses negative coordinates', () => {
@@ -85,7 +89,7 @@ describe('parseCoordinates', () => {
         "-1,0": true,
         "0,-1": true
       };
-      expect(parseCoordinates(input)).toStrictEqual(expected);
+      expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
 
     test('throws error for odd number of coordinates', () => {
@@ -119,7 +123,7 @@ describe('parseCoordinates', () => {
         "1,0": true,
         "0,1": true
       };
-      expect(parseCoordinates(input)).toStrictEqual(expected);
+      expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
   });
 });

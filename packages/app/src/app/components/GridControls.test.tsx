@@ -8,10 +8,13 @@ describe('GridControls', () => {
   const mockOnResetRequested = vi.fn();
   const mockToggleGame = vi.fn();
   const mockCopyCurrentURL = vi.fn();
-  const mockToggleEditMode = vi.fn();
   const mockOnPaletteChange = vi.fn();
+  const mockOnDrawColorChange = vi.fn();
+  const mockOnEnterEditMode = vi.fn();
+  const mockOnEnterPlayMode = vi.fn();
 
   const defaultProps = {
+    variant: 'play' as const,
     nextGeneration: mockNextGeneration,
     updateGenerationSpeed: mockUpdateGenerationSpeed,
     generationSpeed: 3,
@@ -20,9 +23,12 @@ describe('GridControls', () => {
     isGameRunning: false,
     copyCurrentURL: mockCopyCurrentURL,
     selectedPaletteId: 'classic',
+    selectedDrawColor: '#22c55e',
     onPaletteChange: mockOnPaletteChange,
+    onDrawColorChange: mockOnDrawColorChange,
     isEditMode: false,
-    toggleEditMode: mockToggleEditMode,
+    onEnterEditMode: mockOnEnterEditMode,
+    onEnterPlayMode: mockOnEnterPlayMode,
   };
 
   beforeEach(() => {
@@ -85,13 +91,13 @@ describe('GridControls', () => {
 
   it('calls updateGenerationSpeed when generation speed slider changes', () => {
     render(<GridControls {...defaultProps} />);
-    const slider = screen.getByRole('slider');
-    fireEvent.change(slider, { target: { value: '5' } });
-    expect(mockUpdateGenerationSpeed).toHaveBeenCalledWith(5);
+    const increaseButton = screen.getByRole('button', { name: 'Increase generation speed' });
+    fireEvent.click(increaseButton);
+    expect(mockUpdateGenerationSpeed).toHaveBeenCalledWith(4);
   });
 
   it('calls copyCurrentURL when Copy URL button is clicked', () => {
-    render(<GridControls {...defaultProps} />);
+    render(<GridControls {...defaultProps} variant="edit" />);
     const copyButton = screen.getByRole('button', { name: 'Copy URL' });
     fireEvent.click(copyButton);
     expect(mockCopyCurrentURL).toHaveBeenCalledTimes(1);
@@ -99,38 +105,37 @@ describe('GridControls', () => {
 
   it('shows Edit Mode button when toggleEditMode is provided', () => {
     render(<GridControls {...defaultProps} />);
-    expect(screen.getByRole('button', { name: 'Edit Mode' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
   });
 
-  it('does not show Edit Mode button when toggleEditMode is not provided', () => {
-    const { toggleEditMode, ...propsWithoutEditMode } = defaultProps;
-    render(<GridControls {...propsWithoutEditMode} />);
-    expect(screen.queryByRole('button', { name: 'Edit Mode' })).not.toBeInTheDocument();
-  });
-
-  it('calls toggleEditMode when Edit Mode button is clicked', () => {
-    render(<GridControls {...defaultProps} />);
-    const editModeButton = screen.getByRole('button', { name: 'Edit Mode' });
-    fireEvent.click(editModeButton);
-    expect(mockToggleEditMode).toHaveBeenCalledTimes(1);
-  });
-
-  it('shows Edit Mode button as active when isEditMode is true', () => {
+  it('shows Play mode button label when edit mode is active', () => {
     render(<GridControls {...defaultProps} isEditMode={true} />);
-    const editModeButton = screen.getByRole('button', { name: 'Edit Mode' });
-    // Active edit mode should render the button in the active semantic variant.
-    expect(editModeButton).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Play' })).toBeInTheDocument();
   });
 
-  it('disables Edit Mode button when game is running', () => {
-    render(<GridControls {...defaultProps} isGameRunning={true} />);
-    const editModeButton = screen.getByRole('button', { name: 'Edit Mode' });
+  it('calls onEnterEditMode when Edit button is clicked', () => {
+    render(<GridControls {...defaultProps} />);
+    const editModeButton = screen.getByRole('button', { name: 'Edit' });
+    fireEvent.click(editModeButton);
+    expect(mockOnEnterEditMode).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onEnterPlayMode when Play button is clicked in edit mode', () => {
+    render(<GridControls {...defaultProps} isEditMode={true} />);
+    const playModeButton = screen.getByRole('button', { name: 'Play' });
+    fireEvent.click(playModeButton);
+    expect(mockOnEnterPlayMode).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables Edit button for system patterns while in play mode', () => {
+    render(<GridControls {...defaultProps} isSystemPattern={true} />);
+    const editModeButton = screen.getByRole('button', { name: 'Edit' });
     expect(editModeButton).toBeDisabled();
   });
 
-  it('enables Edit Mode button when game is not running', () => {
-    render(<GridControls {...defaultProps} isGameRunning={false} />);
-    const editModeButton = screen.getByRole('button', { name: 'Edit Mode' });
+  it('enables Edit button for non-system patterns', () => {
+    render(<GridControls {...defaultProps} isSystemPattern={false} />);
+    const editModeButton = screen.getByRole('button', { name: 'Edit' });
     expect(editModeButton).not.toBeDisabled();
   });
 });

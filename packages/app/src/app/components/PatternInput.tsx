@@ -7,7 +7,7 @@ import { DEFAULT_PALETTE_ID } from '../constants/colors';
 import ThemeTabs from './ui/ThemeTabs';
 
 interface Props {
-  onLoadPattern: (grid: LifeGrid) => void;
+  onLoadPattern: (grid: LifeGrid, rulesetId?: string) => void;
   disabled?: boolean;
   selectedPaletteId?: string;
 }

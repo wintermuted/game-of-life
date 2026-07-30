@@ -1,46 +1,51 @@
 import Game from "./Game";
+import { createLifeGrid } from '../core/cells';
+
+function toBooleanGrid(grid: Record<string, unknown>): Record<string, true> {
+  return Object.fromEntries(Object.keys(grid).map((coordinate) => [coordinate, true]));
+}
 
 test('next', () => {
-  const base = {
+  const base = createLifeGrid({
     "0,0": true,
     "0,1": true
-  };
+  });
 
   const game = new Game(base);
 
-  expect(game.getStatus()).toStrictEqual({
+  expect(toBooleanGrid(game.getStatus())).toStrictEqual({
     "0,0": true,
     "0,1": true
   })
 
   game.next();
 
-  expect(game.getStatus()).toStrictEqual({})
+  expect(toBooleanGrid(game.getStatus())).toStrictEqual({})
 
   game.next();
 
-  expect(game.getStatus()).toStrictEqual({})
+  expect(toBooleanGrid(game.getStatus())).toStrictEqual({})
 });
 
 test('add', () => {
   const game = new Game({});
 
-  expect(game.getStatus()).toStrictEqual({})
+  expect(toBooleanGrid(game.getStatus())).toStrictEqual({})
 
   game.add("0,0");
-  expect(game.getStatus()).toStrictEqual({"0,0": true,});
+  expect(toBooleanGrid(game.getStatus())).toStrictEqual({"0,0": true,});
 
   game.next();
-  expect(game.getStatus()).toStrictEqual({})
+  expect(toBooleanGrid(game.getStatus())).toStrictEqual({})
 });
 
 describe('getStats', () => {
   test('initializes stats correctly', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true
-    };
+    });
     
     const game = new Game(base);
     const stats = game.getStats();
@@ -53,11 +58,11 @@ describe('getStats', () => {
   });
 
   test('tracks cumulative births and deaths', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true,
       "1,0": true
-    };
+    });
     
     const game = new Game(base);
     
@@ -79,10 +84,10 @@ describe('getStats', () => {
   });
 
   test('tracks deaths correctly', () => {
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "0,1": true
-    };
+    });
     
     const game = new Game(base);
     
@@ -99,11 +104,11 @@ describe('getStats', () => {
 
   test('tracks multiple generations correctly', () => {
     // Blinker pattern (oscillator)
-    const base = {
+    const base = createLifeGrid({
       "0,0": true,
       "1,0": true,
       "2,0": true
-    };
+    });
     
     const game = new Game(base);
     

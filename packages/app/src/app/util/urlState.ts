@@ -1,4 +1,4 @@
-import { LifeGrid } from '@game-of-life/core';
+import { createLifeGrid, isLiveCell, LifeGrid } from '@game-of-life/core';
 
 /**
  * Encodes a LifeGrid to a base64 string for use in URL parameters
@@ -24,14 +24,18 @@ export function decodeBase64ToGrid(base64String: string): LifeGrid | null {
       return null;
     }
     
-    // Validate all keys are strings and all values are booleans
+    const seed: Record<string, boolean | string> = {};
+
+    // Validate all keys are strings and all values are legacy booleans or color strings
     for (const [key, value] of Object.entries(grid)) {
-      if (typeof key !== 'string' || typeof value !== 'boolean') {
+      if (typeof key !== 'string' || (value !== true && !isLiveCell(value))) {
         return null;
       }
+
+      seed[key] = value;
     }
     
-    return grid as LifeGrid;
+    return createLifeGrid(seed);
   } catch (error) {
     console.error('Failed to decode grid from base64:', error);
     return null;

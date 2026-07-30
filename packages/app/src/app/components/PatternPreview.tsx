@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { LifeGrid } from '@game-of-life/core';
+import { getCellColor, isLiveCell, LifeGrid } from '@game-of-life/core';
 import { useThemeMode } from '../ThemeContext';
 import { ColorPalette } from '../constants/colors';
 
@@ -24,8 +24,7 @@ function PatternPreview({ grid, size = 60, palette }: Props) {
     // Clear canvas
     ctx.clearRect(0, 0, size, size);
 
-    // Fill background using the active palette so previews match the board styling.
-    ctx.fillStyle = isDark ? palette.deadCellDark : palette.deadCell;
+    ctx.fillStyle = isDark ? '#161b22' : '#ebedf0';
     ctx.fillRect(0, 0, size, size);
 
     // Find the bounds of the pattern
@@ -62,7 +61,8 @@ function PatternPreview({ grid, size = 60, palette }: Props) {
       const drawX = offsetX + ((x - minX) * cellSize);
       const drawY = offsetY + ((y - minY) * cellSize);
 
-      ctx.fillStyle = palette.liveCell;
+      const cellColor = grid[`${x},${y}`];
+      ctx.fillStyle = isLiveCell(cellColor) ? getCellColor(cellColor) : '#22c55e';
       // Ensure at least 1px cell size is drawn
       const renderSize = Math.max(1, cellSize - 1);
       ctx.fillRect(drawX, drawY, renderSize, renderSize);
@@ -75,9 +75,9 @@ function PatternPreview({ grid, size = 60, palette }: Props) {
       width={size}
       height={size}
       style={{
-        border: `1px solid ${isDark ? palette.centerCellDark : palette.centerCell}`,
+        border: `1px solid ${isDark ? '#30363d' : '#d0d7de'}`,
         borderRadius: '4px',
-        backgroundColor: isDark ? palette.deadCellDark : palette.deadCell
+        backgroundColor: isDark ? '#161b22' : '#ebedf0'
       }}
     />
   );

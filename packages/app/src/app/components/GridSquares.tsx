@@ -25,7 +25,7 @@ function GridSquares({ onMouseOver, grid, gridSize, cellSize }: Props) {
       const x = getCoordinate(rowIndex, cellSize)
       const y = getCoordinate(columnIndex, cellSize);
       const alive = translatedGrid[`${rowIndex},${columnIndex}`];
-      const color = getCellFillColor(alive, rowIndex, columnIndex, gridSize);
+      const color = getCellFillColor(alive);
 
       const rect = (
         <rect

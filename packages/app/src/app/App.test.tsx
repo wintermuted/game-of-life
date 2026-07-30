@@ -6,15 +6,6 @@ import { ThemeProviderWrapper } from './ThemeContext';
 
 // Mock canvas getContext to avoid JSDOM canvas errors
 beforeAll(() => {
-  HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
-    clearRect: vi.fn(),
-    fillRect: vi.fn(),
-    strokeRect: vi.fn(),
-    fillStyle: '',
-    strokeStyle: '',
-    lineWidth: 0,
-  })) as any;
-
   Object.defineProperty(window, 'localStorage', {
     value: {
       getItem: vi.fn(() => 'light'),
@@ -67,6 +58,7 @@ describe('App Dark Mode Toggle', () => {
     );
     
     expect(screen.getByLabelText(/home/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/play/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/about/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/view source/i)).toBeInTheDocument();
   });

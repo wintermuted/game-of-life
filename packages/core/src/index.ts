@@ -1,5 +1,6 @@
 // Core game logic
 export * from './core/game';
+export * from './core/cells';
 export * from './core/coordinates';
 export * from './core/coordinateParser';
 
@@ -11,6 +12,9 @@ export * from './data/oscillators';
 export * from './data/stillLifes';
 export * from './data/spaceships';
 export * from './data/methuselahs';
+export * from './data/guns';
+export * from './data/replicators';
+export * from './data/alternativeRules';
 export * from './data/patterns';
 
 // Interfaces

@@ -3,14 +3,10 @@
   border-radius: var(--wm-radius-sm);
   background: var(--wm-color-surface-solid);
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
   width: 100%;
-  max-width: 800px;
-}
-
-@media (min-width: 768px) {
-  .Grid {
-    height: 800px;
-  }
+  max-width: none;
 }
 
 @media (max-width: 767px) {
@@ -30,10 +26,13 @@
 
 .grid-stage {
   position: relative;
+  width: 100%;
+  height: 100%;
   --grid-overlay-bg: rgba(255, 255, 255, 0.92);
   --grid-overlay-border: rgba(0, 0, 0, 0.15);
   --grid-overlay-button-color: #333;
   --grid-overlay-divider: rgba(0, 0, 0, 0.12);
+  --grid-overlay-text: #333;
 }
 
 .grid-stage[data-theme-mode='dark'] {
@@ -41,6 +40,19 @@
   --grid-overlay-border: rgba(255, 255, 255, 0.12);
   --grid-overlay-button-color: #d1d5db;
   --grid-overlay-divider: rgba(255, 255, 255, 0.12);
+  --grid-overlay-text: #cbd5e1;
+  --grid-minimap-bg: rgba(15, 23, 42, 0.62);
+  --grid-minimap-cell: rgba(148, 163, 184, 0.9);
+  --grid-minimap-viewport: rgba(125, 211, 252, 0.98);
+  --grid-minimap-origin-line: rgba(148, 163, 184, 0.6);
+}
+
+.grid-stage[data-theme-mode='light'] {
+  --grid-overlay-text: #1e293b;
+  --grid-minimap-bg: rgba(241, 245, 249, 0.85);
+  --grid-minimap-cell: rgba(51, 65, 85, 0.75);
+  --grid-minimap-viewport: rgba(37, 99, 235, 0.95);
+  --grid-minimap-origin-line: rgba(51, 65, 85, 0.5);
 }
 
 .grid-overlay-controls {
@@ -54,6 +66,259 @@
   border: 1px solid var(--grid-overlay-border);
   border-radius: 6px;
   background: var(--grid-overlay-bg);
+}
+
+.grid-overlay-controls-top-left {
+  right: auto;
+  left: 8px;
+}
+
+.grid-overlay-controls .GridControls {
+  width: 2.5rem;
+  min-width: 2.5rem;
+}
+
+.grid-overlay-controls .grid-controls-form-play .controls-main-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+}
+
+.grid-overlay-controls .grid-controls-form-play .grid-controls-section {
+  width: 100%;
+}
+
+.grid-overlay-controls .grid-controls-form-play .grid-controls-actions-row {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  row-gap: 0.45rem;
+}
+
+.grid-overlay-selection-banner {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0.22rem 0.58rem;
+  border: 1px solid var(--grid-overlay-border);
+  border-radius: 999px;
+  background: var(--grid-overlay-bg);
+  color: var(--grid-overlay-button-color);
+  font-family: var(--wm-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.76rem;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.grid-overlay-readout {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-height: 28px;
+  padding: 0.18rem 0.5rem;
+  border: 1px solid var(--grid-overlay-border);
+  border-radius: 6px;
+  background: var(--grid-overlay-bg);
+  color: var(--grid-overlay-button-color);
+  font-family: var(--wm-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.76rem;
+  line-height: 1;
+}
+
+.grid-overlay-readout-bottom-right {
+  right: 8px;
+  bottom: 8px;
+}
+
+.grid-overlay-minimap {
+  position: absolute;
+  top: auto;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  width: 152px;
+}
+
+.grid-overlay-minimap-frame {
+  position: relative;
+  width: 152px;
+  height: 152px;
+}
+
+.grid-overlay-minimap-zoom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2rem;
+  margin-top: 0.3rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.grid-overlay-minimap-zoom-row .control-tooltip-trigger {
+  display: block;
+}
+
+.grid-overlay-minimap-zoom-row .grid-overlay-btn {
+  height: 1.4rem;
+}
+
+.grid-overlay-minimap-zoom-group {
+  display: inline-flex;
+  align-items: stretch;
+}
+
+.grid-overlay-minimap-zoom-group .control-tooltip-trigger {
+  display: inline-flex;
+}
+
+.grid-overlay-minimap-zoom-group .grid-overlay-btn,
+.grid-overlay-minimap-zoom-group .grid-overlay-btn-static {
+  min-width: 1.35rem;
+  border-radius: 0;
+}
+
+.grid-overlay-minimap-zoom-group .control-tooltip-trigger:first-child .grid-overlay-btn {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.grid-overlay-minimap-zoom-group .control-tooltip-trigger:last-child .grid-overlay-btn {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.grid-overlay-minimap-actions-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: auto;
+}
+
+.grid-overlay-btn-static {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.grid-overlay-minimap-zoom-value {
+  min-width: 1.65rem;
+  text-align: center;
+  color: var(--grid-overlay-text);
+  font-family: var(--wm-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.grid-overlay-minimap-canvas {
+  display: block;
+  border: 1px solid var(--grid-overlay-border);
+  border-radius: 5px;
+  background: var(--grid-minimap-bg);
+  cursor: grab;
+}
+
+.grid-overlay-minimap-pan-btn {
+  position: absolute;
+  z-index: 2;
+}
+
+.grid-overlay-minimap-frame .grid-overlay-minimap-pan-btn.control-tooltip-trigger {
+  position: absolute;
+  display: block;
+}
+
+.grid-overlay-minimap-pan-btn .grid-overlay-btn {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--grid-overlay-bg) 54%, transparent);
+  border-color: color-mix(in srgb, var(--grid-overlay-border) 72%, transparent);
+  opacity: 0.78;
+  backdrop-filter: blur(2px);
+}
+
+.grid-overlay-minimap-pan-btn .grid-overlay-btn:hover,
+.grid-overlay-minimap-pan-btn .grid-overlay-btn:focus-visible {
+  opacity: 0.96;
+}
+
+.grid-overlay-minimap-pan-up {
+  top: 0.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.grid-overlay-minimap-pan-left {
+  left: 0.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.grid-overlay-minimap-pan-right {
+  right: 0.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.grid-overlay-minimap-pan-down {
+  bottom: 0.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.grid-overlay-minimap-canvas.grid-overlay-minimap-canvas-panning {
+  cursor: grabbing;
+}
+
+.grid-overlay-minimap-cell {
+  fill: var(--grid-minimap-cell);
+}
+
+.grid-overlay-minimap-viewport {
+  fill: none;
+  stroke: var(--grid-minimap-viewport);
+  stroke-width: 1.5;
+}
+
+.grid-overlay-minimap-origin-line {
+  stroke: var(--grid-minimap-origin-line);
+  stroke-width: 0.5;
+  opacity: 0.5;
+}
+
+.grid-overlay-minimap-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--grid-overlay-text);
+  font-family: monospace;
+}
+
+.grid-overlay-minimap-stat-line {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.grid-overlay-readout-count {
+  color: var(--wm-color-text-secondary);
+  white-space: nowrap;
+}
+
+.grid-overlay-readout-coordinates {
+  white-space: nowrap;
 }
 
 .grid-overlay-row {
@@ -92,14 +357,61 @@
   background: var(--grid-overlay-divider);
 }
 
-.CanvasGrid canvas {
+.CanvasGrid canvas,
+.canvas-grid-surface {
   display: block;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable {
+  cursor: pointer;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-pencil {
+  cursor: crosshair;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-selection {
+  cursor: crosshair;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-eraser {
+  cursor: cell;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-grab {
+  cursor: grab;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-grab.canvas-grid-surface-tool-grab-active {
+  cursor: grabbing;
+}
+
+.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-stamp {
+  cursor: copy;
+}
+
+.grid-controls-tool-text {
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
 @media (max-width: 767px) {
-  .CanvasGrid canvas {
+  .grid-overlay-minimap {
+    padding: 4px;
+  }
+
+  .grid-overlay-minimap-canvas {
+    width: 92px;
+    height: 92px;
+  }
+
+  .CanvasGrid canvas,
+  .canvas-grid-surface {
     width: 100% !important;
     height: auto !important;
   }

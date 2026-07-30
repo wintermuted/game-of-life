@@ -2,6 +2,10 @@ import { beacon, beaconA2, blinker2, toad, pulsar, pentadecathlon } from "../../
 import gameOfLife from "../game";
 import { LifeGrid } from "../../interfaces";
 
+function toBooleanGrid(grid: LifeGrid): Record<string, true> {
+  return Object.fromEntries(Object.keys(grid).map((coordinate) => [coordinate, true]));
+}
+
 describe('oscillators', () => {
   describe('blinker', () => {
     const gen1 = gameOfLife(blinker2);
@@ -11,7 +15,7 @@ describe('oscillators', () => {
 
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual({
+      expect(toBooleanGrid(gen1)).toStrictEqual({
         "1,0": true,
         "1,1": true,
         "1,2": true,
@@ -19,11 +23,11 @@ describe('oscillators', () => {
     })
 
     test('gen2', () => {  
-      expect(gen2).toStrictEqual(blinker2)
+      expect(toBooleanGrid(gen2)).toStrictEqual(toBooleanGrid(blinker2))
     })
 
     test('gen3', () => {  
-      expect(gen3).toStrictEqual({
+      expect(toBooleanGrid(gen3)).toStrictEqual({
         "1,0": true,
         "1,1": true,
         "1,2": true,
@@ -31,7 +35,7 @@ describe('oscillators', () => {
     })
 
     test('gen4', () => {  
-      expect(gen4).toStrictEqual(blinker2)
+      expect(toBooleanGrid(gen4)).toStrictEqual(toBooleanGrid(blinker2))
     })
   });
 
@@ -43,19 +47,19 @@ describe('oscillators', () => {
 
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual(beaconA2)
+      expect(toBooleanGrid(gen1)).toStrictEqual(toBooleanGrid(beaconA2))
     })
 
     test('gen2', () => {  
-      expect(gen2).toStrictEqual(beacon)
+      expect(toBooleanGrid(gen2)).toStrictEqual(toBooleanGrid(beacon))
     })
 
     test('gen3', () => {  
-      expect(gen3).toStrictEqual(beaconA2)
+      expect(toBooleanGrid(gen3)).toStrictEqual(toBooleanGrid(beaconA2))
     })
 
     test('gen4', () => {  
-      expect(gen4).toStrictEqual(beacon)
+      expect(toBooleanGrid(gen4)).toStrictEqual(toBooleanGrid(beacon))
     })
   });
 
@@ -65,7 +69,7 @@ describe('oscillators', () => {
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual({
+      expect(toBooleanGrid(gen1)).toStrictEqual({
         "0,0": true,
         "0,1": true,
         "1,2": true,
@@ -76,11 +80,11 @@ describe('oscillators', () => {
     })
 
     test('gen2', () => {  
-      expect(gen2).toStrictEqual(toad)
+      expect(toBooleanGrid(gen2)).toStrictEqual(toBooleanGrid(toad))
     })
 
     test('gen3', () => {  
-      expect(gen3).toStrictEqual({
+      expect(toBooleanGrid(gen3)).toStrictEqual({
         "0,0": true,
         "0,1": true,
         "1,2": true,
@@ -98,7 +102,7 @@ describe('oscillators', () => {
     const gen4 = gameOfLife(gen3);
 
     test('oscillates with period 3 - gen3 returns to original', () => {
-      expect(gen3).toStrictEqual(pulsar)
+      expect(toBooleanGrid(gen3)).toStrictEqual(toBooleanGrid(pulsar))
     })
 
     test('gen1 is different from original', () => {

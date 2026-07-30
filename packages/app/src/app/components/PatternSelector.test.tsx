@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import PatternSelector from './PatternSelector';
 import { patterns } from '@game-of-life/core';
 
@@ -46,7 +46,32 @@ describe('PatternSelector', () => {
     fireEvent.click(firstPattern);
     
     // Check that the handler was called with the correct grid
-    expect(mockHandler).toHaveBeenCalledWith(patterns[0].grid);
+    expect(mockHandler).toHaveBeenCalledWith(patterns[0].grid, patterns[0].rulesetId);
+  });
+
+  test('selects the HighLife ruleset with the replicator pattern', () => {
+    const mockHandler = vi.fn();
+    const replicator = patterns.find((pattern) => pattern.name === 'HighLife Replicator');
+
+    expect(replicator).toBeDefined();
+    render(<PatternSelector onSelectPattern={mockHandler} />);
+    fireEvent.click(screen.getByText('Highlife Replicator'));
+
+    expect(mockHandler).toHaveBeenCalledWith(replicator?.grid, 'highlife');
+  });
+
+  test.each([
+    ['Day & Night Seed', 'Day & Night Seed', 'day-and-night'],
+    ['Life without Death Ladder', 'Life Without Death Ladder', 'life-without-death'],
+  ])('selects the matching ruleset with %s', (patternName, displayName, rulesetId) => {
+    const mockHandler = vi.fn();
+    const pattern = patterns.find((entry) => entry.name === patternName);
+
+    expect(pattern).toBeDefined();
+    render(<PatternSelector onSelectPattern={mockHandler} />);
+    fireEvent.click(screen.getByText(displayName));
+
+    expect(mockHandler).toHaveBeenCalledWith(pattern?.grid, rulesetId);
   });
 
   test('does not call onSelectPattern when disabled', () => {
@@ -71,5 +96,15 @@ describe('PatternSelector', () => {
     expect(screen.getAllByText('Oscillator').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Spaceship').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Methuselah').length).toBeGreaterThan(0);
+  });
+
+  test('lists the applied ruleset beneath the category', () => {
+    const mockHandler = vi.fn();
+    render(<PatternSelector onSelectPattern={mockHandler} />);
+
+    const ladderButton = screen.getByText('Life Without Death Ladder').closest('button');
+    expect(ladderButton).not.toBeNull();
+    expect(within(ladderButton as HTMLButtonElement).getByText('Alternative Rules')).toHaveClass('pattern-selector-badge');
+    expect(within(ladderButton as HTMLButtonElement).getByText('Life without Death')).toHaveClass('pattern-selector-badge');
   });
 });

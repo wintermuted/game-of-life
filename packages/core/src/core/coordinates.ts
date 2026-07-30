@@ -1,32 +1,25 @@
-import { keys, intersection, forEach } from 'lodash';
 import { LifeGrid } from '../interfaces';
+import { isLiveCell } from './cells';
 
 export function getLiveNeighborCount(coordinate: string, grid: LifeGrid): number {  
-  const neighborCoords = getNeighborCoordinates(coordinate)
-  const neighborKeys = keys(neighborCoords);
-  const gridKeys = keys(grid);
-  const intersectedKeys = intersection(neighborKeys, gridKeys);
-  
-  return intersectedKeys.length;
+  return getNeighborCoordinates(coordinate).filter((neighborCoordinate) => isLiveCell(grid[neighborCoordinate])).length;
 }
 
 export function getDeadNeighborCoordinates(coordinate: string, grid: LifeGrid) {
-  const neighborCoords = getNeighborCoordinates(coordinate)
-  const neighborKeys = keys(neighborCoords);
   const deadCells: string[] =[];
 
-  forEach(neighborKeys, (value) => {
-    const isAlive = !!grid[value];
+  for (const neighborCoordinate of getNeighborCoordinates(coordinate)) {
+    const isAlive = isLiveCell(grid[neighborCoordinate]);
 
     if (!isAlive) {
-      deadCells.push(value);
+      deadCells.push(neighborCoordinate);
     }
-  })
+  }
 
   return deadCells;
 }
 
-export function getNeighborCoordinates(coordinate: string): LifeGrid {
+export function getNeighborCoordinates(coordinate: string): string[] {
   const [xCoord, yCoord]: string[] = coordinate.split(",");
   const x = parseInt(xCoord);
   const y = parseInt(yCoord);
@@ -40,16 +33,5 @@ export function getNeighborCoordinates(coordinate: string): LifeGrid {
   const southEast = [x + 1, y - 1].join(",");
   const northEast = [x + 1, y + 1].join(",");
 
-  const neighborCoords = {
-      [north]: true,
-      [south]: true,
-      [east]: true,
-      [west]: true,
-      [southWest]: true,
-      [northWest]: true,
-      [southEast]: true,
-      [northEast]: true
-  };
-
-  return neighborCoords;
+  return [north, south, east, west, southWest, northWest, southEast, northEast];
 }
