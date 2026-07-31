@@ -126,6 +126,7 @@ export default {
     "customColors": "Custom colors",
     "customColor": "Custom color",
     "customColorHex": "Custom color hex",
+    "importCustomPattern": "Import custom pattern",
     "hoveredCell": "Cursor",
     "hoveredCellNone": "None",
     "miniMap": "Mini map",
@@ -146,6 +147,7 @@ export default {
     "title": "Starter Patterns",
     "custom": "Custom Pattern",
     "loadCustom": "Load Custom Pattern",
+    "loadSampleData": "Load Sample Data",
     "placeholder": "Paste coordinates here...",
     "showExamples": "Show examples",
     "hideExamples": "Hide examples",
@@ -234,7 +236,8 @@ export default {
     "confirmDraftSaveTagsLabel": "Tags",
     "confirmDraftSaveTagsPlaceholder": "Add tags separated by commas",
     "confirmDraftSaveVisibilityLabel": "Visibility",
-    "confirmDraftSaveCategoryHint": "Choose category and visibility, and review name/description before first save."
+    "confirmDraftSaveCategoryHint": "Choose category and visibility, and review name/description before first save.",
+    "importCustomPatternTitle": "Import custom pattern"
   },
   "diagnostics": {
     "title": "Diagnostics",
@@ -506,6 +509,7 @@ export default {
     "stabilityBannerTitle": "Stability achieved",
     "stabilityBannerDescription": "Live cell count stayed at {{liveCells}} for {{generations}} generations.",
     "returnToEditMode": "Return to edit mode",
+    "restartGame": "Restart game",
     "continuePlaying": "Continue playing"
   },
   "patternSource": {

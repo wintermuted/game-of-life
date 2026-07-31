@@ -688,6 +688,53 @@ body.gol-board-maximized .wm-toast {
   padding-right: 0;
 }
 
+.play-sidebar-inline-toggle {
+  min-width: 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  justify-content: center;
+}
+
+.left-info-column.is-collapsed,
+.right-column.is-collapsed {
+  flex: 0 0 1.85rem;
+  width: 1.85rem;
+  min-width: 1.85rem;
+  overflow: hidden;
+}
+
+.left-info-column.is-collapsed {
+  align-items: stretch;
+}
+
+.right-column.is-collapsed {
+  align-items: stretch;
+}
+
+.play-sidebar-rail-toggle {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  border-radius: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.play-sidebar-rail-toggle-label {
+  display: inline-block;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  white-space: nowrap;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .left-info-column-card-fill {
   flex: 1;
   min-height: 0;
@@ -1173,6 +1220,16 @@ body.gol-board-maximized .wm-toast {
   gap: 0.3rem;
 }
 
+.grid-controls-import-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-controls-import-button svg {
+  flex: 0 0 auto;
+}
+
 .grid-overlay-controls .grid-controls-form-play .grid-controls-actions-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1192,6 +1249,10 @@ body.gol-board-maximized .wm-toast {
 .grid-overlay-controls .grid-controls-form-play .grid-controls-actions-row .btn {
   width: 100%;
   justify-content: center;
+}
+
+.grid-overlay-controls .grid-controls-form-play .grid-controls-import-button .grid-controls-import-button-label {
+  display: none;
 }
 
 .grid-overlay-controls .grid-controls-form-play .grid-controls-speed-stepper {
@@ -1999,6 +2060,10 @@ body.gol-board-maximized .wm-toast {
   overflow-y: auto;
 }
 
+.right-column.is-collapsed {
+  overflow-y: hidden;
+}
+
 .right-column-card-spaced {
   margin-bottom: 1rem;
 }
@@ -2499,6 +2564,12 @@ body.gol-board-maximized .wm-toast {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.45rem;
+}
+
+.play-about-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .play-about-settings-btn {
@@ -3896,6 +3967,13 @@ body.gol-board-maximized .wm-toast {
     padding-right: 0;
     padding-top: 0;
     order: -1;
+  }
+
+  .left-info-column.is-collapsed,
+  .right-column.is-collapsed {
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
   }
 
   .left-info-column-card-fill {

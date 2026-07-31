@@ -8,6 +8,7 @@ interface Props {
 }
 
 function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
+  const SAMPLE_PATTERN_COORDINATES = '1 0\n2 1\n0 2\n1 2\n2 2';
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [showHelp, setShowHelp] = useState(false);
@@ -33,6 +34,21 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
     if (error) setError(null);
   }
 
+  function handleLoadSampleData() {
+    setError(null);
+    try {
+      const grid = parseCoordinates(SAMPLE_PATTERN_COORDINATES);
+      onLoadPattern(grid);
+      setInput('');
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError('Failed to parse coordinates');
+      }
+    }
+  }
+
   return (
     <div>
       <textarea
@@ -55,15 +71,26 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
         </div>
       )}
 
-      <button
-        className="btn btn-primary-neutral"
-        type="button"
-        onClick={handleLoad}
-        disabled={disabled || !input.trim()}
-        style={{ width: '100%', marginBottom: '0.5rem' }}
-      >
-        {t('patterns.loadCustom')}
-      </button>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+        <button
+          className="btn btn-primary-neutral"
+          type="button"
+          onClick={handleLoad}
+          disabled={disabled || !input.trim()}
+          style={{ flex: 1 }}
+        >
+          {t('patterns.loadCustom')}
+        </button>
+        <button
+          className="btn btn-secondary-neutral"
+          type="button"
+          onClick={handleLoadSampleData}
+          disabled={disabled}
+          style={{ flex: 1 }}
+        >
+          {t('patterns.loadSampleData')}
+        </button>
+      </div>
 
       <button
         type="button"

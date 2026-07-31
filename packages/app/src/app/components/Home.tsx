@@ -1,20 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, GitFork, Lock, LockOpen, Pencil, Save, SaveAll, Settings, Star, Tag } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, GitFork, Lock, LockOpen, Pencil, Save, SaveAll, Settings, Star, Tag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Cpu, User } from 'lucide-react';
 import Grid from "./Grid";
 import GridControls from "./GridControls";
-import PatternInput from "./PatternInput";
 import PatternSelector from './PatternSelector';
 import PatternPreview from './PatternPreview';
+import CustomPatternInput from './CustomPatternInput';
 import RulesPanel from "./RulesPanel";
 import { getGenerationSpeed } from '../util';
 import { createLifeGrid, getCellColor, getNeighborCoordinates, Game, rPentomino, LifeGrid, GameRule, GameRuleKey, GameStats, GameRules, DEFAULT_RULES, RULESETS, patterns } from '@game-of-life/core';
 import { encodeGridToBase64, getGridFromURL, updateURLWithGrid } from '../util/urlState';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
-import ThemeTabs from './ui/ThemeTabs';
 import {
   ensureSeededSocialData,
   getFavoriteBoards,
@@ -654,7 +653,6 @@ function toCreatorSlug(name: string): string {
 function Home() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [activeSidebarTab, setActiveSidebarTab] = useState<'patterns' | 'diagnostics'>('diagnostics');
   const [boardNeedsInitialization, setBoardInitialization] = useState(true);
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(5);
@@ -664,6 +662,7 @@ function Home() {
   const [isRemoveStarConfirmModalOpen, setIsRemoveStarConfirmModalOpen] = useState(false);
   const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
   const [isDraftSaveConfirmModalOpen, setIsDraftSaveConfirmModalOpen] = useState(false);
+  const [isImportCustomPatternModalOpen, setIsImportCustomPatternModalOpen] = useState(false);
   const [draftSaveModalMode, setDraftSaveModalMode] = useState<DraftSaveModalMode>('save');
   const [isUnlockRulesModalOpen, setIsUnlockRulesModalOpen] = useState(false);
   const [draftSaveName, setDraftSaveName] = useState('');
@@ -674,6 +673,8 @@ function Home() {
   const [patternNameDraft, setPatternNameDraft] = useState('');
   const [nameModalMode, setNameModalMode] = useState<NameModalMode>('rename');
   const [isBoardMaximized, setIsBoardMaximized] = useState(false);
+  const [isLeftSidebarCollapsed, setIsLeftSidebarCollapsed] = useState(false);
+  const [isRightSidebarCollapsed, setIsRightSidebarCollapsed] = useState(false);
   const [showMaximizedControls, setShowMaximizedControls] = useState(true);
   const [cellDataCopied, setCellDataCopied] = useState(false);
   const [currentPattern, setCurrentPattern] = useState<LifeGrid>(() => {
@@ -790,7 +791,7 @@ function Home() {
   const savedTitle = savedTemplateNames[effectivePatternHash];
   const isUnsavedDraftBoard = !currentBoardId && !savedTitle;
   const isUnsavedEditableBoard = isUnsavedDraftBoard && !isSystemPattern;
-  const canManageGameRules = Boolean(
+  const canManageGameRules = isEditMode && Boolean(
     activeForkRecord ||
     savedBoardForRoute ||
     savedBoardForCurrent ||
@@ -1046,6 +1047,11 @@ function Home() {
     }
   }
 
+  function restartGameFromBoardState() {
+    resetBoardStateOverlayState();
+    resetBoard();
+  }
+
   function enterPlayMode() {
     if (!isEditMode) return;
 
@@ -1215,6 +1221,19 @@ function Home() {
     }
 
     loadCustomPattern(grid, rulesetId);
+  }
+
+  function openImportCustomPatternModal() {
+    setIsImportCustomPatternModalOpen(true);
+  }
+
+  function closeImportCustomPatternModal() {
+    setIsImportCustomPatternModalOpen(false);
+  }
+
+  function handleImportCustomPattern(grid: LifeGrid) {
+    handlePatternInputLoad(grid);
+    closeImportCustomPatternModal();
   }
 
   function handleStampPatternSelect(grid: LifeGrid) {
@@ -1811,7 +1830,7 @@ function Home() {
       setSnackbarMessage(t('messages.patternForked', { name: headerTitle }));
       setSnackbarOpen(true);
       closeEditNameModal();
-      navigate(`/play?pattern=${encodeURIComponent(currentGridHash)}&board=${encodeURIComponent(forkBoardId)}`);
+      navigate(`/play?pattern=${encodeURIComponent(currentGridHash)}&board=${encodeURIComponent(forkBoardId)}&mode=edit`);
       return;
     }
 
@@ -2001,7 +2020,7 @@ function Home() {
               <h3 className="playground-header-title">
               <span className="playground-header-title-text">{headerTitle}</span>
               </h3>
-              {!isSystemPattern ? (
+              {isEditMode && !isSystemPattern ? (
                 <button
                   className="playground-header-title-edit-btn"
                   type="button"
@@ -2021,7 +2040,7 @@ function Home() {
                 ) : null}
             </div>
           </div>
-          {isUnsavedEditableBoard ? (
+          {isEditMode && isUnsavedEditableBoard ? (
             <div className="playground-header-unsaved-note-row">
               <span className="playground-header-unsaved-note">{t('playground.unsavedEmptyBoardNotice')}</span>
             </div>
@@ -2053,7 +2072,7 @@ function Home() {
                 ) : null}
               </>
             ) : null}
-            {!isSystemPattern ? (
+            {isEditMode && !isSystemPattern ? (
               isUnsavedDraftBoard ? (
                 <button
                   className="btn btn-sm btn-primary"
@@ -2106,29 +2125,65 @@ function Home() {
                   </details>
                 </div>
               )
+            ) : !isEditMode && isSystemPattern ? (
+              <button
+                className="btn btn-sm btn-primary"
+                type="button"
+                onClick={openForkNameModal}
+                aria-label={t('playground.fork')}
+                title={t('playground.fork')}
+              >
+                <GitFork size={12} />
+                <span>{t('playground.fork')}</span>
+              </button>
             ) : null}
           </div>
         </div>
       </div>
 
       <div className="wm-sidebar-layout wm-sidebar-layout-stretch playground-content-row">
-        <div className="left-info-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider">
-          <div className="left-info-column-card-fill">
+        <div className={`left-info-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider${isLeftSidebarCollapsed ? ' is-collapsed' : ''}`}>
+          {isLeftSidebarCollapsed ? (
+            <button
+              className="btn btn-sm btn-secondary-neutral play-sidebar-rail-toggle"
+              type="button"
+              onClick={() => setIsLeftSidebarCollapsed(false)}
+              aria-label={t('playground.expandLeftSidebar', { defaultValue: 'Expand left sidebar' })}
+              title={t('playground.expandLeftSidebar', { defaultValue: 'Expand left sidebar' })}
+              aria-expanded={false}
+            >
+              <span className="play-sidebar-rail-toggle-label">{t('playground.infoTitle')}</span>
+            </button>
+          ) : null}
+
+          {!isLeftSidebarCollapsed ? <div className="left-info-column-card-fill">
             <div className="diagnostics-panel play-info-panel">
               <section className="play-about-section" aria-label={t('playground.infoTitle')}>
                 <div className="play-about-header-row">
                   <h4 className="diagnostics-section-heading">{t('playground.infoTitle')}</h4>
-                  {!isSystemPattern ? (
+                  <div className="play-about-header-actions">
+                    {!isSystemPattern ? (
+                      <button
+                        className="control-tooltip-trigger play-about-settings-btn"
+                        type="button"
+                        onClick={() => openDraftSaveConfirmModal('edit')}
+                        aria-label={t('playground.editPatternInfo')}
+                        data-tooltip={t('playground.editPatternInfo')}
+                      >
+                        <Settings size={13} aria-hidden="true" />
+                      </button>
+                    ) : null}
                     <button
-                      className="control-tooltip-trigger play-about-settings-btn"
+                      className="btn btn-sm btn-secondary-neutral play-sidebar-inline-toggle"
                       type="button"
-                      onClick={() => openDraftSaveConfirmModal('edit')}
-                      aria-label={t('playground.editPatternInfo')}
-                      data-tooltip={t('playground.editPatternInfo')}
+                      onClick={() => setIsLeftSidebarCollapsed(true)}
+                      aria-label={t('playground.collapseLeftSidebar', { defaultValue: 'Collapse left sidebar' })}
+                      title={t('playground.collapseLeftSidebar', { defaultValue: 'Collapse left sidebar' })}
+                      aria-expanded={true}
                     >
-                      <Settings size={13} aria-hidden="true" />
+                      <ChevronLeft size={14} aria-hidden="true" />
                     </button>
-                  ) : null}
+                  </div>
                 </div>
                 <div className="play-about-content">
                   <p className="play-about-description">{infoDescriptionValue}</p>
@@ -2331,7 +2386,7 @@ function Home() {
                 </div>
               </details>
             </div>
-          </div>
+          </div> : null}
         </div>
 
         <div
@@ -2380,6 +2435,7 @@ function Home() {
               onDrawColorChange={handleDrawColorChange}
               onCustomColorCommitted={handleCustomColorCommitted}
               isEditMode={isEditMode}
+              onForkPattern={openForkNameModal}
               onEnterEditMode={enterEditMode}
               onEnterPlayMode={enterPlayMode}
               onUndoBoardChange={undoBoardChange}
@@ -2396,6 +2452,7 @@ function Home() {
               rotateStampKeyPressToken={rotateStampKeyPressToken}
               onRotateStamp={rotateStampPattern}
               onStampPatternSelect={handleStampPatternSelect}
+              onImportCustomPattern={openImportCustomPatternModal}
             />
           )}
         />
@@ -2414,6 +2471,11 @@ function Home() {
                 <button className="btn btn-sm btn-secondary-neutral" type="button" onClick={returnToEditModeFromBoardState}>
                   {t('messages.returnToEditMode')}
                 </button>
+                {boardStateOverlay === 'gameOver' && (
+                  <button className="btn btn-sm btn-primary-neutral" type="button" onClick={restartGameFromBoardState}>
+                    {t('messages.restartGame')}
+                  </button>
+                )}
                 {boardStateOverlay === 'stability' && (
                   <button className="btn btn-sm btn-primary-neutral" type="button" onClick={continuePlayingFromBoardState}>
                     {t('messages.continuePlaying')}
@@ -2424,34 +2486,38 @@ function Home() {
           </div>
         )}
       </div>
-        <div className="right-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider">
-        <div className="sidebar-tabs-nav right-column-card-spaced">
-          <ThemeTabs
-            options={[
-              { value: 'diagnostics', label: 'State' },
-              { value: 'patterns', label: 'Patterns' },
-            ]}
-            activeValue={activeSidebarTab}
-            onChange={(value) => setActiveSidebarTab(value as 'patterns' | 'diagnostics')}
-            ariaLabel="Simulation panels"
-          />
-        </div>
+        <div className={`right-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider${isRightSidebarCollapsed ? ' is-collapsed' : ''}`}>
+          {isRightSidebarCollapsed ? (
+            <button
+              className="btn btn-sm btn-secondary-neutral play-sidebar-rail-toggle"
+              type="button"
+              onClick={() => setIsRightSidebarCollapsed(false)}
+              aria-label={t('playground.expandRightSidebar', { defaultValue: 'Expand right sidebar' })}
+              title={t('playground.expandRightSidebar', { defaultValue: 'Expand right sidebar' })}
+              aria-expanded={false}
+            >
+              <span className="play-sidebar-rail-toggle-label">{t('diagnostics.statistics')}</span>
+            </button>
+          ) : null}
 
-        {activeSidebarTab === 'patterns' && (
-          <div className="right-column-card-fill">
-            <PatternInput 
-              onLoadPattern={handlePatternInputLoad}
-              disabled={isGameRunning}
-              selectedPaletteId={selectedPaletteId}
-            />
-          </div>
-        )}
-
-        {activeSidebarTab === 'diagnostics' && (
-          <div className="diagnostics-panel">
+          {!isRightSidebarCollapsed ? <div className="diagnostics-panel">
             <details className="diagnostics-section" open>
               <summary className="diagnostics-section-summary">
                 <h4 className="diagnostics-section-heading">{t('diagnostics.statistics')}</h4>
+                <button
+                  className="btn btn-sm btn-secondary-neutral play-sidebar-inline-toggle"
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setIsRightSidebarCollapsed(true);
+                  }}
+                  aria-label={t('playground.collapseRightSidebar', { defaultValue: 'Collapse right sidebar' })}
+                  title={t('playground.collapseRightSidebar', { defaultValue: 'Collapse right sidebar' })}
+                  aria-expanded={true}
+                >
+                  <ChevronRight size={14} aria-hidden="true" />
+                </button>
               </summary>
               <div className="diagnostics-section-content">
                 <div className="diagnostics-stats-grid">
@@ -2592,8 +2658,7 @@ function Home() {
                 </div>
               </div>
             </details>
-          </div>
-        )}
+          </div> : null}
         </div>
       </div>
 
@@ -2846,6 +2911,30 @@ function Home() {
             </div>
             <div className="wm-modal-footer">
               <button className="btn btn-secondary btn-outline" type="button" onClick={closeInsertPatternModal}>
+                {t('dialogs.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isImportCustomPatternModalOpen && (
+        <div className="wm-modal-overlay" onClick={closeImportCustomPatternModal}>
+          <div
+            className="wm-modal-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="import-custom-pattern-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="wm-modal-header">
+              <h3 id="import-custom-pattern-modal-title" className="wm-modal-title">{t('playground.importCustomPatternTitle')}</h3>
+            </div>
+            <div className="wm-modal-body">
+              <CustomPatternInput onLoadPattern={handleImportCustomPattern} disabled={isGameRunning} />
+            </div>
+            <div className="wm-modal-footer">
+              <button className="btn btn-secondary btn-outline" type="button" onClick={closeImportCustomPatternModal}>
                 {t('dialogs.cancel')}
               </button>
             </div>

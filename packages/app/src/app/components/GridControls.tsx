@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { patterns, LifeGrid, Pattern } from '@game-of-life/core';
-import { ArrowRightLeft, ChevronRight, Eraser, Filter, Hand, Link, Minus, PaintBucket, Pause, Pencil, Play, Plus, RotateCcw, RotateCw, Stamp } from 'lucide-react';
+import { ArrowRightLeft, ChevronRight, Eraser, FileUp, Filter, GitFork, Hand, Link, Minus, PaintBucket, Pause, Pencil, Play, Plus, RotateCcw, RotateCw, Stamp } from 'lucide-react';
 import { Square } from 'lucide-react';
 import PatternPreview from './PatternPreview';
 import { getPaletteById } from '../constants/colors';
@@ -35,6 +35,7 @@ interface Props {
   onDrawColorChange: (color: string) => void;
   onCustomColorCommitted?: (color: string) => void;
   isEditMode?: boolean;
+  onForkPattern?: () => void;
   onEnterEditMode?: () => void;
   onEnterPlayMode?: () => void;
   onUndoBoardChange?: () => void;
@@ -51,6 +52,7 @@ interface Props {
   rotateStampKeyPressToken?: number;
   onRotateStamp?: () => void;
   onStampPatternSelect?: (grid: LifeGrid) => void;
+  onImportCustomPattern?: () => void;
 }
 
 function GridControls({
@@ -69,6 +71,7 @@ function GridControls({
   onDrawColorChange,
   onCustomColorCommitted,
   isEditMode = false,
+  onForkPattern,
   onEnterEditMode,
   onEnterPlayMode,
   onUndoBoardChange,
@@ -84,6 +87,7 @@ function GridControls({
   onRotateStamp,
   onStampPatternSelect,
   onFillSelectionColor,
+  onImportCustomPattern,
 }: Props) {
   const { t } = useTranslation();
   const toggleLabel = isGameRunning ? t('controls.pause') : t('controls.start');
@@ -105,6 +109,7 @@ function GridControls({
   const eraserLabel = t('controls.eraser');
   const customColorLabel = t('controls.customColor');
   const customColorHexLabel = t('controls.customColorHex');
+  const importCustomPatternLabel = t('controls.importCustomPattern');
   const undoLabel = t('controls.undo');
   const systemColorsLabel = t('controls.systemColors');
   const customColorsLabel = t('controls.customColors');
@@ -387,18 +392,31 @@ function GridControls({
             <>
               <div className="grid-controls-section grid-controls-section-mode-toggle">
                 <div className="grid-controls-actions-row">
-                  <span className="control-tooltip-trigger" data-tooltip={`${modeToggleLabel} (${modeToggleHotkeyLabel})`}>
-                    <button
-                      className={`btn btn-sm ${isEditMode ? 'btn-primary' : 'btn-secondary-neutral'} grid-controls-mode-button`}
-                      type="button"
-                      onClick={isEditMode ? onEnterPlayMode : onEnterEditMode}
-                      aria-label={modeToggleLabel}
-                      disabled={!isEditMode && isSystemPattern}
-                    >
-                      <ArrowRightLeft size={12} aria-hidden="true" />
-                      <span>{modeToggleLabel}</span>
-                    </button>
-                  </span>
+                  {isEditMode ? (
+                    <span className="control-tooltip-trigger" data-tooltip={`${modeToggleLabel} (${modeToggleHotkeyLabel})`}>
+                      <button
+                        className="btn btn-sm btn-primary grid-controls-mode-button"
+                        type="button"
+                        onClick={onEnterPlayMode}
+                        aria-label={modeToggleLabel}
+                      >
+                        <ArrowRightLeft size={12} aria-hidden="true" />
+                        <span>{modeToggleLabel}</span>
+                      </button>
+                    </span>
+                  ) : (
+                    <span className="control-tooltip-trigger" data-tooltip={t('playground.fork')}>
+                      <button
+                        className="btn btn-sm btn-primary grid-controls-mode-button"
+                        type="button"
+                        onClick={onForkPattern}
+                        aria-label={t('playground.fork')}
+                      >
+                        <GitFork size={12} aria-hidden="true" />
+                        <span>{t('playground.fork')}</span>
+                      </button>
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -414,20 +432,6 @@ function GridControls({
                           aria-label={grabPanLabel}
                         >
                           <Hand size={12} />
-                        </button>
-                      </span>
-                      <span className="control-tooltip-trigger" data-tooltip={selectionLabel}>
-                        <button
-                          className={`btn btn-sm ${isEditMode && activeEditTool === 'selection' ? 'btn-primary' : 'btn-secondary-neutral'}`}
-                          type="button"
-                          onClick={() => {
-                            onEnterEditMode?.();
-                            onEditToolChange?.('selection');
-                          }}
-                          aria-label={selectionLabel}
-                          disabled={isSystemPattern}
-                        >
-                          <Square size={12} />
                         </button>
                       </span>
                       <div className="btn-group">
@@ -757,6 +761,17 @@ function GridControls({
                         </button>
                       </span>
                     </div>
+                    <span className="control-tooltip-trigger" data-tooltip={importCustomPatternLabel}>
+                      <button
+                        className="btn btn-sm btn-secondary-neutral grid-controls-mode-button grid-controls-import-button"
+                        type="button"
+                        onClick={onImportCustomPattern}
+                        aria-label={importCustomPatternLabel}
+                      >
+                        <FileUp size={12} aria-hidden="true" />
+                        <span className="grid-controls-import-button-label">{importCustomPatternLabel}</span>
+                      </button>
+                    </span>
                     <span className="control-tooltip-trigger" data-tooltip={fillSelectionLabel}>
                       <button
                         className="btn btn-sm btn-secondary-neutral"

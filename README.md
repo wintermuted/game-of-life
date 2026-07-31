@@ -11,13 +11,42 @@ This project is an implementation of [Conway's Game of Life](https://en.wikipedi
 - Provide myself an opportunity to learn HTML5 Canvas.
 
 ## Current State
-- The rules of the Game of Life have been implemented.  
-  - A Dictionary is used as the primary datastructure.
-  - The implementation of the core logic can be found in [`packages/core/src/core/game.ts`](https://github.com/wintermuted/game-of-life/blob/master/packages/core/src/core/game.ts).
-  - A class [`Game`](https://github.com/wintermuted/game-of-life/blob/master/packages/core/src/class/Game.ts) can be used to start a game and step through it.
-- The game rules are backed with unit tests.
-- The game has been tested with common Still Life & Oscillator patterns.
-- A rudimentary UI built with React has been added, however it is poorly optimized.  A rewrite is necessary for it to be performant with larger grids.
+
+### Key Features (Current Branch)
+
+- Core simulation is implemented and tested in `@game-of-life/core`, with the main rules engine in [`packages/core/src/core/game.ts`](https://github.com/wintermuted/game-of-life/blob/master/packages/core/src/core/game.ts).
+- Board state now uses a colored-cell model (per-cell color values instead of booleans), while preserving Conway-style life/death behavior.
+- Edit mode now supports draw tools (pencil + eraser) and active draw-color selection.
+- Experimental species competition rules are supported:
+  - dominant-species birth rule
+  - optional tie-break birth rule for tied parent colors
+- Alternative Life-like rulesets are supported out of the box:
+  - Conway (B3/S23)
+  - HighLife (B36/S23)
+  - Day & Night (B3678/S34678)
+  - Life without Death (B3/S012345678)
+- Pattern library and selector include ruleset-aware presets, including still lifes, oscillators, spaceships, guns, methuselahs, and alternative-rules seeds.
+- Pattern metadata now includes richer descriptions and reference links surfaced in the Play UI.
+- URL state/storage paths were updated for the colored model while maintaining compatibility with older board URLs where possible.
+- Play UI includes simulation controls, minimap/viewport controls, diagnostics, and pattern workflows on top of the core engine.
+
+### Screenshots
+
+- Play view (dark state)
+
+  ![Game of Life play view in dark theme](docs/screenshots/play-dark-state.png)
+
+- Play view (state/diagnostics)
+
+  ![Game of Life play view with diagnostics panels](docs/screenshots/play-state.png)
+
+- Pattern selector with ruleset-aware presets
+
+  ![Game of Life pattern selector showing starter patterns and alternative rulesets](docs/screenshots/play-patterns.png)
+
+- Running simulation view
+
+  ![Game of Life running simulation in Play view](docs/screenshots/play-running.png)
 
 ## Architecture
 

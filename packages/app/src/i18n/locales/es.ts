@@ -125,6 +125,7 @@ export default {
     "customColors": "Colores personalizados",
     "customColor": "Color personalizado",
     "customColorHex": "Hex de color personalizado",
+    "importCustomPattern": "Importar patron personalizado",
     "hoveredCell": "Cursor",
     "hoveredCellNone": "Ninguna",
     "miniMap": "Minimapa",
@@ -145,6 +146,7 @@ export default {
     "title": "Patrones Iniciales",
     "custom": "Patrón Personalizado",
     "loadCustom": "Cargar Patrón Personalizado",
+    "loadSampleData": "Cargar datos de muestra",
     "placeholder": "Pegar coordenadas aquí...",
     "showExamples": "Mostrar ejemplos",
     "hideExamples": "Ocultar ejemplos",
@@ -233,7 +235,8 @@ export default {
     "confirmDraftSaveTagsLabel": "Etiquetas",
     "confirmDraftSaveTagsPlaceholder": "Agrega etiquetas separadas por comas",
     "confirmDraftSaveVisibilityLabel": "Visibilidad",
-    "confirmDraftSaveCategoryHint": "Elige categoria y visibilidad, y revisa nombre/descripcion antes del primer guardado."
+    "confirmDraftSaveCategoryHint": "Elige categoria y visibilidad, y revisa nombre/descripcion antes del primer guardado.",
+    "importCustomPatternTitle": "Importar patron personalizado"
   },
   "diagnostics": {
     "title": "Diagnósticos",
@@ -505,6 +508,7 @@ export default {
     "stabilityBannerTitle": "Estabilidad lograda",
     "stabilityBannerDescription": "El conteo de celulas vivas se mantuvo en {{liveCells}} durante {{generations}} generaciones.",
     "returnToEditMode": "Volver al modo edicion",
+    "restartGame": "Reiniciar juego",
     "continuePlaying": "Continuar jugando"
   },
   "patternSource": {
