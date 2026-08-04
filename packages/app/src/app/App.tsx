@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Routes, Route, NavLink, Link, useLocation } from 'react-router-dom';
-import { Moon, Sun, CircleUserRound, ChevronDown } from 'lucide-react';
+import { Moon, Sun, CircleUserRound, ChevronDown, Menu, X } from 'lucide-react';
 import Home from "./components/Home";
 import About from "./components/About";
 import Landing from "./components/Landing";
@@ -34,7 +34,12 @@ function App() {
   const { t } = useTranslation();
   const location = useLocation();
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [playMode, setPlayMode] = useState<PlayMode>(() => getPlayModeFromSearch(window.location.search));
+
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (location.pathname !== '/play') return;
@@ -135,11 +140,16 @@ function App() {
               <span className="wm-badge wm-badge-neutral docs-topbar-alpha-badge">Alpha</span>
             </span>
           </Link>
-          <nav className="docs-topbar-nav wm-app-nav-nowrap" aria-label="Primary navigation">
+          <nav
+            id="primary-navigation"
+            className={`docs-topbar-nav wm-app-nav-nowrap${isMobileNavOpen ? ' is-mobile-open' : ''}`}
+            aria-label="Primary navigation"
+          >
           <NavLink
             to="/play/select"
             className={({ isActive }) => `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`}
             aria-label={t('nav.play')}
+            onClick={() => setIsMobileNavOpen(false)}
           >
             {t('nav.play')}
           </NavLink>
@@ -147,6 +157,7 @@ function App() {
             to="/explore"
             className={({ isActive }) => `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`}
             aria-label={t('nav.explore')}
+            onClick={() => setIsMobileNavOpen(false)}
           >
             {t('nav.explore')}
           </NavLink>
@@ -154,11 +165,24 @@ function App() {
             to="/about"
             className={({ isActive }) => `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`}
             aria-label={t('nav.about')}
+            onClick={() => setIsMobileNavOpen(false)}
           >
             {t('nav.about')}
           </NavLink>
         </nav>
         <div className="docs-topbar-actions">
+          <button
+            className="docs-topbar-mobile-nav-toggle"
+            type="button"
+            aria-controls="primary-navigation"
+            aria-expanded={isMobileNavOpen}
+            aria-label={isMobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+            title={isMobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+            onClick={() => setIsMobileNavOpen((isOpen) => !isOpen)}
+          >
+            {isMobileNavOpen ? <X size={16} aria-hidden="true" /> : <Menu size={16} aria-hidden="true" />}
+            <span>{isMobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}</span>
+          </button>
           <details className="header-user-menu">
             <summary className="header-user-menu-trigger" aria-label={t('nav.userMenu')} title={t('nav.userMenu')}>
               <CircleUserRound size={16} aria-hidden="true" />

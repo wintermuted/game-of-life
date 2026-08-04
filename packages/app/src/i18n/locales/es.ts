@@ -12,6 +12,8 @@ export default {
     "profile": "Perfil",
     "settings": "Configuracion",
     "signOut": "Cerrar sesion",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
     "toggleDarkMode": "Cambiar modo oscuro",
     "viewSource": "Ver código fuente en GitHub"
   },

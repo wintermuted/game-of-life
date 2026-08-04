@@ -39,6 +39,10 @@
   overflow: visible;
 }
 
+.docs-topbar-mobile-nav-toggle {
+  display: none;
+}
+
 .header-user-menu {
   position: relative;
   z-index: 260;
@@ -620,6 +624,46 @@ body.gol-board-maximized .wm-toast {
 }
 
 @media (max-width: 767px) {
+  .docs-topbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 0.45rem;
+  }
+
+  .docs-topbar-brand-title-wrap h1 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .docs-topbar-alpha-badge {
+    display: none;
+  }
+
+  .docs-topbar-mobile-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-left: auto;
+  }
+
+  .docs-topbar-nav {
+    order: 3;
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
+  }
+
+  .docs-topbar-nav.is-mobile-open {
+    display: flex;
+  }
+
+  .docs-topbar-link-devdocs {
+    width: 100%;
+  }
+
   .App {
     overflow: visible;
     padding: 0.75rem;
