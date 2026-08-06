@@ -10,7 +10,46 @@ The current app stores boards, favorites, profile data, recent history, template
 - Implemented the first backend package scaffold under `packages/api/` with an in-memory repository, HTTP server entry point, bootstrap route, and smoke test.
 - Added profile, preferences, and import endpoints so the backend owns more than just board saves and favorites.
 - Added an opt-in browser bridge in the app that bootstraps the backend session and syncs theme preferences when the API base URL is configured.
-- Added backend-backed profile hydration in the profile page so the signed-in user can come from the new API while preserving the browser-storage fallback.
+- Expanded ticket descriptions across existing UI issues and backend project draft items to include product requirements and acceptance criteria.
+- Added PRD coverage in `docs/prd/backend-migration-and-ui-baseline.md` for ticket mapping, milestones, dependencies, and shipped UI features.
+
+## Task Ledger
+
+Project sync target: [GitHub project 3, `Game of Life UI`](https://github.com/users/wintermuted/projects/3).
+
+Milestones:
+
+- [Backend Discovery](https://github.com/wintermuted/game-of-life/milestone/2)
+- [Backend API and Auth](https://github.com/wintermuted/game-of-life/milestone/3)
+- [Migration and Rollout](https://github.com/wintermuted/game-of-life/milestone/4)
+
+| Milestone | Status | Task | GitHub Project Item | Depends On |
+|---|---|---|---|---|
+| [Backend Discovery](https://github.com/wintermuted/game-of-life/milestone/2) | Created | [Discovery and scope lock](https://github.com/users/wintermuted/projects/3) | `PVTI_lAHOACOqLc4AAxzmzg1fGRk` | — |
+| [Backend Discovery](https://github.com/wintermuted/game-of-life/milestone/2) | Created | [Domain model and data architecture](https://github.com/users/wintermuted/projects/3) | `PVTI_lAHOACOqLc4AAxzmzg1fGTA` | Discovery and scope lock |
+| [Backend API and Auth](https://github.com/wintermuted/game-of-life/milestone/3) | Created | [Authentication and authorization](https://github.com/users/wintermuted/projects/3) | `PVTI_lAHOACOqLc4AAxzmzg1fGT0` | Domain model and data architecture |
+| [Backend API and Auth](https://github.com/wintermuted/game-of-life/milestone/3) | Created | [API design and contract](https://github.com/users/wintermuted/projects/3) | `PVTI_lAHOACOqLc4AAxzmzg1fGUo` | Authentication and authorization |
+| [Backend API and Auth](https://github.com/wintermuted/game-of-life/milestone/3) | Created | [Client integration and local cache migration](https://github.com/users/wintermuted/projects/3) | `PVTI_lAHOACOqLc4AAxzmzg1fGVQ` | API design and contract |
+| [Migration and Rollout](https://github.com/wintermuted/game-of-life/milestone/4) | Created | [Migration, testing, and rollout](https://github.com/users/wintermuted/projects/3) | `PVTI_lAHOACOqLc4AAxzmzg1fGVw` | Client integration and local cache migration |
+| [Migration and Rollout](https://github.com/wintermuted/game-of-life/milestone/4) | Created | [Operational and platform concerns](https://github.com/users/wintermuted/projects/3) | `PVTI_lAHOACOqLc4AAxzmzg1fGW4` | Migration, testing, and rollout |
+
+The corresponding project draft items are now queued in the board and can be elaborated into execution details as the backend work continues.
+
+PRD references:
+
+- `docs/prd/backend-migration-and-ui-baseline.md`
+
+Execution order:
+
+1. Discovery and scope lock.
+2. Domain model and data architecture.
+3. Authentication and authorization.
+4. API design and contract.
+5. Client integration and local cache migration.
+6. Migration, testing, and rollout.
+7. Operational and platform concerns.
+
+Dependency rule: each step starts only after the previous step in the list is sufficiently defined or implemented for the next step to use as its input boundary.
 
 ## Phases
 
