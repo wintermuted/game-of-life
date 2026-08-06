@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Clock3, Cpu, GitFork, LayoutGrid, Rows3, Star, User } from 'lucide-react';
@@ -26,6 +26,7 @@ import {
   trackRecentBoard,
   toggleFavoriteBoard,
 } from '../util/browserStorage';
+import { loadCurrentUserProfile } from '../util/backendClient';
 
 interface BoardGalleryItem {
   id: string;
@@ -53,6 +54,7 @@ function Profile() {
   const [sectionViewMode, setSectionViewMode] = useState<'cards' | 'table'>('cards');
   const [favoriteRefreshToken, setFavoriteRefreshToken] = useState(0);
   const [profileFeedbackMessage, setProfileFeedbackMessage] = useState('');
+  const [currentUser, setCurrentUser] = useState<StoredProfileUser>(() => getStoredProfileUser());
 
   const creatorProfileMap: Record<string, StoredProfileUser> = {
     system: {
@@ -116,17 +118,16 @@ function Profile() {
   const libraryPatternHashes = new Set(patterns.map((pattern) => encodeGridToBase64(pattern.grid)));
 
   const storageMode = getBrowserStorageMode();
-  const user = getStoredProfileUser();
   const viewedUser = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const creator = params.get('creator');
     if (!creator) {
-      return user;
+      return currentUser;
     }
 
-    return creatorProfileMap[creator] ?? user;
-  }, [location.search, user]);
-  const isOwnProfile = viewedUser.name === user.name;
+    return creatorProfileMap[creator] ?? currentUser;
+  }, [location.search, currentUser]);
+  const isOwnProfile = viewedUser.name === currentUser.name;
   const savedTemplateNames = getSavedTemplateNames();
 
   const relativeFormatter = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
@@ -228,8 +229,32 @@ function Profile() {
 
   void favoriteRefreshToken;
 
+  useEffect(() => {
+    let isMounted = true;
+
+    loadCurrentUserProfile().then((profile) => {
+      if (!isMounted || !profile) {
+        return;
+      }
+
+      const nextUser: StoredProfileUser = {
+        name: profile.displayName,
+        email: profile.email ?? currentUser.email,
+        memberSince: profile.memberSince,
+        timezone: profile.timezone,
+        favoritePalette: profile.favoritePalette,
+        avatarInitials: profile.avatarInitials,
+      };
+      setCurrentUser(nextUser);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   function handleToggleStar(board: BoardGalleryItem): void {
-    const nextStarred = toggleFavoriteBoard(board.hash, board.title, user.name);
+    const nextStarred = toggleFavoriteBoard(board.hash, board.title, currentUser.name);
     setFavoriteRefreshToken((value) => value + 1);
     setProfileFeedbackMessage(
       t(nextStarred ? 'messages.patternFavorited' : 'messages.patternUnfavorited', { name: board.title }),
