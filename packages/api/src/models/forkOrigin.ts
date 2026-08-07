@@ -36,6 +36,10 @@ export interface AddForkOriginResponse {
   fork: ServerForkOrigin;
 }
 
+export interface GetForkOriginResponse {
+  fork: ServerForkOrigin;
+}
+
 export interface ListForkOriginsResponse {
   forks: ServerForkOrigin[];
 }

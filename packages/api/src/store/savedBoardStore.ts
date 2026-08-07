@@ -69,12 +69,12 @@ export class SavedBoardStore {
 
     // Enforce per-user limit: drop oldest boards beyond the cap
     if (boards.size > MAX_SAVED_BOARDS_PER_USER) {
-      const sorted = Array.from(boards.values()).sort(
-        (a, b) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
+      const sorted = Array.from(boards.entries()).sort(
+        ([, a], [, b]) => new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
       );
       const toRemove = sorted.slice(0, boards.size - MAX_SAVED_BOARDS_PER_USER);
-      for (const r of toRemove) {
-        boards.delete(r.id);
+      for (const [key] of toRemove) {
+        boards.delete(key);
       }
     }
 

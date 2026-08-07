@@ -5,6 +5,7 @@ import type {
   ListForkOriginsResponse,
   AddForkOriginRequest,
   AddForkOriginResponse,
+  GetForkOriginResponse,
 } from '../models/forkOrigin';
 
 export function createForkOriginsRouter(store: ForkOriginStore): Router {
@@ -23,7 +24,7 @@ export function createForkOriginsRouter(store: ForkOriginStore): Router {
       res.status(404).json({ error: 'Fork origin not found' });
       return;
     }
-    const response: AddForkOriginResponse = { fork };
+    const response: GetForkOriginResponse = { fork };
     res.json(response);
   });
 

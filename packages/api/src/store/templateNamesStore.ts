@@ -18,7 +18,7 @@ export class TemplateNamesStore {
     const created: ServerTemplateNames = {
       userId,
       names: {},
-      updatedAt: new Date().toISOString(),
+      updatedAt: nowIso(),
     };
     this.data.set(userId, created);
     return created;
