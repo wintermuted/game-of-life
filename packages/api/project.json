@@ -1,0 +1,25 @@
+{
+  "name": "@game-of-life/api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/api/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "cache": false,
+      "options": {
+        "command": "npm run build",
+        "cwd": "packages/api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run",
+        "cwd": "packages/api"
+      }
+    }
+  },
+  "tags": ["type:app", "scope:backend"]
+}
