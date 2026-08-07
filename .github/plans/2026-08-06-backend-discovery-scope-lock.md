@@ -14,16 +14,16 @@ Sign-off status: **Approved for Phases B-G implementation**
 
 | Persisted entity | Current storage | Scope decision | Migration ownership | Notes |
 | --- | --- | --- | --- | --- |
-| Saved boards (`savedBoards`) | local/session storage | **Server-owned** | Server canonical, local cached | User-generated board content and metadata are account data. |
-| Favorites (`favoriteBoards`) | local/session storage | **Server-owned** | Server canonical, local cached | Favorite relationships are account + social graph data. |
-| Recents (`recentBoards`) | local/session storage | **Server-owned** | Server canonical, local cached | Cross-device continuity expected for "recently opened" history. |
-| Fork origins (`forkOrigins`) | local/session storage | **Server-owned** | Server canonical, local cached | Fork lineage is shared/social metadata and must be authoritative. |
-| Profile (`profileUser`) | local/session storage | **Server-owned** | Server canonical, local cached | Account profile settings belong to authenticated identity. |
-| Template names (`savedTemplateNames`) | local/session storage | **Server-owned** | Server canonical, local cached | User naming of board hashes is user library metadata. |
+| Saved boards (`gol.storage.savedBoards`) | local/session storage | **Server-owned** | Server canonical, local cached | User-generated board content and metadata are account data. |
+| Favorites (`gol.storage.favoriteBoards`) | local/session storage | **Server-owned** | Server canonical, local cached | Favorite relationships are account + social graph data. |
+| Recents (`gol.storage.recentBoards`) | local/session storage | **Server-owned** | Server canonical, local cached | Cross-device continuity expected for "recently opened" history. |
+| Fork origins (`gol.storage.forkOrigins`) | local/session storage | **Server-owned** | Server canonical, local cached | Fork lineage is shared/social metadata and must be authoritative. |
+| Profile (`gol.storage.profileUser`) | local/session storage | **Server-owned** | Server canonical, local cached | Account profile settings belong to authenticated identity. |
+| Template names (`gol.storage.savedTemplateNames`) | local/session storage | **Server-owned** | Server canonical, local cached | User naming of board hashes is user library metadata. |
 | Preferences: theme (`themeMode`) | local storage | **Client-only** | Client local only | Device/UI preference, not required for backend phase. |
-| Preferences: language (i18n detector cache) | browser language cache | **Client-only** | Client local only | Browser-locale and per-device preference remain local. |
+| Preferences: language (LanguageDetector cache) | LanguageDetector-managed | **Client-only** | Client local only | `i18next-browser-languagedetector` cache backend is detector-configurable. |
 | Storage mode (`gol.storage.mode`) | local storage | **Client-only (migration toggle)** | Client local only | Temporary migration/testing control; removed after backend cutover. |
-| Social seed flag (`socialSeed.v1`) | local/session storage | **Client-only (dev/demo seed)** | Client local only | Demo bootstrap helper; excluded from backend data model. |
+| Social seed flag (`gol.storage.socialSeed.v1`) | local/session storage | **Client-only (dev/demo seed)** | Client local only | Demo bootstrap helper; excluded from backend data model.
 
 ### 2) Hybrid read/write migration behavior
 
