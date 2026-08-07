@@ -24,6 +24,7 @@ export interface GameOfLifeRepository {
   updatePreferences(userId: string, next: UpdatePreferencesInput): UserPreferences;
   listBoards(userId: string): BoardRecord[];
   getBoard(userId: string, boardId: string): BoardRecord | null;
+  deleteBoard(userId: string, boardId: string): boolean;
   upsertBoard(userId: string, input: UpsertBoardInput): BoardRecord;
   listFavorites(userId: string): FavoriteRecord[];
   toggleFavorite(userId: string, input: ToggleFavoriteInput): { favorited: boolean; record?: FavoriteRecord };

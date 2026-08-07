@@ -163,7 +163,7 @@ Dependency rule:
 Backend scaffold currently provides:
 - Anonymous session bootstrap endpoint.
 - Profile and preferences retrieval/update endpoints.
-- Boards list/upsert endpoints.
+- Boards list/upsert/get/delete endpoints.
 - Favorites, recents, and fork lineage endpoints.
 - Bootstrap import endpoint for migration.
 

@@ -1,7 +1,7 @@
 import { createServer, IncomingMessage, ServerResponse } from 'node:http';
 import { parse as parseUrl } from 'node:url';
 
-import { GameRules } from '@game-of-life/core';
+import { GameRules, LifeGrid } from '@game-of-life/core';
 
 import { ApiErrorShape, BootstrapSnapshot, ImportSnapshot, UpdatePreferencesInput, UpdateProfileInput } from './domain';
 import { GameOfLifeRepository } from './storage';
@@ -9,6 +9,9 @@ import { GameOfLifeRepository } from './storage';
 interface RouteContext {
   repository: GameOfLifeRepository;
 }
+
+const COORDINATE_PATTERN = /^-?\d+,-?\d+$/;
+const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
 function sendJson(response: ServerResponse, statusCode: number, body: unknown, headers: Record<string, string> = {}): void {
   const origin = headers['access-control-allow-origin'] ?? '*';
@@ -63,6 +66,33 @@ function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function parseLifeGrid(value: unknown): LifeGrid | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return null;
+  }
+
+  const parsed = value as Record<string, unknown>;
+  const normalized: LifeGrid = {};
+
+  for (const [coordinate, cell] of Object.entries(parsed)) {
+    if (!COORDINATE_PATTERN.test(coordinate)) {
+      return null;
+    }
+
+    if (!isString(cell) || !HEX_COLOR_PATTERN.test(cell)) {
+      return null;
+    }
+
+    normalized[coordinate] = cell;
+  }
+
+  return normalized;
+}
+
 function requireSession(context: RouteContext, request: IncomingMessage, response: ServerResponse) {
   const sessionId = getSessionId(request);
   if (!sessionId) {
@@ -82,6 +112,7 @@ function requireSession(context: RouteContext, request: IncomingMessage, respons
 async function handleRequest(context: RouteContext, request: IncomingMessage, response: ServerResponse): Promise<void> {
   const parsed = parseUrl(request.url ?? '/', true);
   const pathname = parsed.pathname ?? '/';
+  const boardMatch = pathname.match(/^\/api\/v1\/boards\/([^/]+)$/);
 
   if (request.method === 'OPTIONS') {
     sendJson(response, 204, {}, request.headers.origin ? { 'access-control-allow-origin': request.headers.origin } : {});
@@ -171,17 +202,33 @@ async function handleRequest(context: RouteContext, request: IncomingMessage, re
     return;
   }
 
+  if (request.method === 'GET' && boardMatch) {
+    const boardId = decodeURIComponent(boardMatch[1]);
+    const board = context.repository.getBoard(session.userId, boardId);
+
+    if (!board) {
+      sendError(response, 404, 'not_found', `Board '${boardId}' was not found.`);
+      return;
+    }
+
+    sendJson(response, 200, { board });
+    return;
+  }
+
   if (request.method === 'POST' && pathname === '/api/v1/boards') {
     const body = await readJsonBody(request);
-    if (!body || !isString(body.hash) || !isString(body.title)) {
-      sendError(response, 400, 'invalid_request', 'Expected hash and title in request body.');
+    const grid = body ? parseLifeGrid(body.grid) : null;
+
+    if (!body || !isNonEmptyString(body.hash) || !isNonEmptyString(body.title) || grid === null) {
+      sendError(response, 400, 'invalid_request', 'Expected non-empty hash, title, and a valid grid in request body.');
       return;
     }
 
     const board = context.repository.upsertBoard(session.userId, {
       boardId: isString(body.boardId) ? body.boardId : undefined,
-      hash: body.hash,
-      title: body.title,
+      hash: body.hash.trim(),
+      grid,
+      title: body.title.trim(),
       category: isString(body.category) ? body.category : undefined,
       description: isString(body.description) ? body.description : undefined,
       tags: Array.isArray(body.tags) ? body.tags.filter(isString) : undefined,
@@ -191,6 +238,19 @@ async function handleRequest(context: RouteContext, request: IncomingMessage, re
     });
 
     sendJson(response, 200, { board });
+    return;
+  }
+
+  if (request.method === 'DELETE' && boardMatch) {
+    const boardId = decodeURIComponent(boardMatch[1]);
+    const deleted = context.repository.deleteBoard(session.userId, boardId);
+
+    if (!deleted) {
+      sendError(response, 404, 'not_found', `Board '${boardId}' was not found.`);
+      return;
+    }
+
+    sendJson(response, 200, { deleted: true });
     return;
   }
 

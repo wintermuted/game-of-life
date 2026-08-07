@@ -12,6 +12,7 @@ The current app stores boards, favorites, profile data, recent history, template
 - Added an opt-in browser bridge in the app that bootstraps the backend session and syncs theme preferences when the API base URL is configured.
 - Expanded ticket descriptions across existing UI issues and backend project draft items to include product requirements and acceptance criteria.
 - Added PRD coverage in `docs/prd/backend-migration-and-ui-baseline.md` for ticket mapping, milestones, dependencies, and shipped UI features.
+- Began API contract implementation by adding board lifecycle endpoints for `GET /api/v1/boards/:boardId` and `DELETE /api/v1/boards/:boardId` with repository support and test coverage.
 
 ## Task Ledger
 

@@ -22,6 +22,7 @@ export interface UserProfile {
 export interface BoardRecord {
   boardId: string;
   hash: string;
+  grid: LifeGrid;
   ownerId: string;
   title: string;
   category?: string;
@@ -102,6 +103,7 @@ export interface BootstrapSnapshot {
 export interface UpsertBoardInput {
   boardId?: string;
   hash: string;
+  grid: LifeGrid;
   title: string;
   category?: string;
   description?: string;

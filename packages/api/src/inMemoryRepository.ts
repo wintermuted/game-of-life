@@ -140,12 +140,23 @@ export class InMemoryGameOfLifeRepository implements GameOfLifeRepository {
     return board;
   }
 
+  deleteBoard(userId: string, boardId: string): boolean {
+    const board = this.boards.get(boardId);
+    if (!board || board.ownerId !== userId) {
+      return false;
+    }
+
+    this.boards.delete(boardId);
+    return true;
+  }
+
   upsertBoard(userId: string, input: UpsertBoardInput): BoardRecord {
     const boardId = input.boardId?.trim() || input.hash;
     const current = this.boards.get(boardId);
     const next: BoardRecord = {
       boardId,
       hash: input.hash,
+      grid: { ...input.grid },
       ownerId: userId,
       title: normalizeTitle(input.title),
       category: input.category?.trim() || current?.category,
@@ -254,7 +265,11 @@ export class InMemoryGameOfLifeRepository implements GameOfLifeRepository {
     }
 
     for (const board of snapshot.boards ?? []) {
-      this.upsertBoard(userId, { ...board, boardId: board.boardId ?? board.hash });
+      this.upsertBoard(userId, {
+        ...board,
+        boardId: board.boardId ?? board.hash,
+        grid: board.grid ?? {},
+      });
     }
 
     const favorites = snapshot.favorites ?? [];
