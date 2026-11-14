@@ -1,0 +1,10 @@
+scripts:
+  - name: Setup
+    command: node .github/scripts/setup.cjs
+    triggers:
+      - session.create
+  - name: Run
+    command: npm run dev
+
+server_ready_pattern: 'Local:\s+(https?://\S+)'
+auto_open_in_browser: true

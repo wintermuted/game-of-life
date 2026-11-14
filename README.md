@@ -98,6 +98,19 @@ npm run lint         # Lint the app package
 npm run preview      # Preview production build
 ```
 
+### GitHub Copilot App
+
+Review and accept `.github/github-app.yml` in the app to enable its scripts.
+**Setup** runs automatically when a session is created and can also be run
+manually. It requires Node.js, npm, Git, and access to `wintermuted/ui-theme`.
+It clones that repository into `../wintermuted-ui-theme` when missing, preserves
+an existing checkout, and runs `npm ci` at the workspace root to install all
+workspace dependencies, including the local theme package.
+
+**Run** starts the local Vite development server using `npm run dev`. The app
+detects Vite's local URL (including the `/game-of-life/` base path) and opens it
+in the integrated browser.
+
 ### NX Commands
 
 You can also use NX directly for more control:
