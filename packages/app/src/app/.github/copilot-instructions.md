@@ -1,22 +1,30 @@
 # React UI Components - Copilot Instructions
 
 ## Purpose
-This directory contains the React-based user interface for the Game of Life. Components here are responsible for rendering the grid, controls, and managing user interactions.
+This directory contains the application shell, routes/pages, and orchestration for the Game of Life. Reusable components are imported directly from their owning UI package, not implemented in this app directory.
 
 ## Architecture
 
 ### Component Structure
 ```
 app/
-├── App.tsx              # Root component, game state management
-├── components/          # UI components
-│   ├── Grid.tsx         # Main grid rendering (DOM-based)
-│   ├── CanvasGrid.tsx   # Alternative canvas-based rendering
-│   ├── GridSquares.tsx  # Individual cell rendering
-│   └── GridControls.tsx # Play/pause/speed controls
-├── styles/              # CSS stylesheets
-└── util/                # UI utility functions
+├── App.tsx              # Application shell and routing
+├── ThemeContext.tsx     # App-owned persisted theme preferences
+├── components/          # App-specific pages and orchestration
+│   ├── Home.tsx         # Simulation orchestration and editing
+│   ├── Explore.tsx      # Pattern catalog page
+│   └── Profile.tsx      # Profile page
+└── styles/              # App layout styles
 ```
+
+Shared helpers come from `@game-of-life/util`, browser-backed data services
+from `@game-of-life/api`, and the game engine from `@game-of-life/core`.
+Do not move React, theme, or translation dependencies into these libraries.
+Primitives, palettes, and controlled theme context come from `@game-of-life/ui`;
+grid rendering from `@game-of-life/ui-grid`; pattern components from
+`@game-of-life/ui-patterns`; and game controls from `@game-of-life/ui-controls`.
+Keep startup, routing, translation initialization, assets, and persisted
+preferences in app. UI libraries must not import app or API.
 
 ## Key Principles
 
@@ -30,7 +38,7 @@ app/
 ### Separation of Concerns
 - **App.tsx**: Orchestrates game loop, manages intervals
 - **Components**: Pure presentation, receive props
-- **Game class**: Business logic (imported from `src/class/`)
+- **Game class**: Business logic (imported from `@game-of-life/core`)
 - Keep game logic OUT of components
 
 ## App.tsx - Main Component

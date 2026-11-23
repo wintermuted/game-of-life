@@ -9,8 +9,7 @@ import Profile from "./components/Profile";
 import Settings from "./components/Settings";
 import SignOut from "./components/SignOut";
 import PlayStart from "./components/PlayStart";
-import LanguageSwitcher from "./components/LanguageSwitcher";
-import { useThemeMode } from './ThemeContext';
+import { LanguageSwitcher, useThemeMode } from '@game-of-life/ui';
 import { useTranslation } from 'react-i18next';
 import './styles/App.css';
 

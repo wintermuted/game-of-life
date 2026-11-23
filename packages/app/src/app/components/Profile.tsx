@@ -9,11 +9,10 @@ import {
   pulsar,
   patterns,
 } from '@game-of-life/core';
-import PatternPreview from './PatternPreview';
-import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
-import { encodeGridToBase64 } from '../util/urlState';
+import { DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
+import { PatternPreview } from '@game-of-life/ui-patterns';
+import { encodeGridToBase64, formatRelativeTime } from '@game-of-life/util';
 import {
-  formatRelativeTime,
   getBrowserStorageMode,
   getFavoriteBoards,
   getForkOrigin,
@@ -25,7 +24,7 @@ import {
   hashToGrid,
   trackRecentBoard,
   toggleFavoriteBoard,
-} from '../util/browserStorage';
+} from '@game-of-life/api';
 
 interface BoardGalleryItem {
   id: string;

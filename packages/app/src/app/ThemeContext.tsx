@@ -1,25 +1,11 @@
-import React, { createContext, useState, useMemo, useContext, useEffect } from 'react';
-
-type ThemeMode = 'light' | 'dark';
-
-interface ThemeContextType {
-  mode: ThemeMode;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType>({
-  mode: 'light',
-  toggleTheme: () => {},
-});
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const useThemeMode = () => useContext(ThemeContext);
+import React, { useState, useEffect } from 'react';
+import { ThemeModeProvider, ThemeMode } from '@game-of-life/ui';
 
 interface ThemeProviderWrapperProps {
   children: React.ReactNode;
 }
 
-export function ThemeProviderWrapper({ children }: ThemeProviderWrapperProps) {
+export function ThemeProviderWrapper({ children }: ThemeProviderWrapperProps): React.ReactElement {
   const [mode, setMode] = useState<ThemeMode>(() => {
     const savedMode = localStorage.getItem('themeMode');
     return (savedMode === 'dark' || savedMode === 'light') ? savedMode : 'light';
@@ -37,17 +23,9 @@ export function ThemeProviderWrapper({ children }: ThemeProviderWrapperProps) {
     document.documentElement.setAttribute('data-theme', mode === 'dark' ? 'dark' : '');
   }, [mode]);
 
-  const contextValue = useMemo(
-    () => ({
-      mode,
-      toggleTheme,
-    }),
-    [mode]
-  );
-
   return (
-    <ThemeContext.Provider value={contextValue}>
+    <ThemeModeProvider mode={mode} toggleTheme={toggleTheme}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeModeProvider>
   );
 }

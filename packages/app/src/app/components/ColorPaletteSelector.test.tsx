@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
-import ColorPaletteSelector from './ColorPaletteSelector';
-import { COLOR_PALETTES } from '../constants/colors';
+import { ColorPaletteSelector, COLOR_PALETTES } from '@game-of-life/ui';
 
 describe('ColorPaletteSelector', () => {
   const mockOnPaletteChange = vi.fn();

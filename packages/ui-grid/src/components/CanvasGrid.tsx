@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { DEFAULT_LIVE_CELL_COLOR, LifeGrid } from '@game-of-life/core';
-import { getCellFillColor, translateGridToViewport } from '../util/coordinate';
-import { ColorPalette } from '../constants/colors';
-import { useThemeMode } from '../ThemeContext';
+import { translateGridToViewport } from '@game-of-life/util';
+import { getCellFillColor } from '../util/cellColor';
+import { ColorPalette, useThemeMode } from '@game-of-life/ui';
 
 const CELL_GAP = 1;
 

@@ -34,7 +34,13 @@
 
     /* Workspace package aliases */
     "paths": {
-      "@game-of-life/core": ["../core/src/index.ts"]
+      "@game-of-life/core": ["../core/src/index.ts"],
+      "@game-of-life/ui": ["../ui/src/index.ts"],
+      "@game-of-life/ui-grid": ["../ui-grid/src/index.ts"],
+      "@game-of-life/ui-patterns": ["../ui-patterns/src/index.ts"],
+      "@game-of-life/ui-controls": ["../ui-controls/src/index.ts"],
+      "@game-of-life/api": ["../api/src/index.ts"],
+      "@game-of-life/util": ["../util/src/index.ts"]
     }
   },
   "include": [

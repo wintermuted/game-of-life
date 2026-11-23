@@ -43,6 +43,8 @@ describe('App Dark Mode Toggle', () => {
     // Initial state should show dark mode icon (Brightness4Icon) in light mode
     // After clicking, should show light mode icon (Brightness7Icon) in dark mode
     fireEvent.click(toggleButton);
+    expect(window.localStorage.setItem).toHaveBeenCalledWith('themeMode', 'dark');
+    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     
     // Verify the button is still present after toggle
     expect(toggleButton).toBeInTheDocument();

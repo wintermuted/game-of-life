@@ -1,6 +1,6 @@
 import { patterns, Pattern, LifeGrid, RULESETS } from '@game-of-life/core';
 import PatternPreview from './PatternPreview';
-import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
+import { DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
 
 interface Props {
   onSelectPattern: (grid: LifeGrid, rulesetId?: string) => void;

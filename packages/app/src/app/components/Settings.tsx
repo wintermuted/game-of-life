@@ -10,7 +10,7 @@ import {
   getStoredProfileUser,
   getFavoriteBoards,
   setBrowserStorageMode,
-} from '../util/browserStorage';
+} from '@game-of-life/api';
 
 function buildStorageSnapshot(mode: BrowserStorageMode) {
   return {

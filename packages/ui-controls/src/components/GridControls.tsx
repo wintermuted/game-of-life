@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { patterns, LifeGrid, Pattern } from '@game-of-life/core';
 import { ArrowRightLeft, ChevronRight, Eraser, Filter, Hand, Link, Minus, PaintBucket, Pause, Pencil, Play, Plus, RotateCcw, RotateCw, Stamp } from 'lucide-react';
 import { Square } from 'lucide-react';
-import PatternPreview from './PatternPreview';
-import { getPaletteById } from '../constants/colors';
+import { PatternPreview } from '@game-of-life/ui-patterns';
+import { getPaletteById } from '@game-of-life/ui';
 
 const GENERATION_SPEED_MIN = 1;
 const GENERATION_SPEED_MAX = 10;

@@ -3,8 +3,7 @@ import CustomPatternInput from './CustomPatternInput';
 import PatternSelector from './PatternSelector';
 import { LifeGrid } from '@game-of-life/core';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_PALETTE_ID } from '../constants/colors';
-import ThemeTabs from './ui/ThemeTabs';
+import { DEFAULT_PALETTE_ID, ThemeTabs } from '@game-of-life/ui';
 
 interface Props {
   onLoadPattern: (grid: LifeGrid, rulesetId?: string) => void;

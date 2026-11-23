@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { encodeGridToBase64, decodeBase64ToGrid, getGridFromURL, updateURLWithGrid } from './urlState';
+import { encodeGridToBase64, decodeBase64ToGrid, getGridFromURL, updateURLWithGrid } from '@game-of-life/util';
 import { createLifeGrid, DEFAULT_LIVE_CELL_COLOR, LifeGrid } from '@game-of-life/core';
 
 describe('urlState utilities', () => {

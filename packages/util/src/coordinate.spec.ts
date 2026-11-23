@@ -1,5 +1,5 @@
 import { createLifeGrid, LifeGrid } from '@game-of-life/core';
-import { handleXCoord, handleYCoord, translateGrid, translateGridToViewport } from './coordinate';
+import { handleXCoord, handleYCoord, translateGrid, translateGridToViewport } from '@game-of-life/util';
 
 describe('coordinate utilities', () => {
   describe('handleXCoord', () => {

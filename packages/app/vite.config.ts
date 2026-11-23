@@ -9,6 +9,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@game-of-life/core': path.resolve(__dirname, '../core/src/index.ts'),
+      '@game-of-life/ui': path.resolve(__dirname, '../ui/src/index.ts'),
+      '@game-of-life/ui-grid': path.resolve(__dirname, '../ui-grid/src/index.ts'),
+      '@game-of-life/ui-patterns': path.resolve(__dirname, '../ui-patterns/src/index.ts'),
+      '@game-of-life/ui-controls': path.resolve(__dirname, '../ui-controls/src/index.ts'),
+      '@game-of-life/api': path.resolve(__dirname, '../api/src/index.ts'),
+      '@game-of-life/util': path.resolve(__dirname, '../util/src/index.ts'),
     },
   },
   server: {
