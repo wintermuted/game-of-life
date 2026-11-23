@@ -20,7 +20,7 @@ export const COLOR_PALETTES: ColorPalette[] = [
     centerCell: '#888888',
     deadCellDark: '#1a1a1a',
     centerCellDark: '#2e2e2e',
-    description: 'Traditional green color scheme'
+    description: 'Traditional green color scheme',
   },
   {
     id: 'github',
@@ -30,7 +30,7 @@ export const COLOR_PALETTES: ColorPalette[] = [
     centerCell: '#9ca3af',
     deadCellDark: '#161b22',
     centerCellDark: '#21262d',
-    description: 'GitHub contributions graph inspired palette'
+    description: 'GitHub contributions graph inspired palette',
   },
   {
     id: 'ocean',
@@ -40,7 +40,7 @@ export const COLOR_PALETTES: ColorPalette[] = [
     centerCell: '#93c5fd',
     deadCellDark: '#0a1628',
     centerCellDark: '#0f2040',
-    description: 'Cool ocean blue theme'
+    description: 'Cool ocean blue theme',
   },
   {
     id: 'sunset',
@@ -50,12 +50,12 @@ export const COLOR_PALETTES: ColorPalette[] = [
     centerCell: '#fdba74',
     deadCellDark: '#1c0a00',
     centerCellDark: '#2d1500',
-    description: 'Warm sunset orange theme'
-  }
+    description: 'Warm sunset orange theme',
+  },
 ];
 
 export const DEFAULT_PALETTE_ID = 'classic';
 
 export function getPaletteById(id: string): ColorPalette {
-  return COLOR_PALETTES.find(p => p.id === id) || COLOR_PALETTES[0];
+  return COLOR_PALETTES.find((p) => p.id === id) || COLOR_PALETTES[0];
 }

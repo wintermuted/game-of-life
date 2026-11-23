@@ -49,16 +49,21 @@ function Landing() {
           </h2>
           <div className="landing-pattern-details">
             <Link to="/profile?creator=system">
-              <User size={14} aria-hidden="true" />{showcase.author}
+              <User size={14} aria-hidden="true" />
+              {showcase.author}
             </Link>
             <Link to={`/explore?ruleset=${encodeURIComponent(showcase.rulesetId)}`}>
-              <BookOpen size={14} aria-hidden="true" />{rulesetLabel}
+              <BookOpen size={14} aria-hidden="true" />
+              {rulesetLabel}
             </Link>
           </div>
         </div>
         <div className="landing-showcase-actions">
           <span className="landing-pattern-count">
-            {t('landing.patternCount', { current: showcaseIndex + 1, total: LANDING_SHOWCASE_PATTERNS.length })}
+            {t('landing.patternCount', {
+              current: showcaseIndex + 1,
+              total: LANDING_SHOWCASE_PATTERNS.length,
+            })}
           </span>
           <button
             className="wm-btn wm-btn-secondary landing-next-button"

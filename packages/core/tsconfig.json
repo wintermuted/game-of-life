@@ -3,29 +3,29 @@
     "target": "ES2020",
     "lib": ["ES2020"],
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
-    
+
     /* Composite build */
     "composite": true,
     "declaration": true,
     "declarationMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    
+
     /* Additional */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    
+
     /* Testing */
     "types": ["vitest/globals"]
   },

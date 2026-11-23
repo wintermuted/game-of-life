@@ -10,9 +10,9 @@ describe('parseCoordinates', () => {
     test('parses valid JSON format', () => {
       const input = '{ "1,0": true, "0,1": true, "1,1": true }';
       const expected: LifeGrid = {
-        "1,0": true,
-        "0,1": true,
-        "1,1": true
+        '1,0': true,
+        '0,1': true,
+        '1,1': true,
       };
       expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
@@ -20,8 +20,8 @@ describe('parseCoordinates', () => {
     test('parses JSON with negative coordinates', () => {
       const input = '{ "-1,0": true, "0,-1": true }';
       const expected: LifeGrid = {
-        "-1,0": true,
-        "0,-1": true
+        '-1,0': true,
+        '0,-1': true,
       };
       expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
@@ -46,9 +46,9 @@ describe('parseCoordinates', () => {
     test('parses space-separated coordinates', () => {
       const input = '1 0 0 1 1 1';
       const expected: LifeGrid = {
-        "1,0": true,
-        "0,1": true,
-        "1,1": true
+        '1,0': true,
+        '0,1': true,
+        '1,1': true,
       };
       expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
@@ -56,9 +56,9 @@ describe('parseCoordinates', () => {
     test('parses newline-separated coordinates', () => {
       const input = '1 0\n0 1\n1 1';
       const expected: LifeGrid = {
-        "1,0": true,
-        "0,1": true,
-        "1,1": true
+        '1,0': true,
+        '0,1': true,
+        '1,1': true,
       };
       expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
@@ -66,9 +66,9 @@ describe('parseCoordinates', () => {
     test('parses comma-separated coordinates', () => {
       const input = '1,0,0,1,1,1';
       const expected: LifeGrid = {
-        "1,0": true,
-        "0,1": true,
-        "1,1": true
+        '1,0': true,
+        '0,1': true,
+        '1,1': true,
       };
       expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
@@ -76,9 +76,9 @@ describe('parseCoordinates', () => {
     test('parses mixed separators', () => {
       const input = '1,0 0,1\n1,1';
       const expected: LifeGrid = {
-        "1,0": true,
-        "0,1": true,
-        "1,1": true
+        '1,0': true,
+        '0,1': true,
+        '1,1': true,
       };
       expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
@@ -86,8 +86,8 @@ describe('parseCoordinates', () => {
     test('parses negative coordinates', () => {
       const input = '-1 0 0 -1';
       const expected: LifeGrid = {
-        "-1,0": true,
-        "0,-1": true
+        '-1,0': true,
+        '0,-1': true,
       };
       expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });
@@ -120,8 +120,8 @@ describe('parseCoordinates', () => {
     test('handles extra whitespace', () => {
       const input = '  1  0   0  1  ';
       const expected: LifeGrid = {
-        "1,0": true,
-        "0,1": true
+        '1,0': true,
+        '0,1': true,
       };
       expect(toBooleanGrid(parseCoordinates(input))).toStrictEqual(expected);
     });

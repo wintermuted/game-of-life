@@ -6,10 +6,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@game-of-life/ui-grid': path.resolve(__dirname, './src/index.ts'),
-      '@game-of-life/ui': path.resolve(__dirname, '../ui/src/index.ts'),
-      '@game-of-life/core': path.resolve(__dirname, '../core/src/index.ts'),
-      '@game-of-life/util': path.resolve(__dirname, '../util/src/index.ts'),
+      '@game-of-life/ui-grid': path.resolve(import.meta.dirname, './src/index.ts'),
+      '@game-of-life/ui': path.resolve(import.meta.dirname, '../ui/src/index.ts'),
+      '@game-of-life/core': path.resolve(import.meta.dirname, '../core/src/index.ts'),
+      '@game-of-life/util': path.resolve(import.meta.dirname, '../util/src/index.ts'),
     },
   },
   build: {
@@ -17,14 +17,19 @@ export default defineConfig({
     emptyOutDir: false,
     sourcemap: true,
     lib: {
-      entry: path.resolve(__dirname, 'src/index.ts'),
+      entry: path.resolve(import.meta.dirname, 'src/index.ts'),
       formats: ['es'],
       fileName: 'index',
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: [
-        /^react($|\/)/, /^react-dom($|\/)/, /^@game-of-life\//,
-        'react-i18next', 'i18next', 'lucide-react', 'lodash',
+        /^react($|\/)/,
+        /^react-dom($|\/)/,
+        /^@game-of-life\//,
+        'react-i18next',
+        'i18next',
+        'lucide-react',
+        'lodash',
       ],
     },
   },

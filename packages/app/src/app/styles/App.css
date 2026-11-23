@@ -330,7 +330,8 @@
 
 .shortcuts-context-card.is-current {
   border-color: var(--wm-color-accent, var(--wm-color-border-strong));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wm-color-accent, var(--wm-color-text)) 22%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--wm-color-accent, var(--wm-color-text)) 22%, transparent);
 }
 
 .shortcuts-context-card-header {
@@ -431,8 +432,16 @@
   display: block;
   padding: 0;
   background:
-    radial-gradient(circle at 20% 15%, color-mix(in srgb, var(--wm-color-success) 22%, transparent), transparent 35%),
-    radial-gradient(circle at 85% 80%, color-mix(in srgb, var(--wm-color-info) 20%, transparent), transparent 38%),
+    radial-gradient(
+      circle at 20% 15%,
+      color-mix(in srgb, var(--wm-color-success) 22%, transparent),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 85% 80%,
+      color-mix(in srgb, var(--wm-color-info) 20%, transparent),
+      transparent 38%
+    ),
     var(--wm-color-bg);
 }
 
@@ -610,7 +619,9 @@ body.gol-board-maximized .game-controls-overlay {
   opacity: 0;
   transform: translateY(10px);
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 body.gol-board-maximized .game-controls-overlay.game-controls-overlay-visible {
@@ -899,7 +910,9 @@ body.gol-board-maximized .wm-toast {
 .playground-header-title-icon {
   opacity: 0;
   transform: translateX(-2px);
-  transition: opacity 0.16s ease, transform 0.16s ease;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
   flex-shrink: 0;
 }
 
@@ -919,7 +932,10 @@ body.gol-board-maximized .wm-toast {
   line-height: 0;
   opacity: 0;
   transform: translateX(-2px);
-  transition: opacity 0.16s ease, transform 0.16s ease, color 0.16s ease;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    color 0.16s ease;
 }
 
 .playground-header-title-wrap:hover .playground-header-title-edit-btn,
@@ -1229,7 +1245,10 @@ body.gol-board-maximized .wm-toast {
 }
 
 .grid-overlay-controls .grid-controls-form-play .grid-controls-actions-row .control-tooltip-trigger,
-.grid-overlay-controls .grid-controls-form-play .grid-controls-actions-row .control-tooltip-trigger-block {
+.grid-overlay-controls
+  .grid-controls-form-play
+  .grid-controls-actions-row
+  .control-tooltip-trigger-block {
   width: 100%;
 }
 
@@ -1375,10 +1394,18 @@ body.gol-board-maximized .wm-toast {
   transform: translateX(-4px) translateY(-50%);
 }
 
-.grid-overlay-controls .grid-controls-stamp-preview-trigger:hover .grid-controls-stamp-preview-popover,
-.grid-overlay-controls .grid-controls-stamp-preview-trigger:focus-within .grid-controls-stamp-preview-popover,
-.grid-overlay-controls .grid-controls-stamp-menu-trigger:hover + .grid-controls-stamp-preview-popover,
-.grid-overlay-controls .grid-controls-stamp-menu-trigger:focus-visible + .grid-controls-stamp-preview-popover {
+.grid-overlay-controls
+  .grid-controls-stamp-preview-trigger:hover
+  .grid-controls-stamp-preview-popover,
+.grid-overlay-controls
+  .grid-controls-stamp-preview-trigger:focus-within
+  .grid-controls-stamp-preview-popover,
+.grid-overlay-controls
+  .grid-controls-stamp-menu-trigger:hover
+  + .grid-controls-stamp-preview-popover,
+.grid-overlay-controls
+  .grid-controls-stamp-menu-trigger:focus-visible
+  + .grid-controls-stamp-preview-popover {
   transform: translateX(0) translateY(-50%);
 }
 
@@ -1417,7 +1444,9 @@ body.gol-board-maximized .wm-toast {
   opacity: 0;
   transform: translateY(4px);
   pointer-events: none;
-  transition: opacity 120ms ease, transform 120ms ease;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
   z-index: 310;
 }
 
@@ -2283,7 +2312,15 @@ body.gol-board-maximized .wm-toast {
   border-radius: var(--wm-radius-sm);
   background: var(--wm-color-surface-muted);
   color: var(--wm-color-text-primary);
-  font-family: var(--wm-font-family-monospace, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  font-family: var(
+    --wm-font-family-monospace,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace
+  );
   font-size: 0.66rem;
   font-weight: 600;
   line-height: 1.1;
@@ -2493,8 +2530,6 @@ body.gol-board-maximized .wm-toast {
   font-size: 0.875rem;
   color: var(--wm-color-text-muted);
 }
-
-
 
 .diagnostics-panel .code-block {
   max-height: 440px;
@@ -4079,7 +4114,6 @@ body.gol-board-maximized .wm-toast {
   .settings-options-grid {
     grid-template-columns: 1fr;
   }
-
 }
 
 @media (max-width: 767px) {

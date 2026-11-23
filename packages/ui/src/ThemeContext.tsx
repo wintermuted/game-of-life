@@ -16,15 +16,15 @@ const ThemeContext = createContext<ThemeContextType>({
   toggleTheme: () => {},
 });
 
-// eslint-disable-next-line react-refresh/only-export-components
+// oxlint-disable-next-line react/only-export-components
 export function useThemeMode(): ThemeContextType {
   return useContext(ThemeContext);
 }
 
-export function ThemeModeProvider({ children, mode, toggleTheme }: ThemeModeProviderProps): ReactElement {
-  return (
-    <ThemeContext.Provider value={{ mode, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+export function ThemeModeProvider({
+  children,
+  mode,
+  toggleTheme,
+}: ThemeModeProviderProps): ReactElement {
+  return <ThemeContext.Provider value={{ mode, toggleTheme }}>{children}</ThemeContext.Provider>;
 }

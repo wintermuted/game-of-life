@@ -1,5 +1,5 @@
-import { toNumber, forEach } from "lodash";
-import { LifeGrid } from "@game-of-life/core";
+import { toNumber, forEach } from 'lodash';
+import { LifeGrid } from '@game-of-life/core';
 
 export function handleXCoord(x: string, gridSize: number, offsetX: number = 0): number {
   const xNumber = toNumber(x);
@@ -18,7 +18,7 @@ export function translateGridToViewport(
   gridWidth: number,
   gridHeight: number,
   offsetX: number = 0,
-  offsetY: number = 0
+  offsetY: number = 0,
 ): LifeGrid {
   const translatedGrid: LifeGrid = {} as LifeGrid;
 
@@ -33,6 +33,11 @@ export function translateGridToViewport(
   return translatedGrid;
 }
 
-export function translateGrid (grid: LifeGrid, gridSize: number, offsetX: number = 0, offsetY: number = 0): LifeGrid {
+export function translateGrid(
+  grid: LifeGrid,
+  gridSize: number,
+  offsetX: number = 0,
+  offsetY: number = 0,
+): LifeGrid {
   return translateGridToViewport(grid, gridSize, gridSize, offsetX, offsetY);
 }

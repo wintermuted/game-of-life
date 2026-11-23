@@ -1,5 +1,5 @@
-import { beehive, block, tub, boat, loaf, pond } from "../../data/stillLifes";
-import gameOfLife from "../game";
+import { beehive, block, tub, boat, loaf, pond } from '../../data/stillLifes';
+import gameOfLife from '../game';
 
 describe('still lifes', () => {
   describe('block', () => {
@@ -8,16 +8,16 @@ describe('still lifes', () => {
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual(block)
-    })
+      expect(gen1).toStrictEqual(block);
+    });
 
-    test('gen2', () => {  
-      expect(gen2).toStrictEqual(block)
-    })
+    test('gen2', () => {
+      expect(gen2).toStrictEqual(block);
+    });
 
-    test('gen3', () => {  
-      expect(gen3).toStrictEqual(block)
-    })
+    test('gen3', () => {
+      expect(gen3).toStrictEqual(block);
+    });
   });
 
   describe('beehive', () => {
@@ -26,16 +26,16 @@ describe('still lifes', () => {
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual(beehive)
-    })
+      expect(gen1).toStrictEqual(beehive);
+    });
 
     test('gen2', () => {
-      expect(gen2).toStrictEqual(beehive)
-    })
+      expect(gen2).toStrictEqual(beehive);
+    });
 
     test('gen3', () => {
-      expect(gen3).toStrictEqual(beehive)
-    })
+      expect(gen3).toStrictEqual(beehive);
+    });
   });
 
   describe('tub', () => {
@@ -44,16 +44,16 @@ describe('still lifes', () => {
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual(tub)
-    })
+      expect(gen1).toStrictEqual(tub);
+    });
 
     test('gen2', () => {
-      expect(gen2).toStrictEqual(tub)
-    })
+      expect(gen2).toStrictEqual(tub);
+    });
 
     test('gen3', () => {
-      expect(gen3).toStrictEqual(tub)
-    })
+      expect(gen3).toStrictEqual(tub);
+    });
   });
 
   describe('boat', () => {
@@ -62,16 +62,16 @@ describe('still lifes', () => {
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual(boat)
-    })
+      expect(gen1).toStrictEqual(boat);
+    });
 
     test('gen2', () => {
-      expect(gen2).toStrictEqual(boat)
-    })
+      expect(gen2).toStrictEqual(boat);
+    });
 
     test('gen3', () => {
-      expect(gen3).toStrictEqual(boat)
-    })
+      expect(gen3).toStrictEqual(boat);
+    });
   });
 
   describe('loaf', () => {
@@ -80,16 +80,16 @@ describe('still lifes', () => {
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual(loaf)
-    })
+      expect(gen1).toStrictEqual(loaf);
+    });
 
     test('gen2', () => {
-      expect(gen2).toStrictEqual(loaf)
-    })
+      expect(gen2).toStrictEqual(loaf);
+    });
 
     test('gen3', () => {
-      expect(gen3).toStrictEqual(loaf)
-    })
+      expect(gen3).toStrictEqual(loaf);
+    });
   });
 
   describe('pond', () => {
@@ -98,15 +98,15 @@ describe('still lifes', () => {
     const gen3 = gameOfLife(gen2);
 
     test('gen1', () => {
-      expect(gen1).toStrictEqual(pond)
-    })
+      expect(gen1).toStrictEqual(pond);
+    });
 
     test('gen2', () => {
-      expect(gen2).toStrictEqual(pond)
-    })
+      expect(gen2).toStrictEqual(pond);
+    });
 
     test('gen3', () => {
-      expect(gen3).toStrictEqual(pond)
-    })
+      expect(gen3).toStrictEqual(pond);
+    });
   });
-})
+});

@@ -1,7 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowDown, ArrowDownUp, ArrowUp, ArrowUpAZ, ChevronDown, Cpu, FolderTree, GitFork, LayoutGrid, Play, Rows3, Search, Star, User } from 'lucide-react';
-import { createLifeGrid, DEFAULT_RULES, GameRuleKey, GameRules, LifeGrid, patterns, RULESETS } from '@game-of-life/core';
+import {
+  ArrowDown,
+  ArrowDownUp,
+  ArrowUp,
+  ArrowUpAZ,
+  ChevronDown,
+  Cpu,
+  FolderTree,
+  GitFork,
+  LayoutGrid,
+  Play,
+  Rows3,
+  Search,
+  Star,
+  User,
+} from 'lucide-react';
+import {
+  createLifeGrid,
+  DEFAULT_RULES,
+  GameRuleKey,
+  GameRules,
+  LifeGrid,
+  patterns,
+  RULESETS,
+} from '@game-of-life/core';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
 import { PatternPreview } from '@game-of-life/ui-patterns';
 import { encodeGridToBase64 } from '@game-of-life/util';
@@ -115,9 +138,7 @@ const VALID_GROUP_MODES = new Set<GroupMode>(['none', 'category', 'ruleset', 'au
 
 function readMultiValueParam(params: URLSearchParams, key: string): string[] {
   const values = params.getAll(key).flatMap((value) => value.split(','));
-  const normalized = values
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0);
+  const normalized = values.map((value) => value.trim()).filter((value) => value.length > 0);
 
   return Array.from(new Set(normalized));
 }
@@ -158,7 +179,9 @@ function getFavoriteHashesForActor(actorName: string): Set<string> {
   );
 }
 
-function buildPatternMetrics(patternList: ExplorePattern[]): Record<string, { favorites: number; forks: number }> {
+function buildPatternMetrics(
+  patternList: ExplorePattern[],
+): Record<string, { favorites: number; forks: number }> {
   const favoriteCounts = getFavoriteBoards().reduce<Record<string, number>>((acc, entry) => {
     acc[entry.hash] = (acc[entry.hash] ?? 0) + 1;
     return acc;
@@ -191,7 +214,9 @@ function detectPersistedRuleset(rules?: GameRules): string | undefined {
       const persistedEnabled = rules[ruleKey]?.enabled ?? DEFAULT_RULES[ruleKey].enabled;
       return persistedEnabled === ruleset.rules[ruleKey].enabled;
     });
-    const profilesMatch = JSON.stringify(rules.lifeLikeProfile ?? null) === JSON.stringify(ruleset.rules.lifeLikeProfile ?? null);
+    const profilesMatch =
+      JSON.stringify(rules.lifeLikeProfile ?? null) ===
+      JSON.stringify(ruleset.rules.lifeLikeProfile ?? null);
     return togglesMatch && profilesMatch;
   });
 
@@ -209,7 +234,9 @@ function Explore() {
   const toastHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isApplyingQueryState = useRef(false);
   const currentProfileName = getCurrentProfileName();
-  const [favoriteHashes, setFavoriteHashes] = useState<Set<string>>(() => getFavoriteHashesForActor(currentProfileName));
+  const [favoriteHashes, setFavoriteHashes] = useState<Set<string>>(() =>
+    getFavoriteHashesForActor(currentProfileName),
+  );
   const [forkOrigins, setForkOrigins] = useState(() => getForkOrigins());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
@@ -223,7 +250,9 @@ function Explore() {
   const [showDisabledAuthors, setShowDisabledAuthors] = useState(false);
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [forkedOnly, setForkedOnly] = useState(false);
-  const [sortField, setSortField] = useState<'favorites' | 'forks' | 'name' | 'user' | 'category'>('favorites');
+  const [sortField, setSortField] = useState<'favorites' | 'forks' | 'name' | 'user' | 'category'>(
+    'favorites',
+  );
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [groupMode, setGroupMode] = useState<GroupMode>(DEFAULT_GROUP_MODE);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -257,8 +286,12 @@ function Explore() {
   }, []);
 
   const forkedPatterns = useMemo<ExplorePattern[]>(() => {
-    const parentPatternsByHash = new Map(allPatterns.map((pattern) => [encodeGridToBase64(pattern.grid), pattern]));
-    const savedBoardsById = new Map(getSavedBoards().map((record) => [record.boardId ?? record.hash, record]));
+    const parentPatternsByHash = new Map(
+      allPatterns.map((pattern) => [encodeGridToBase64(pattern.grid), pattern]),
+    );
+    const savedBoardsById = new Map(
+      getSavedBoards().map((record) => [record.boardId ?? record.hash, record]),
+    );
 
     return forkOrigins.flatMap((forkOrigin) => {
       const parentPattern = parentPatternsByHash.get(forkOrigin.parentHash);
@@ -266,26 +299,33 @@ function Explore() {
 
       const savedBoard = savedBoardsById.get(forkOrigin.hash);
       const savedGrid = savedBoard ? hashToGrid(savedBoard.hash) : null;
-      return [{
-        ...parentPattern,
-        name: savedBoard?.title || forkOrigin.forkedPatternTitle || `${forkOrigin.parentTitle} (${t('explore.forkSuffix')})`,
-        category: savedBoard?.category || parentPattern.category,
-        source: 'user' as const,
-        creatorName: forkOrigin.forkerName,
-        visibility: savedBoard?.visibility ?? 'public',
-        rulesetId: detectPersistedRuleset(savedBoard?.rules) ?? parentPattern.rulesetId,
-        tags: savedBoard?.tags?.length ? savedBoard.tags : parentPattern.tags,
-        favoriteCount: 0,
-        forkCount: 0,
-        boardId: forkOrigin.hash,
-        grid: savedGrid ?? parentPattern.grid,
-      }];
+      return [
+        {
+          ...parentPattern,
+          name:
+            savedBoard?.title ||
+            forkOrigin.forkedPatternTitle ||
+            `${forkOrigin.parentTitle} (${t('explore.forkSuffix')})`,
+          category: savedBoard?.category || parentPattern.category,
+          source: 'user' as const,
+          creatorName: forkOrigin.forkerName,
+          visibility: savedBoard?.visibility ?? 'public',
+          rulesetId: detectPersistedRuleset(savedBoard?.rules) ?? parentPattern.rulesetId,
+          tags: savedBoard?.tags?.length ? savedBoard.tags : parentPattern.tags,
+          favoriteCount: 0,
+          forkCount: 0,
+          boardId: forkOrigin.hash,
+          grid: savedGrid ?? parentPattern.grid,
+        },
+      ];
     });
   }, [allPatterns, forkOrigins, t]);
 
   const browsablePatterns = forkedOnly ? forkedPatterns : allPatterns;
 
-  const [patternMetrics, setPatternMetrics] = useState<Record<string, { favorites: number; forks: number }>>(() => {
+  const [patternMetrics, setPatternMetrics] = useState<
+    Record<string, { favorites: number; forks: number }>
+  >(() => {
     return buildPatternMetrics(allPatterns);
   });
 
@@ -301,7 +341,10 @@ function Explore() {
     setFavoriteHashes(getFavoriteHashesForActor(currentProfileName));
     setForkOrigins((current) => {
       const next = getForkOrigins();
-      return next.map((entry) => entry.hash).join('|') === current.map((entry) => entry.hash).join('|') ? current : next;
+      return next.map((entry) => entry.hash).join('|') ===
+        current.map((entry) => entry.hash).join('|')
+        ? current
+        : next;
     });
     setPatternMetrics(buildPatternMetrics(allPatterns));
   }, [allPatterns, currentProfileName]);
@@ -320,12 +363,18 @@ function Explore() {
   }, [allPatterns]);
 
   const rulesetOptions = useMemo(
-    () => [...RULESETS.filter((ruleset) => ruleset.implemented).map((ruleset) => ruleset.id), CUSTOM_RULESET_ID],
+    () => [
+      ...RULESETS.filter((ruleset) => ruleset.implemented).map((ruleset) => ruleset.id),
+      CUSTOM_RULESET_ID,
+    ],
     [],
   );
 
   const tagOptions = useMemo(
-    () => ['all', ...Array.from(new Set(allPatterns.flatMap((pattern) => getPatternTags(pattern))))],
+    () => [
+      'all',
+      ...Array.from(new Set(allPatterns.flatMap((pattern) => getPatternTags(pattern)))),
+    ],
     [allPatterns, t],
   );
 
@@ -333,28 +382,40 @@ function Explore() {
     const params = new URLSearchParams(location.search);
     const search = params.get('q')?.trim() ?? '';
 
-    const categories = readMultiValueParam(params, 'category').filter((category) => categoryOptions.includes(category));
-    const authors = readMultiValueParam(params, 'author').filter((author) => authorOptions.includes(author));
-    const rulesets = readMultiValueParam(params, 'ruleset').filter((ruleset) => rulesetOptions.includes(ruleset));
+    const categories = readMultiValueParam(params, 'category').filter((category) =>
+      categoryOptions.includes(category),
+    );
+    const authors = readMultiValueParam(params, 'author').filter((author) =>
+      authorOptions.includes(author),
+    );
+    const rulesets = readMultiValueParam(params, 'ruleset').filter((ruleset) =>
+      rulesetOptions.includes(ruleset),
+    );
     const tags = readMultiValueParam(params, 'tag').filter((tag) => tagOptions.includes(tag));
 
     const sourceParam = params.get('source');
-    const source = sourceParam && VALID_SOURCES.has(sourceParam) ? (sourceParam as 'all' | 'system' | 'user') : 'all';
+    const source =
+      sourceParam && VALID_SOURCES.has(sourceParam)
+        ? (sourceParam as 'all' | 'system' | 'user')
+        : 'all';
 
     const sortParam = params.get('sort');
-    const sortField = sortParam && VALID_SORT_FIELDS.has(sortParam)
-      ? (sortParam as 'favorites' | 'forks' | 'name' | 'user' | 'category')
-      : DEFAULT_SORT_FIELD;
+    const sortField =
+      sortParam && VALID_SORT_FIELDS.has(sortParam)
+        ? (sortParam as 'favorites' | 'forks' | 'name' | 'user' | 'category')
+        : DEFAULT_SORT_FIELD;
 
     const directionParam = params.get('direction');
-    const sortDirection = directionParam && VALID_SORT_DIRECTIONS.has(directionParam)
-      ? (directionParam as 'asc' | 'desc')
-      : DEFAULT_SORT_DIRECTION;
+    const sortDirection =
+      directionParam && VALID_SORT_DIRECTIONS.has(directionParam)
+        ? (directionParam as 'asc' | 'desc')
+        : DEFAULT_SORT_DIRECTION;
 
     const viewParam = params.get('view');
-    const viewMode = viewParam && VALID_VIEW_MODES.has(viewParam)
-      ? (viewParam as 'cards' | 'table')
-      : DEFAULT_VIEW_MODE;
+    const viewMode =
+      viewParam && VALID_VIEW_MODES.has(viewParam)
+        ? (viewParam as 'cards' | 'table')
+        : DEFAULT_VIEW_MODE;
 
     const favoritesParam = params.get('favorites');
     const favoritesOnly = favoritesParam === '1' || favoritesParam === 'true';
@@ -363,11 +424,12 @@ function Explore() {
 
     const groupParam = params.get('groupBy');
     const legacyGroupParam = params.get('groupByCategory');
-    const groupMode = groupParam && VALID_GROUP_MODES.has(groupParam as GroupMode)
-      ? (groupParam as GroupMode)
-      : legacyGroupParam === '1' || legacyGroupParam === 'true'
-        ? 'category'
-        : DEFAULT_GROUP_MODE;
+    const groupMode =
+      groupParam && VALID_GROUP_MODES.has(groupParam as GroupMode)
+        ? (groupParam as GroupMode)
+        : legacyGroupParam === '1' || legacyGroupParam === 'true'
+          ? 'category'
+          : DEFAULT_GROUP_MODE;
 
     return {
       search,
@@ -525,7 +587,9 @@ function Explore() {
     }
 
     const nextSearch = params.toString();
-    const currentSearch = location.search.startsWith('?') ? location.search.slice(1) : location.search;
+    const currentSearch = location.search.startsWith('?')
+      ? location.search.slice(1)
+      : location.search;
     if (nextSearch === currentSearch) {
       return;
     }
@@ -559,10 +623,12 @@ function Explore() {
   function patternMatchesSearch(pattern: ExplorePattern, normalizedQuery: string): boolean {
     if (!normalizedQuery) return true;
 
-    const sourceLabel = pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
-    const visibilityLabel = pattern.visibility === 'private'
-      ? t('playground.visibilityPrivate')
-      : t('playground.visibilityPublic');
+    const sourceLabel =
+      pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
+    const visibilityLabel =
+      pattern.visibility === 'private'
+        ? t('playground.visibilityPrivate')
+        : t('playground.visibilityPublic');
     const searchableValues = [
       pattern.name,
       pattern.category,
@@ -633,8 +699,14 @@ function Explore() {
           return leftPattern.category.localeCompare(rightPattern.category);
         }
 
-        const leftUser = leftPattern.source === 'user' ? leftPattern.creatorName ?? '' : t('patternSource.system');
-        const rightUser = rightPattern.source === 'user' ? rightPattern.creatorName ?? '' : t('patternSource.system');
+        const leftUser =
+          leftPattern.source === 'user'
+            ? (leftPattern.creatorName ?? '')
+            : t('patternSource.system');
+        const rightUser =
+          rightPattern.source === 'user'
+            ? (rightPattern.creatorName ?? '')
+            : t('patternSource.system');
         return leftUser.localeCompare(rightUser);
       })();
 
@@ -644,7 +716,21 @@ function Explore() {
 
       return leftPattern.name.localeCompare(rightPattern.name);
     });
-  }, [browsablePatterns, favoriteHashes, favoritesOnly, patternMetrics, searchQuery, selectedAuthors, selectedCategories, selectedRulesets, selectedSource, selectedTags, sortDirection, sortField, t]);
+  }, [
+    browsablePatterns,
+    favoriteHashes,
+    favoritesOnly,
+    patternMetrics,
+    searchQuery,
+    selectedAuthors,
+    selectedCategories,
+    selectedRulesets,
+    selectedSource,
+    selectedTags,
+    sortDirection,
+    sortField,
+    t,
+  ]);
 
   const categoryCountBase = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -670,7 +756,16 @@ function Explore() {
 
       return patternMatchesSearch(pattern, normalizedQuery);
     });
-  }, [browsablePatterns, favoriteHashes, favoritesOnly, searchQuery, selectedAuthors, selectedRulesets, selectedSource, selectedTags]);
+  }, [
+    browsablePatterns,
+    favoriteHashes,
+    favoritesOnly,
+    searchQuery,
+    selectedAuthors,
+    selectedRulesets,
+    selectedSource,
+    selectedTags,
+  ]);
 
   const categoryCounts = useMemo(() => {
     const next: Record<string, number> = {
@@ -708,7 +803,16 @@ function Explore() {
 
       return patternMatchesSearch(pattern, normalizedQuery);
     });
-  }, [browsablePatterns, favoriteHashes, favoritesOnly, searchQuery, selectedCategories, selectedRulesets, selectedSource, selectedTags]);
+  }, [
+    browsablePatterns,
+    favoriteHashes,
+    favoritesOnly,
+    searchQuery,
+    selectedCategories,
+    selectedRulesets,
+    selectedSource,
+    selectedTags,
+  ]);
 
   const authorCounts = useMemo(() => {
     const next: Record<string, number> = {
@@ -729,12 +833,23 @@ function Explore() {
     return browsablePatterns.filter((pattern) => {
       if (selectedCategories.size > 0 && !selectedCategories.has(pattern.category)) return false;
       if (selectedSource !== 'all' && pattern.source !== selectedSource) return false;
-      if (selectedAuthors.size > 0 && !selectedAuthors.has(getPatternAuthorKey(pattern))) return false;
+      if (selectedAuthors.size > 0 && !selectedAuthors.has(getPatternAuthorKey(pattern)))
+        return false;
       if (!patternMatchesSelectedTags(pattern)) return false;
       if (favoritesOnly && !favoriteHashes.has(getPatternHash(pattern.grid))) return false;
       return patternMatchesSearch(pattern, normalizedQuery);
     });
-  }, [browsablePatterns, favoriteHashes, favoritesOnly, searchQuery, selectedAuthors, selectedCategories, selectedSource, selectedTags, t]);
+  }, [
+    browsablePatterns,
+    favoriteHashes,
+    favoritesOnly,
+    searchQuery,
+    selectedAuthors,
+    selectedCategories,
+    selectedSource,
+    selectedTags,
+    t,
+  ]);
 
   const rulesetCounts = useMemo(() => {
     const next: Record<string, number> = { all: rulesetCountBase.length };
@@ -751,12 +866,24 @@ function Explore() {
     return browsablePatterns.filter((pattern) => {
       if (selectedCategories.size > 0 && !selectedCategories.has(pattern.category)) return false;
       if (selectedSource !== 'all' && pattern.source !== selectedSource) return false;
-      if (selectedAuthors.size > 0 && !selectedAuthors.has(getPatternAuthorKey(pattern))) return false;
-      if (selectedRulesets.size > 0 && !selectedRulesets.has(getPatternRulesetId(pattern))) return false;
+      if (selectedAuthors.size > 0 && !selectedAuthors.has(getPatternAuthorKey(pattern)))
+        return false;
+      if (selectedRulesets.size > 0 && !selectedRulesets.has(getPatternRulesetId(pattern)))
+        return false;
       if (favoritesOnly && !favoriteHashes.has(getPatternHash(pattern.grid))) return false;
       return patternMatchesSearch(pattern, normalizedQuery);
     });
-  }, [browsablePatterns, favoriteHashes, favoritesOnly, searchQuery, selectedAuthors, selectedCategories, selectedRulesets, selectedSource, t]);
+  }, [
+    browsablePatterns,
+    favoriteHashes,
+    favoritesOnly,
+    searchQuery,
+    selectedAuthors,
+    selectedCategories,
+    selectedRulesets,
+    selectedSource,
+    t,
+  ]);
 
   const tagCounts = useMemo(() => {
     const next: Record<string, number> = { all: tagCountBase.length };
@@ -769,7 +896,12 @@ function Explore() {
   }, [tagCountBase, t]);
 
   const sortedCategoryOptions = useMemo(
-    () => sortByCountThenLabel(categoryOptions.filter((category) => category !== 'all'), categoryCounts, (category) => category),
+    () =>
+      sortByCountThenLabel(
+        categoryOptions.filter((category) => category !== 'all'),
+        categoryCounts,
+        (category) => category,
+      ),
     [categoryCounts, categoryOptions],
   );
 
@@ -781,17 +913,28 @@ function Explore() {
     : sortedCategoryOptions.filter((category) => !disabledCategoryOptions.includes(category));
 
   const sortedAuthorOptions = useMemo(
-    () => sortByCountThenLabel(authorOptions.filter((author) => author !== 'all'), authorCounts, (author) => getAuthorLabel(author)),
+    () =>
+      sortByCountThenLabel(
+        authorOptions.filter((author) => author !== 'all'),
+        authorCounts,
+        (author) => getAuthorLabel(author),
+      ),
     [authorCounts, authorOptions, t],
   );
 
   const sortedRulesetOptions = useMemo(
-    () => sortByCountThenLabel(rulesetOptions, rulesetCounts, (ruleset) => getRulesetLabel(ruleset)),
+    () =>
+      sortByCountThenLabel(rulesetOptions, rulesetCounts, (ruleset) => getRulesetLabel(ruleset)),
     [rulesetCounts, rulesetOptions, t],
   );
 
   const sortedTagOptions = useMemo(
-    () => sortByCountThenLabel(tagOptions.filter((tag) => tag !== 'all'), tagCounts, (tag) => tag),
+    () =>
+      sortByCountThenLabel(
+        tagOptions.filter((tag) => tag !== 'all'),
+        tagCounts,
+        (tag) => tag,
+      ),
     [tagCounts, tagOptions],
   );
 
@@ -814,8 +957,12 @@ function Explore() {
     ? sortedAuthorOptions
     : sortedAuthorOptions.filter((author) => !disabledAuthorOptions.includes(author));
 
-  const hasAvailableCategories = sortedCategoryOptions.some((category) => (categoryCounts[category] ?? 0) > 0);
-  const hasAvailableRulesets = sortedRulesetOptions.some((rulesetId) => (rulesetCounts[rulesetId] ?? 0) > 0);
+  const hasAvailableCategories = sortedCategoryOptions.some(
+    (category) => (categoryCounts[category] ?? 0) > 0,
+  );
+  const hasAvailableRulesets = sortedRulesetOptions.some(
+    (rulesetId) => (rulesetCounts[rulesetId] ?? 0) > 0,
+  );
   const hasAvailableTags = sortedTagOptions.some((tag) => (tagCounts[tag] ?? 0) > 0);
   const hasAvailableAuthors = sortedAuthorOptions.some((author) => (authorCounts[author] ?? 0) > 0);
 
@@ -830,11 +977,12 @@ function Explore() {
 
     const grouped = new Map<string, ExplorePattern[]>();
     for (const pattern of filteredPatterns) {
-      const groupLabel = groupMode === 'category'
-        ? pattern.category
-        : groupMode === 'ruleset'
-          ? getRulesetLabel(getPatternRulesetId(pattern))
-          : getAuthorLabel(getPatternAuthorKey(pattern));
+      const groupLabel =
+        groupMode === 'category'
+          ? pattern.category
+          : groupMode === 'ruleset'
+            ? getRulesetLabel(getPatternRulesetId(pattern))
+            : getAuthorLabel(getPatternAuthorKey(pattern));
       const current = grouped.get(groupLabel) ?? [];
       current.push(pattern);
       grouped.set(groupLabel, current);
@@ -849,7 +997,8 @@ function Explore() {
     { value: 'ruleset', label: t('explore.groupRuleset'), icon: Cpu },
     { value: 'author', label: t('explore.groupAuthor'), icon: User },
   ];
-  const selectedGroupOption = groupOptions.find((option) => option.value === groupMode) ?? groupOptions[0];
+  const selectedGroupOption =
+    groupOptions.find((option) => option.value === groupMode) ?? groupOptions[0];
   const SelectedGroupIcon = selectedGroupOption.icon;
 
   const sortFieldLabel =
@@ -859,9 +1008,9 @@ function Explore() {
         ? t('explore.sortForks')
         : sortField === 'name'
           ? t('explore.sortName')
-        : sortField === 'category'
-          ? t('explore.sortCategory')
-          : t('explore.sortUser');
+          : sortField === 'category'
+            ? t('explore.sortCategory')
+            : t('explore.sortUser');
 
   const SortFieldIcon =
     sortField === 'favorites'
@@ -874,7 +1023,8 @@ function Explore() {
             ? FolderTree
             : User;
 
-  const sortDirectionLabel = sortDirection === 'desc' ? t('explore.sortDirectionDesc') : t('explore.sortDirectionAsc');
+  const sortDirectionLabel =
+    sortDirection === 'desc' ? t('explore.sortDirectionDesc') : t('explore.sortDirectionAsc');
   const SortDirectionIcon = sortDirection === 'desc' ? ArrowDown : ArrowUp;
   const selectedSortLabel = `${sortFieldLabel} (${sortDirectionLabel})`;
 
@@ -943,7 +1093,10 @@ function Explore() {
     } else if (pattern.source === 'system') {
       params.set('catalog', pattern.name);
     }
-    if (pattern.rulesetId && RULESETS.some((ruleset) => ruleset.id === pattern.rulesetId && ruleset.implemented)) {
+    if (
+      pattern.rulesetId &&
+      RULESETS.some((ruleset) => ruleset.id === pattern.rulesetId && ruleset.implemented)
+    ) {
       params.set('ruleset', pattern.rulesetId);
     }
     return `/play?${params.toString()}`;
@@ -959,7 +1112,9 @@ function Explore() {
     setSortDirection('asc');
   }
 
-  function handleTableSortDirection(nextField: 'name' | 'user' | 'category' | 'forks' | 'favorites'): void {
+  function handleTableSortDirection(
+    nextField: 'name' | 'user' | 'category' | 'forks' | 'favorites',
+  ): void {
     if (sortField === nextField) {
       setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'));
       return;
@@ -1005,35 +1160,45 @@ function Explore() {
 
   function getPatternTags(pattern: ExplorePattern): string[] {
     const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const sourceLabel = pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
-    const visibilityLabel = pattern.visibility === 'private'
-      ? t('playground.visibilityPrivate')
-      : t('playground.visibilityPublic');
+    const sourceLabel =
+      pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
+    const visibilityLabel =
+      pattern.visibility === 'private'
+        ? t('playground.visibilityPrivate')
+        : t('playground.visibilityPublic');
     const rulesetId = getPatternRulesetId(pattern);
-    const excludedValues = new Set([
-      pattern.category,
-      sourceLabel,
-      visibilityLabel,
-      pattern.creatorName ?? '',
-      rulesetId,
-      getRulesetLabel(rulesetId),
-    ].map(normalize).filter(Boolean));
+    const excludedValues = new Set(
+      [
+        pattern.category,
+        sourceLabel,
+        visibilityLabel,
+        pattern.creatorName ?? '',
+        rulesetId,
+        getRulesetLabel(rulesetId),
+      ]
+        .map(normalize)
+        .filter(Boolean),
+    );
     const seenTags = new Set<string>();
 
-    return (pattern.tags ?? []).filter((tag) => {
-      const normalizedTag = normalize(tag.trim());
-      if (!normalizedTag || excludedValues.has(normalizedTag) || seenTags.has(normalizedTag)) {
-        return false;
-      }
+    return (pattern.tags ?? [])
+      .filter((tag) => {
+        const normalizedTag = normalize(tag.trim());
+        if (!normalizedTag || excludedValues.has(normalizedTag) || seenTags.has(normalizedTag)) {
+          return false;
+        }
 
-      seenTags.add(normalizedTag);
-      return true;
-    }).slice(0, 3);
+        seenTags.add(normalizedTag);
+        return true;
+      })
+      .slice(0, 3);
   }
 
   function renderSourceBadge(pattern: ExplorePattern) {
-    const sourceLabel = pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
-    const displayLabel = pattern.source === 'user' ? pattern.creatorName ?? sourceLabel : sourceLabel;
+    const sourceLabel =
+      pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
+    const displayLabel =
+      pattern.source === 'user' ? (pattern.creatorName ?? sourceLabel) : sourceLabel;
     const SourceIcon = pattern.source === 'user' ? User : Cpu;
 
     return (
@@ -1099,42 +1264,67 @@ function Explore() {
   function renderRulesetFilter() {
     return (
       <details className="explore-filter-section" open>
-        <summary className="explore-filter-section-summary">{t('explore.rulesetFilterLabel')}</summary>
-        <div className="explore-checkbox-list" role="group" aria-label={t('explore.rulesetFilterLabel')}>
-          {!hasAvailableRulesets ? <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p> : null}
-          {hasAvailableRulesets ? ['all', ...visibleRulesetOptions].map((rulesetId) => {
-            const checked = rulesetId === 'all' ? selectedRulesets.size === 0 : selectedRulesets.has(rulesetId);
-            const disabled = rulesetId !== 'all' && (rulesetCounts[rulesetId] ?? 0) === 0 && !checked;
+        <summary className="explore-filter-section-summary">
+          {t('explore.rulesetFilterLabel')}
+        </summary>
+        <div
+          className="explore-checkbox-list"
+          role="group"
+          aria-label={t('explore.rulesetFilterLabel')}
+        >
+          {!hasAvailableRulesets ? (
+            <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p>
+          ) : null}
+          {hasAvailableRulesets
+            ? ['all', ...visibleRulesetOptions].map((rulesetId) => {
+                const checked =
+                  rulesetId === 'all'
+                    ? selectedRulesets.size === 0
+                    : selectedRulesets.has(rulesetId);
+                const disabled =
+                  rulesetId !== 'all' && (rulesetCounts[rulesetId] ?? 0) === 0 && !checked;
 
-            return (
-              <label key={rulesetId} className="explore-checkbox-item explore-checkbox-item-with-count">
-                <span className="explore-checkbox-item-main">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    disabled={disabled}
-                    onChange={(event) => {
-                      if (rulesetId === 'all') {
-                        if (event.target.checked) setSelectedRulesets(new Set());
-                        return;
-                      }
+                return (
+                  <label
+                    key={rulesetId}
+                    className="explore-checkbox-item explore-checkbox-item-with-count"
+                  >
+                    <span className="explore-checkbox-item-main">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={disabled}
+                        onChange={(event) => {
+                          if (rulesetId === 'all') {
+                            if (event.target.checked) setSelectedRulesets(new Set());
+                            return;
+                          }
 
-                      setSelectedRulesets((current) => {
-                        const next = new Set(current);
-                        if (event.target.checked) next.add(rulesetId);
-                        else next.delete(rulesetId);
-                        return next;
-                      });
-                    }}
-                  />
-                  <span>{rulesetId === 'all' ? t('explore.rulesetAll') : getRulesetLabel(rulesetId)}</span>
-                </span>
-                <span className="wm-badge wm-badge-neutral explore-filter-option-count">{rulesetCounts[rulesetId] ?? 0}</span>
-              </label>
-            );
-          }) : null}
+                          setSelectedRulesets((current) => {
+                            const next = new Set(current);
+                            if (event.target.checked) next.add(rulesetId);
+                            else next.delete(rulesetId);
+                            return next;
+                          });
+                        }}
+                      />
+                      <span>
+                        {rulesetId === 'all' ? t('explore.rulesetAll') : getRulesetLabel(rulesetId)}
+                      </span>
+                    </span>
+                    <span className="wm-badge wm-badge-neutral explore-filter-option-count">
+                      {rulesetCounts[rulesetId] ?? 0}
+                    </span>
+                  </label>
+                );
+              })
+            : null}
           {hasAvailableRulesets && disabledRulesetOptions.length > 0 ? (
-            <button className="explore-filter-more-btn" type="button" onClick={() => setShowDisabledRulesets((current) => !current)}>
+            <button
+              className="explore-filter-more-btn"
+              type="button"
+              onClick={() => setShowDisabledRulesets((current) => !current)}
+            >
               {showDisabledRulesets
                 ? t('explore.showFewerFilterOptions')
                 : t('explore.showMoreFilterOptions', { count: disabledRulesetOptions.length })}
@@ -1149,41 +1339,58 @@ function Explore() {
     return (
       <details className="explore-filter-section" open>
         <summary className="explore-filter-section-summary">{t('explore.tagFilterLabel')}</summary>
-        <div className="explore-checkbox-list" role="group" aria-label={t('explore.tagFilterLabel')}>
-          {!hasAvailableTags ? <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p> : null}
-          {hasAvailableTags ? ['all', ...visibleTagOptions].map((tag) => {
-            const checked = tag === 'all' ? selectedTags.size === 0 : selectedTags.has(tag);
-            const disabled = tag !== 'all' && (tagCounts[tag] ?? 0) === 0 && !checked;
+        <div
+          className="explore-checkbox-list"
+          role="group"
+          aria-label={t('explore.tagFilterLabel')}
+        >
+          {!hasAvailableTags ? (
+            <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p>
+          ) : null}
+          {hasAvailableTags
+            ? ['all', ...visibleTagOptions].map((tag) => {
+                const checked = tag === 'all' ? selectedTags.size === 0 : selectedTags.has(tag);
+                const disabled = tag !== 'all' && (tagCounts[tag] ?? 0) === 0 && !checked;
 
-            return (
-              <label key={tag} className="explore-checkbox-item explore-checkbox-item-with-count">
-                <span className="explore-checkbox-item-main">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    disabled={disabled}
-                    onChange={(event) => {
-                      if (tag === 'all') {
-                        if (event.target.checked) setSelectedTags(new Set());
-                        return;
-                      }
+                return (
+                  <label
+                    key={tag}
+                    className="explore-checkbox-item explore-checkbox-item-with-count"
+                  >
+                    <span className="explore-checkbox-item-main">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={disabled}
+                        onChange={(event) => {
+                          if (tag === 'all') {
+                            if (event.target.checked) setSelectedTags(new Set());
+                            return;
+                          }
 
-                      setSelectedTags((current) => {
-                        const next = new Set(current);
-                        if (event.target.checked) next.add(tag);
-                        else next.delete(tag);
-                        return next;
-                      });
-                    }}
-                  />
-                  <span>{tag === 'all' ? t('explore.tagAll') : tag}</span>
-                </span>
-                <span className="wm-badge wm-badge-neutral explore-filter-option-count">{tagCounts[tag] ?? 0}</span>
-              </label>
-            );
-          }) : null}
+                          setSelectedTags((current) => {
+                            const next = new Set(current);
+                            if (event.target.checked) next.add(tag);
+                            else next.delete(tag);
+                            return next;
+                          });
+                        }}
+                      />
+                      <span>{tag === 'all' ? t('explore.tagAll') : tag}</span>
+                    </span>
+                    <span className="wm-badge wm-badge-neutral explore-filter-option-count">
+                      {tagCounts[tag] ?? 0}
+                    </span>
+                  </label>
+                );
+              })
+            : null}
           {hasAvailableTags && disabledTagOptions.length > 0 ? (
-            <button className="explore-filter-more-btn" type="button" onClick={() => setShowDisabledTags((current) => !current)}>
+            <button
+              className="explore-filter-more-btn"
+              type="button"
+              onClick={() => setShowDisabledTags((current) => !current)}
+            >
               {showDisabledTags
                 ? t('explore.showFewerFilterOptions')
                 : t('explore.showMoreFilterOptions', { count: disabledTagOptions.length })}
@@ -1269,7 +1476,9 @@ function Explore() {
               </div>
 
               <div className="explore-filters-meta-row">
-                <p className="profile-persistence-note">{t('explore.resultsCount', { count: filteredCount })}</p>
+                <p className="profile-persistence-note">
+                  {t('explore.resultsCount', { count: filteredCount })}
+                </p>
                 <button
                   className="btn btn-sm btn-secondary-neutral"
                   type="button"
@@ -1292,45 +1501,66 @@ function Explore() {
               </div>
 
               <details className="explore-filter-section" open>
-                <summary className="explore-filter-section-summary">{t('explore.categoryFilterLabel')}</summary>
-                <div className="explore-checkbox-list" role="group" aria-label={t('explore.categoryFilterLabel')}>
-                  {!hasAvailableCategories ? <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p> : null}
-                  {hasAvailableCategories ? ['all', ...visibleCategoryOptions].map((category) => {
-                    const checked = category === 'all' ? selectedCategories.size === 0 : selectedCategories.has(category);
-                    const disabled = category !== 'all' && (categoryCounts[category] ?? 0) === 0 && !checked;
+                <summary className="explore-filter-section-summary">
+                  {t('explore.categoryFilterLabel')}
+                </summary>
+                <div
+                  className="explore-checkbox-list"
+                  role="group"
+                  aria-label={t('explore.categoryFilterLabel')}
+                >
+                  {!hasAvailableCategories ? (
+                    <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p>
+                  ) : null}
+                  {hasAvailableCategories
+                    ? ['all', ...visibleCategoryOptions].map((category) => {
+                        const checked =
+                          category === 'all'
+                            ? selectedCategories.size === 0
+                            : selectedCategories.has(category);
+                        const disabled =
+                          category !== 'all' && (categoryCounts[category] ?? 0) === 0 && !checked;
 
-                    return (
-                      <label key={category} className="explore-checkbox-item explore-checkbox-item-with-count">
-                        <span className="explore-checkbox-item-main">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            disabled={disabled}
-                            onChange={(event) => {
-                              if (category === 'all') {
-                                if (event.target.checked) {
-                                  setSelectedCategories(new Set());
-                                }
-                                return;
-                              }
+                        return (
+                          <label
+                            key={category}
+                            className="explore-checkbox-item explore-checkbox-item-with-count"
+                          >
+                            <span className="explore-checkbox-item-main">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                disabled={disabled}
+                                onChange={(event) => {
+                                  if (category === 'all') {
+                                    if (event.target.checked) {
+                                      setSelectedCategories(new Set());
+                                    }
+                                    return;
+                                  }
 
-                              setSelectedCategories((current) => {
-                                const next = new Set(current);
-                                if (event.target.checked) {
-                                  next.add(category);
-                                } else {
-                                  next.delete(category);
-                                }
-                                return next;
-                              });
-                            }}
-                          />
-                          <span>{category === 'all' ? t('explore.categoryAll') : category}</span>
-                        </span>
-                        <span className="wm-badge wm-badge-neutral explore-filter-option-count">{categoryCounts[category] ?? 0}</span>
-                      </label>
-                    );
-                  }) : null}
+                                  setSelectedCategories((current) => {
+                                    const next = new Set(current);
+                                    if (event.target.checked) {
+                                      next.add(category);
+                                    } else {
+                                      next.delete(category);
+                                    }
+                                    return next;
+                                  });
+                                }}
+                              />
+                              <span>
+                                {category === 'all' ? t('explore.categoryAll') : category}
+                              </span>
+                            </span>
+                            <span className="wm-badge wm-badge-neutral explore-filter-option-count">
+                              {categoryCounts[category] ?? 0}
+                            </span>
+                          </label>
+                        );
+                      })
+                    : null}
                   {hasAvailableCategories && disabledCategoryOptions.length > 0 ? (
                     <button
                       className="explore-filter-more-btn"
@@ -1339,7 +1569,9 @@ function Explore() {
                     >
                       {showDisabledCategories
                         ? t('explore.showFewerFilterOptions')
-                        : t('explore.showMoreFilterOptions', { count: disabledCategoryOptions.length })}
+                        : t('explore.showMoreFilterOptions', {
+                            count: disabledCategoryOptions.length,
+                          })}
                     </button>
                   ) : null}
                 </div>
@@ -1350,64 +1582,95 @@ function Explore() {
               {renderTagFilter()}
 
               <details className="explore-filter-section" open>
-                <summary className="explore-filter-section-summary">{t('explore.authorFilterLabel')}</summary>
-                <div className="explore-checkbox-list" role="group" aria-label={t('explore.authorFilterLabel')}>
-                  {!hasAvailableAuthors ? <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p> : null}
-                  {hasAvailableAuthors ? ['all', ...visibleAuthorOptions].map((authorKey) => {
-                    const checked = authorKey === 'all' ? selectedAuthors.size === 0 : selectedAuthors.has(authorKey);
-                    const disabled = authorKey !== 'all' && (authorCounts[authorKey] ?? 0) === 0 && !checked;
+                <summary className="explore-filter-section-summary">
+                  {t('explore.authorFilterLabel')}
+                </summary>
+                <div
+                  className="explore-checkbox-list"
+                  role="group"
+                  aria-label={t('explore.authorFilterLabel')}
+                >
+                  {!hasAvailableAuthors ? (
+                    <p className="explore-filter-empty-state">{t('explore.noFiltersAvailable')}</p>
+                  ) : null}
+                  {hasAvailableAuthors
+                    ? ['all', ...visibleAuthorOptions].map((authorKey) => {
+                        const checked =
+                          authorKey === 'all'
+                            ? selectedAuthors.size === 0
+                            : selectedAuthors.has(authorKey);
+                        const disabled =
+                          authorKey !== 'all' && (authorCounts[authorKey] ?? 0) === 0 && !checked;
 
-                    return (
-                      <label key={authorKey} className="explore-checkbox-item explore-checkbox-item-with-count">
-                        <span className="explore-checkbox-item-main">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            disabled={disabled}
-                            onChange={(event) => {
-                              if (authorKey === 'all') {
-                                if (event.target.checked) {
-                                  setSelectedAuthors(new Set());
-                                }
-                                return;
-                              }
+                        return (
+                          <label
+                            key={authorKey}
+                            className="explore-checkbox-item explore-checkbox-item-with-count"
+                          >
+                            <span className="explore-checkbox-item-main">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                disabled={disabled}
+                                onChange={(event) => {
+                                  if (authorKey === 'all') {
+                                    if (event.target.checked) {
+                                      setSelectedAuthors(new Set());
+                                    }
+                                    return;
+                                  }
 
-                              setSelectedAuthors((current) => {
-                                const next = new Set(current);
-                                if (event.target.checked) {
-                                  next.add(authorKey);
-                                } else {
-                                  next.delete(authorKey);
-                                }
-                                return next;
-                              });
-                            }}
-                          />
-                          <span>{authorKey === 'all' ? t('explore.authorAll') : getAuthorLabel(authorKey)}</span>
-                        </span>
-                        <span className="wm-badge wm-badge-neutral explore-filter-option-count">{authorCounts[authorKey] ?? 0}</span>
-                      </label>
-                    );
-                  }) : null}
+                                  setSelectedAuthors((current) => {
+                                    const next = new Set(current);
+                                    if (event.target.checked) {
+                                      next.add(authorKey);
+                                    } else {
+                                      next.delete(authorKey);
+                                    }
+                                    return next;
+                                  });
+                                }}
+                              />
+                              <span>
+                                {authorKey === 'all'
+                                  ? t('explore.authorAll')
+                                  : getAuthorLabel(authorKey)}
+                              </span>
+                            </span>
+                            <span className="wm-badge wm-badge-neutral explore-filter-option-count">
+                              {authorCounts[authorKey] ?? 0}
+                            </span>
+                          </label>
+                        );
+                      })
+                    : null}
                   {hasAvailableAuthors && disabledAuthorOptions.length > 0 ? (
-                    <button className="explore-filter-more-btn" type="button" onClick={() => setShowDisabledAuthors((current) => !current)}>
+                    <button
+                      className="explore-filter-more-btn"
+                      type="button"
+                      onClick={() => setShowDisabledAuthors((current) => !current)}
+                    >
                       {showDisabledAuthors
                         ? t('explore.showFewerFilterOptions')
-                        : t('explore.showMoreFilterOptions', { count: disabledAuthorOptions.length })}
+                        : t('explore.showMoreFilterOptions', {
+                            count: disabledAuthorOptions.length,
+                          })}
                     </button>
                   ) : null}
                 </div>
               </details>
-
             </div>
-
           </section>
         </aside>
 
         <div className="explore-results-column">
           <section className="explore-results-toolbar">
             <div className="explore-results-toolbar-left">
-              <div className="explore-view-toggle" role="group" aria-label={t('explore.viewModeLabel')}>
+              <div
+                className="explore-view-toggle"
+                role="group"
+                aria-label={t('explore.viewModeLabel')}
+              >
                 <button
                   className={`btn btn-sm btn-secondary-neutral explore-view-toggle-btn${viewMode === 'cards' ? ' is-active' : ''}`}
                   type="button"
@@ -1427,7 +1690,11 @@ function Explore() {
               </div>
 
               <div className="explore-group-select-wrap">
-                <SelectedGroupIcon className="explore-group-select-icon" size={12} aria-hidden="true" />
+                <SelectedGroupIcon
+                  className="explore-group-select-icon"
+                  size={12}
+                  aria-hidden="true"
+                />
                 <select
                   className="wm-select explore-group-select"
                   aria-label={t('explore.groupByLabel')}
@@ -1435,7 +1702,9 @@ function Explore() {
                   onChange={(event) => setGroupMode(event.target.value as GroupMode)}
                 >
                   {groupOptions.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -1463,7 +1732,10 @@ function Explore() {
 
             <div className="explore-results-toolbar-right">
               <details className="header-user-menu explore-sort-menu">
-                <summary className="header-user-menu-trigger explore-sort-menu-trigger" aria-label={t('explore.sortLabel')}>
+                <summary
+                  className="header-user-menu-trigger explore-sort-menu-trigger"
+                  aria-label={t('explore.sortLabel')}
+                >
                   <span className="explore-sort-menu-selected">
                     <SortFieldIcon size={12} aria-hidden="true" />
                     <SortDirectionIcon size={12} aria-hidden="true" />
@@ -1471,7 +1743,11 @@ function Explore() {
                   </span>
                   <ChevronDown size={14} aria-hidden="true" />
                 </summary>
-                <div className="header-user-menu-panel explore-sort-menu-panel" role="menu" aria-label={t('explore.sortLabel')}>
+                <div
+                  className="header-user-menu-panel explore-sort-menu-panel"
+                  role="menu"
+                  aria-label={t('explore.sortLabel')}
+                >
                   {sortMenuSections.map((section) => (
                     <div key={section.value} className="explore-sort-menu-group" role="none">
                       <div className="explore-sort-menu-heading" role="presentation">
@@ -1480,7 +1756,8 @@ function Explore() {
                       </div>
 
                       {section.options.map((option) => {
-                        const active = option.field === sortField && option.direction === sortDirection;
+                        const active =
+                          option.field === sortField && option.direction === sortDirection;
 
                         return (
                           <button
@@ -1492,7 +1769,9 @@ function Explore() {
                             onClick={(event) => {
                               setSortField(option.field);
                               setSortDirection(option.direction);
-                              (event.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open');
+                              (
+                                event.currentTarget.closest('details') as HTMLDetailsElement | null
+                              )?.removeAttribute('open');
                             }}
                           >
                             <option.icon size={12} aria-hidden="true" />
@@ -1550,14 +1829,21 @@ function Explore() {
                     const favorite = favoriteHashes.has(hash);
                     const metrics = patternMetrics[hash] ?? { favorites: 0, forks: 0 };
                     return (
-                      <article key={`${pattern.category}-${pattern.name}`} className="card card-body explore-pattern-card">
+                      <article
+                        key={`${pattern.category}-${pattern.name}`}
+                        className="card card-body explore-pattern-card"
+                      >
                         <Link
                           className="explore-card-preview-link"
                           to={getPatternPlayUrl(pattern)}
                           onClick={() => trackRecentBoard(hash, pattern.name)}
                         >
                           <div className="profile-board-preview">
-                            <PatternPreview grid={pattern.grid} size={88} palette={previewPalette} />
+                            <PatternPreview
+                              grid={pattern.grid}
+                              size={88}
+                              palette={previewPalette}
+                            />
                           </div>
                         </Link>
 
@@ -1579,7 +1865,7 @@ function Explore() {
                           <button
                             className="btn btn-sm btn-secondary-neutral explore-action-btn"
                             type="button"
-                              onClick={() => handleFork(pattern)}
+                            onClick={() => handleFork(pattern)}
                           >
                             <GitFork size={13} aria-hidden="true" />
                             {t('explore.forkPattern')}
@@ -1601,7 +1887,9 @@ function Explore() {
                 </div>
               ) : (
                 <div className="explore-patterns-table-wrap">
-                  <table className={`explore-patterns-table${groupMode !== 'none' ? ' is-grouped' : ''}`}>
+                  <table
+                    className={`explore-patterns-table${groupMode !== 'none' ? ' is-grouped' : ''}`}
+                  >
                     <colgroup>
                       <col className="explore-col-pattern" />
                       <col className="explore-col-source" />
@@ -1630,7 +1918,11 @@ function Explore() {
                               onClick={() => handleTableSortDirection('name')}
                             >
                               {sortField === 'name' ? (
-                                sortDirection === 'asc' ? <ArrowUp size={12} aria-hidden="true" /> : <ArrowDown size={12} aria-hidden="true" />
+                                sortDirection === 'asc' ? (
+                                  <ArrowUp size={12} aria-hidden="true" />
+                                ) : (
+                                  <ArrowDown size={12} aria-hidden="true" />
+                                )
                               ) : (
                                 <ArrowDownUp size={12} aria-hidden="true" />
                               )}
@@ -1653,7 +1945,11 @@ function Explore() {
                               onClick={() => handleTableSortDirection('user')}
                             >
                               {sortField === 'user' ? (
-                                sortDirection === 'asc' ? <ArrowUp size={12} aria-hidden="true" /> : <ArrowDown size={12} aria-hidden="true" />
+                                sortDirection === 'asc' ? (
+                                  <ArrowUp size={12} aria-hidden="true" />
+                                ) : (
+                                  <ArrowDown size={12} aria-hidden="true" />
+                                )
                               ) : (
                                 <ArrowDownUp size={12} aria-hidden="true" />
                               )}
@@ -1676,7 +1972,11 @@ function Explore() {
                               onClick={() => handleTableSortDirection('category')}
                             >
                               {sortField === 'category' ? (
-                                sortDirection === 'asc' ? <ArrowUp size={12} aria-hidden="true" /> : <ArrowDown size={12} aria-hidden="true" />
+                                sortDirection === 'asc' ? (
+                                  <ArrowUp size={12} aria-hidden="true" />
+                                ) : (
+                                  <ArrowDown size={12} aria-hidden="true" />
+                                )
                               ) : (
                                 <ArrowDownUp size={12} aria-hidden="true" />
                               )}
@@ -1701,7 +2001,11 @@ function Explore() {
                               onClick={() => handleTableSortDirection('forks')}
                             >
                               {sortField === 'forks' ? (
-                                sortDirection === 'asc' ? <ArrowUp size={12} aria-hidden="true" /> : <ArrowDown size={12} aria-hidden="true" />
+                                sortDirection === 'asc' ? (
+                                  <ArrowUp size={12} aria-hidden="true" />
+                                ) : (
+                                  <ArrowDown size={12} aria-hidden="true" />
+                                )
                               ) : (
                                 <ArrowDownUp size={12} aria-hidden="true" />
                               )}
@@ -1724,7 +2028,11 @@ function Explore() {
                               onClick={() => handleTableSortDirection('favorites')}
                             >
                               {sortField === 'favorites' ? (
-                                sortDirection === 'asc' ? <ArrowUp size={12} aria-hidden="true" /> : <ArrowDown size={12} aria-hidden="true" />
+                                sortDirection === 'asc' ? (
+                                  <ArrowUp size={12} aria-hidden="true" />
+                                ) : (
+                                  <ArrowDown size={12} aria-hidden="true" />
+                                )
                               ) : (
                                 <ArrowDownUp size={12} aria-hidden="true" />
                               )}
@@ -1749,14 +2057,16 @@ function Explore() {
                                 onClick={() => trackRecentBoard(hash, pattern.name)}
                               >
                                 <div className="explore-table-pattern-cell">
-                                  <PatternPreview grid={pattern.grid} size={48} palette={previewPalette} />
+                                  <PatternPreview
+                                    grid={pattern.grid}
+                                    size={48}
+                                    palette={previewPalette}
+                                  />
                                   <span>{pattern.name}</span>
                                 </div>
                               </Link>
                             </td>
-                            <td>
-                              {renderSourceBadge(pattern)}
-                            </td>
+                            <td>{renderSourceBadge(pattern)}</td>
                             <td>
                               <button
                                 className="wm-badge wm-badge-neutral explore-filter-badge"
@@ -1772,7 +2082,9 @@ function Explore() {
                                 className="wm-badge wm-badge-neutral explore-pattern-ruleset-badge explore-filter-badge"
                                 type="button"
                                 aria-label={`${t('explore.rulesetFilterLabel')}: ${getRulesetLabel(getPatternRulesetId(pattern))}`}
-                                onClick={() => setSelectedRulesets(new Set([getPatternRulesetId(pattern)]))}
+                                onClick={() =>
+                                  setSelectedRulesets(new Set([getPatternRulesetId(pattern)]))
+                                }
                               >
                                 {getRulesetLabel(getPatternRulesetId(pattern))}
                               </button>
@@ -1810,7 +2122,9 @@ function Explore() {
                                 onClick={() => handleFavorite(pattern.name, pattern.grid)}
                               >
                                 <Star size={13} fill={favorite ? 'currentColor' : 'none'} />
-                                <span>{favorite ? t('explore.favorited') : t('explore.favorite')}</span>
+                                <span>
+                                  {favorite ? t('explore.favorited') : t('explore.favorite')}
+                                </span>
                                 <span className="explore-action-count">{metrics.favorites}</span>
                               </button>
                             </td>
@@ -1838,14 +2152,25 @@ function Explore() {
         </div>
       </div>
 
-      <div className={`wm-toast wm-toast-success${toastOpen ? ' wm-toast-visible' : ''}`} role="status" aria-live="polite">
+      <div
+        className={`wm-toast wm-toast-success${toastOpen ? ' wm-toast-visible' : ''}`}
+        role="status"
+        aria-live="polite"
+      >
         <span>{toastMessage}</span>
         {showFavoritesToastLink ? (
           <Link className="explore-toast-link" to="/profile#favorites" onClick={closeToast}>
             {t('explore.viewFavorites')}
           </Link>
         ) : null}
-        <button className="wm-toast-dismiss" type="button" aria-label="Dismiss" onClick={closeToast}>&#x2715;</button>
+        <button
+          className="wm-toast-dismiss"
+          type="button"
+          aria-label="Dismiss"
+          onClick={closeToast}
+        >
+          &#x2715;
+        </button>
       </div>
     </div>
   );

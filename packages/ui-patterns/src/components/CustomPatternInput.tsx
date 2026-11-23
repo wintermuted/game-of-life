@@ -42,15 +42,16 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
         value={input}
         onChange={handleInputChange}
         disabled={disabled}
-        style={{ width: '100%', resize: 'vertical', marginBottom: '0.25rem', boxSizing: 'border-box' }}
+        style={{
+          width: '100%',
+          resize: 'vertical',
+          marginBottom: '0.25rem',
+          boxSizing: 'border-box',
+        }}
       />
 
       {error && (
-        <div
-          className="feedback feedback-error"
-          style={{ marginBottom: '0.75rem' }}
-          role="alert"
-        >
+        <div className="feedback feedback-error" style={{ marginBottom: '0.75rem' }} role="alert">
           {error}
         </div>
       )}
@@ -85,17 +86,25 @@ function CustomPatternInput({ onLoadPattern, disabled = false }: Props) {
           }}
         >
           <strong>{t('patterns.supportedFormats')}</strong>
-          <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div
+            style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+          >
             <div>
-              <div style={{ marginBottom: '0.2rem', color: 'var(--wm-color-text-muted)' }}>JSON</div>
+              <div style={{ marginBottom: '0.2rem', color: 'var(--wm-color-text-muted)' }}>
+                JSON
+              </div>
               <code>{`{ "1,0": true, "0,1": true }`}</code>
             </div>
             <div>
-              <div style={{ marginBottom: '0.2rem', color: 'var(--wm-color-text-muted)' }}>Space-separated</div>
+              <div style={{ marginBottom: '0.2rem', color: 'var(--wm-color-text-muted)' }}>
+                Space-separated
+              </div>
               <code>{'1 0 0 1 1 1'}</code>
             </div>
             <div>
-              <div style={{ marginBottom: '0.2rem', color: 'var(--wm-color-text-muted)' }}>Line-separated</div>
+              <div style={{ marginBottom: '0.2rem', color: 'var(--wm-color-text-muted)' }}>
+                Line-separated
+              </div>
               <pre style={{ margin: 0, fontSize: '0.75rem' }}>{'1 0\n0 1\n1 1'}</pre>
             </div>
           </div>

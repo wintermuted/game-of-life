@@ -1,11 +1,11 @@
 import { forEach, range } from 'lodash';
-import { ReactElement } from "react";
+import { ReactElement } from 'react';
 import { LifeGrid } from '@game-of-life/core';
 import { translateGrid } from '@game-of-life/util';
 import { getCellFillColor } from '../util/cellColor';
 
 function getCoordinate(rowIndex: number, cellSize: number) {
-  return rowIndex + (cellSize * rowIndex);
+  return rowIndex + cellSize * rowIndex;
 }
 
 interface Props {
@@ -18,12 +18,12 @@ interface Props {
 function GridSquares({ onMouseOver, grid, gridSize, cellSize }: Props) {
   const gridRange = range(gridSize);
   const innerDom: ReactElement[] = [];
-  const translatedGrid = translateGrid(grid, gridSize); 
+  const translatedGrid = translateGrid(grid, gridSize);
 
   forEach(gridRange, (_columnVal, columnIndex) => {
     forEach(gridRange, (_rowVal, rowIndex) => {
       const key = `panel_key_${rowIndex}_${columnIndex}`;
-      const x = getCoordinate(rowIndex, cellSize)
+      const x = getCoordinate(rowIndex, cellSize);
       const y = getCoordinate(columnIndex, cellSize);
       const alive = translatedGrid[`${rowIndex},${columnIndex}`];
       const color = getCellFillColor(alive);
@@ -42,19 +42,16 @@ function GridSquares({ onMouseOver, grid, gridSize, cellSize }: Props) {
           onMouseOver={onMouseOver}
         />
       );
-  
+
       innerDom.push(rect);
     });
   });
 
   return (
     <div className="GridSquares">
-      <svg>
-        {innerDom}
-      </svg>
+      <svg>{innerDom}</svg>
     </div>
   );
 }
 
 export default GridSquares;
-

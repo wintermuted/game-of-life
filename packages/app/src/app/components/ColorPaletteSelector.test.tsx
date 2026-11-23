@@ -16,8 +16,8 @@ describe('ColorPaletteSelector', () => {
 
   it('renders all color palettes', () => {
     render(<ColorPaletteSelector {...defaultProps} />);
-    
-    COLOR_PALETTES.forEach(palette => {
+
+    COLOR_PALETTES.forEach((palette) => {
       expect(screen.getByText(palette.name)).toBeInTheDocument();
     });
   });
@@ -34,34 +34,34 @@ describe('ColorPaletteSelector', () => {
 
   it('calls onPaletteChange when a palette is selected', () => {
     render(<ColorPaletteSelector {...defaultProps} />);
-    
+
     const oceanButton = screen.getByText('Ocean Blue').closest('button');
     if (!oceanButton) {
       throw new Error('Ocean Blue button not found');
     }
     fireEvent.click(oceanButton);
-    
+
     expect(mockOnPaletteChange).toHaveBeenCalledWith('ocean');
   });
 
   it('does not call onPaletteChange when clicking the already selected palette', () => {
     render(<ColorPaletteSelector {...defaultProps} selectedPaletteId="classic" />);
-    
+
     const classicPalette = COLOR_PALETTES.find((palette) => palette.id === 'classic');
     const classicButton = screen.getByText(classicPalette!.name).closest('button');
     if (!classicButton) {
       throw new Error('Classic Green button not found');
     }
     fireEvent.click(classicButton);
-    
+
     // Current custom button behavior still emits selection click for idempotent updates.
     expect(mockOnPaletteChange).toHaveBeenCalledWith('classic');
   });
 
   it('disables all palette buttons when disabled prop is true', () => {
     render(<ColorPaletteSelector {...defaultProps} disabled={true} />);
-    
-    COLOR_PALETTES.forEach(palette => {
+
+    COLOR_PALETTES.forEach((palette) => {
       const button = screen.getByText(palette.name).closest('button');
       expect(button).not.toBeNull();
       expect(button).toBeDisabled();

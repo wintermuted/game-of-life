@@ -30,35 +30,35 @@ function PatternPreview({ grid, size = 60, palette }: Props) {
     const coordinates = Object.keys(grid);
     if (coordinates.length === 0) return;
 
-    const points = coordinates.map(coord => {
+    const points = coordinates.map((coord) => {
       const [x, y] = coord.split(',').map(Number);
       return { x, y };
     });
 
-    const minX = Math.min(...points.map(p => p.x));
-    const maxX = Math.max(...points.map(p => p.x));
-    const minY = Math.min(...points.map(p => p.y));
-    const maxY = Math.max(...points.map(p => p.y));
+    const minX = Math.min(...points.map((p) => p.x));
+    const maxX = Math.max(...points.map((p) => p.x));
+    const minY = Math.min(...points.map((p) => p.y));
+    const maxY = Math.max(...points.map((p) => p.y));
 
     const patternWidth = maxX - minX + 1;
     const patternHeight = maxY - minY + 1;
 
     // Calculate cell size to fit the pattern with padding
     const padding = 4;
-    const availableSize = size - (2 * padding);
+    const availableSize = size - 2 * padding;
     const maxDimension = Math.max(patternWidth, patternHeight);
     const calculatedCellSize = Math.floor(availableSize / maxDimension);
     // Ensure minimum cell size of 2 pixels for visibility
     const cellSize = Math.max(2, calculatedCellSize);
 
     // Center the pattern
-    const offsetX = padding + (availableSize - (patternWidth * cellSize)) / 2;
-    const offsetY = padding + (availableSize - (patternHeight * cellSize)) / 2;
+    const offsetX = padding + (availableSize - patternWidth * cellSize) / 2;
+    const offsetY = padding + (availableSize - patternHeight * cellSize) / 2;
 
     // Draw the cells
     points.forEach(({ x, y }) => {
-      const drawX = offsetX + ((x - minX) * cellSize);
-      const drawY = offsetY + ((y - minY) * cellSize);
+      const drawX = offsetX + (x - minX) * cellSize;
+      const drawY = offsetY + (y - minY) * cellSize;
 
       const cellColor = grid[`${x},${y}`];
       ctx.fillStyle = isLiveCell(cellColor) ? getCellColor(cellColor) : '#22c55e';
@@ -76,7 +76,7 @@ function PatternPreview({ grid, size = 60, palette }: Props) {
       style={{
         border: `1px solid ${isDark ? '#30363d' : '#d0d7de'}`,
         borderRadius: '4px',
-        backgroundColor: isDark ? '#161b22' : '#ebedf0'
+        backgroundColor: isDark ? '#161b22' : '#ebedf0',
       }}
     />
   );

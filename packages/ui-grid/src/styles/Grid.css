@@ -385,7 +385,8 @@
   cursor: grab;
 }
 
-.CanvasGrid canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-grab.canvas-grid-surface-tool-grab-active {
+.CanvasGrid
+  canvas.canvas-grid-surface-editable.canvas-grid-surface-tool-grab.canvas-grid-surface-tool-grab-active {
   cursor: grabbing;
 }
 

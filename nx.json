@@ -10,6 +10,12 @@
       "cache": true
     },
     "lint": {
+      "inputs": [
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/.oxlintrc.json",
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/.gitignore"
+      ],
       "cache": true
     }
   },

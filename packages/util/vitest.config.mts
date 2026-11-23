@@ -4,8 +4,8 @@ import path from 'path';
 export default defineConfig({
   resolve: {
     alias: {
-      '@game-of-life/core': path.resolve(__dirname, '../core/src/index.ts'),
-      '@game-of-life/util': path.resolve(__dirname, './src/index.ts'),
+      '@game-of-life/core': path.resolve(import.meta.dirname, '../core/src/index.ts'),
+      '@game-of-life/util': path.resolve(import.meta.dirname, './src/index.ts'),
     },
   },
   test: {

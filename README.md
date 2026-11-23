@@ -6,18 +6,20 @@ Game of Life
 This project is an implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) written in [Typescript](https://www.typescriptlang.org/).
 
 ## Goals
+
 - Provide a succinct example of my programming skill in TypeScript vis-a-vis a known programming problem.
 - Demonstrate my understanding of [Big O notation](https://en.wikipedia.org/wiki/Big_O_notation).
 - Provide myself an opportunity to learn HTML5 Canvas.
 
 ## Current State
-- The rules of the Game of Life have been implemented.  
+
+- The rules of the Game of Life have been implemented.
   - A Dictionary is used as the primary datastructure.
   - The implementation of the core logic can be found in [`packages/core/src/core/game.ts`](https://github.com/wintermuted/game-of-life/blob/master/packages/core/src/core/game.ts).
   - A class [`Game`](https://github.com/wintermuted/game-of-life/blob/master/packages/core/src/class/Game.ts) can be used to start a game and step through it.
 - The game rules are backed with unit tests.
 - The game has been tested with common Still Life & Oscillator patterns.
-- A rudimentary UI built with React has been added, however it is poorly optimized.  A rewrite is necessary for it to be performant with larger grids.
+- A rudimentary UI built with React has been added, however it is poorly optimized. A rewrite is necessary for it to be performant with larger grids.
 
 ## Architecture
 
@@ -38,7 +40,7 @@ This project is organized as an **NX monorepo** with npm workspaces:
   - Pattern definitions (oscillators, still lifes, spaceships, methuselahs)
   - Type definitions and interfaces
   - No dependencies on UI frameworks
-  
+
 - **`@game-of-life/app`** (`packages/app/`) - React application
   - Vite-based React application
   - Owns startup, routes/pages, assets, translations, persisted theme preferences, and simulation orchestration
@@ -98,6 +100,7 @@ The project uses TypeScript's [project references](https://www.typescriptlang.or
   direct tests do not require prebuilt libraries
 
 This enables:
+
 - Faster incremental builds
 - Better IDE performance
 - Clear dependency boundaries between packages
@@ -105,18 +108,27 @@ This enables:
 ## Technology
 
 - **Build System**: [NX](https://nx.dev) - Smart monorepo build system with caching
-- **Language**: TypeScript 5.0
-- **UI Framework**: React 18 with Vite
+- **Language**: TypeScript 6
+- **UI Framework**: React 19 with React Router 7
 - **UI Components**: [@wintermuted/ui-theme](https://github.com/wintermuted/ui-theme)
-- **Testing**: Vitest
-- **Bundler**: Vite
+- **Testing**: Vitest 5 with React Testing Library
+- **Bundler**: Vite 8
+- **Linting and Formatting**: Oxlint and Oxfmt
 
 ## Development
 
 ### Prerequisites
 
+Use Node.js 24 LTS (24.15.0 or newer). Node 22.22.2 or newer is also
+supported and tested in CI. The root `.nvmrc` selects Node 24.
+Node type definitions intentionally track Node 24 rather than Node 26.
+TypeScript is held at 6.0.3 because Nx 24 dependency discovery still requires
+the compiler API removed in TypeScript 7 (`readConfigFile`).
+All dependencies, including the published Wintermuted theme, install from npm;
+no sibling theme checkout is required.
+
 ```bash
-npm install
+npm ci
 ```
 
 ### Available Commands
@@ -136,21 +148,39 @@ npm test             # Run tests for all packages
 npm run test:watch   # Run tests in watch mode
 npm run test:ui      # Open Vitest UI
 
-# Linting
+# Linting (Oxlint)
 npm run lint         # Lint app and all four UI libraries
+
+# Formatting (Oxfmt)
+npm run format       # Format supported repository files
+npm run format:check # Check formatting without modifying files
 
 # Preview
 npm run preview      # Preview production build
 ```
 
+CI runs clean installation, Oxlint, Oxfmt checks, package builds/typechecks,
+and all workspace tests on Node 22 and 24. Local lint, typecheck, and build runs
+are not required for this workflow; CI owns those validation gates.
+
+Oxlint uses the shared `.oxlintrc.json` from every package/Nx lint entry point.
+It preserves the existing recommended JavaScript/TypeScript rule intent,
+React Hooks checks, refresh export checks, underscore-unused exemptions, and
+test-only explicit-any exceptions. Oxlint's core rules cover the former
+TypeScript-specific array-constructor, loss-of-precision, and unused-variable
+rules. The former duplicate-argument, octal-literal, and `new Symbol` checks
+are covered by parser/compiler diagnostics rather than standalone Oxlint rules;
+extra semicolons and mixed indentation are handled by Oxfmt.
+Oxfmt preserves single-quoted code, uses two-space indentation and LF endings,
+and excludes generated outputs and the npm-generated lockfile.
+
 ### GitHub Copilot App
 
 Review and accept `.github/github-app.yml` in the app to enable its scripts.
 **Setup** runs automatically when a session is created and can also be run
-manually. It requires Node.js, npm, Git, and access to `wintermuted/ui-theme`.
-It clones that repository into `../wintermuted-ui-theme` when missing, preserves
-an existing checkout, and runs `npm ci` at the workspace root to install all
-workspace dependencies, including the local theme package.
+manually. It requires a supported Node.js version and npm, and runs `npm ci`
+at the workspace root to install all workspace dependencies, including the
+published `@wintermuted/ui-theme` package.
 
 **Run** starts the local Vite development server using `npm run dev`. The app
 detects Vite's local URL (including the `/game-of-life/` base path) and opens it
@@ -230,7 +260,7 @@ game-of-life/
 │       ├── public/
 │       ├── package.json
 │       ├── tsconfig.json
-│       └── vite.config.ts
+│       └── vite.config.mts
 ├── package.json              # Root package.json (workspace)
 ├── tsconfig.json            # Root TypeScript config (project references)
 └── nx.json                  # NX workspace configuration
@@ -245,6 +275,7 @@ This project is automatically deployed to GitHub Pages using GitHub Actions:
 - **PR Previews**: Each pull request receives a preview deployment which is automatically cleaned up when the PR is closed. The preview URL is posted as a comment on the PR.
 
 The deployment workflows are located in `.github/workflows/`:
+
 - `deploy-pages.yml` - Main production deployment
 - `deploy-pr-preview.yml` - PR preview deployments
 - `cleanup-pr-preview.yml` - PR preview cleanup

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 const languages = [
   { code: 'en', name: 'English' },
-  { code: 'es', name: 'Español' }
+  { code: 'es', name: 'Español' },
 ];
 
 interface LanguageSwitcherProps {
@@ -16,7 +16,8 @@ function LanguageSwitcher({ className, dropUp = false }: LanguageSwitcherProps) 
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const activeLanguage = i18n.language.startsWith('es') ? 'es' : 'en';
-  const activeLanguageLabel = languages.find((language) => language.code === activeLanguage)?.name || 'English';
+  const activeLanguageLabel =
+    languages.find((language) => language.code === activeLanguage)?.name || 'English';
 
   function handleChange(languageCode: string) {
     i18n.changeLanguage(languageCode);
@@ -61,7 +62,11 @@ function LanguageSwitcher({ className, dropUp = false }: LanguageSwitcherProps) 
           <span aria-hidden="true">▴</span>
         </button>
         {open && (
-          <div className="language-switcher-dropup-menu" role="listbox" aria-label="Change language">
+          <div
+            className="language-switcher-dropup-menu"
+            role="listbox"
+            aria-label="Change language"
+          >
             {languages.map((language) => (
               <button
                 key={language.code}
@@ -82,7 +87,7 @@ function LanguageSwitcher({ className, dropUp = false }: LanguageSwitcherProps) 
 
   return (
     <select
-      className={className || "docs-topbar-version docs-topbar-language"}
+      className={className || 'docs-topbar-version docs-topbar-language'}
       aria-label="Change language"
       value={activeLanguage}
       onChange={(event) => handleChange(event.target.value)}

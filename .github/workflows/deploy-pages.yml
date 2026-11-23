@@ -38,15 +38,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Checkout ui-theme
-        run: |
-          git clone --branch v0.18.0 --depth 1 https://github.com/wintermuted/ui-theme.git \
-            ${{ github.workspace }}/../wintermuted-ui-theme
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies

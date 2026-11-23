@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Routes, Route, NavLink, Link, useLocation } from 'react-router-dom';
 import { Moon, Sun, CircleUserRound, ChevronDown, Menu, X } from 'lucide-react';
-import Home from "./components/Home";
-import About from "./components/About";
-import Landing from "./components/Landing";
-import Explore from "./components/Explore";
-import Profile from "./components/Profile";
-import Settings from "./components/Settings";
-import SignOut from "./components/SignOut";
-import PlayStart from "./components/PlayStart";
+import Home from './components/Home';
+import About from './components/About';
+import Landing from './components/Landing';
+import Explore from './components/Explore';
+import Profile from './components/Profile';
+import Settings from './components/Settings';
+import SignOut from './components/SignOut';
+import PlayStart from './components/PlayStart';
 import { LanguageSwitcher, useThemeMode } from '@game-of-life/ui';
 import { useTranslation } from 'react-i18next';
 import './styles/App.css';
@@ -34,7 +34,9 @@ function App() {
   const location = useLocation();
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [playMode, setPlayMode] = useState<PlayMode>(() => getPlayModeFromSearch(window.location.search));
+  const [playMode, setPlayMode] = useState<PlayMode>(() =>
+    getPlayModeFromSearch(window.location.search),
+  );
 
   useEffect(() => {
     setIsMobileNavOpen(false);
@@ -59,70 +61,77 @@ function App() {
     };
   }, []);
 
-  const shortcutDefinitions = useMemo<ShortcutDefinition[]>(() => [
-    {
-      keyCombo: 'W / A / S / D',
-      description: t('footer.shortcuts.actions.panBoard'),
-      controlLabel: t('footer.shortcuts.controls.panControls'),
-      contexts: ['play-edit', 'play-run'],
-    },
-    {
-      keyCombo: 'Q / E',
-      description: t('footer.shortcuts.actions.zoomBoard'),
-      controlLabel: t('footer.shortcuts.controls.zoomControls'),
-      contexts: ['play-edit', 'play-run'],
-    },
-    {
-      keyCombo: 'R',
-      description: t('footer.shortcuts.actions.centerView'),
-      controlLabel: t('footer.shortcuts.controls.centerView'),
-      contexts: ['play-edit', 'play-run'],
-    },
-    {
-      keyCombo: 'Space',
-      description: t('footer.shortcuts.actions.toggleSimulation'),
-      controlLabel: t('footer.shortcuts.controls.startPause'),
-      contexts: ['play-run'],
-    },
-    {
-      keyCombo: 'X / Shift+= / Numpad +',
-      description: t('footer.shortcuts.actions.increaseSpeed'),
-      controlLabel: t('footer.shortcuts.controls.increaseSpeed'),
-      contexts: ['play-run'],
-    },
-    {
-      keyCombo: 'Z / - / Numpad -',
-      description: t('footer.shortcuts.actions.decreaseSpeed'),
-      controlLabel: t('footer.shortcuts.controls.decreaseSpeed'),
-      contexts: ['play-run'],
-    },
-  ], [t]);
+  const shortcutDefinitions = useMemo<ShortcutDefinition[]>(
+    () => [
+      {
+        keyCombo: 'W / A / S / D',
+        description: t('footer.shortcuts.actions.panBoard'),
+        controlLabel: t('footer.shortcuts.controls.panControls'),
+        contexts: ['play-edit', 'play-run'],
+      },
+      {
+        keyCombo: 'Q / E',
+        description: t('footer.shortcuts.actions.zoomBoard'),
+        controlLabel: t('footer.shortcuts.controls.zoomControls'),
+        contexts: ['play-edit', 'play-run'],
+      },
+      {
+        keyCombo: 'R',
+        description: t('footer.shortcuts.actions.centerView'),
+        controlLabel: t('footer.shortcuts.controls.centerView'),
+        contexts: ['play-edit', 'play-run'],
+      },
+      {
+        keyCombo: 'Space',
+        description: t('footer.shortcuts.actions.toggleSimulation'),
+        controlLabel: t('footer.shortcuts.controls.startPause'),
+        contexts: ['play-run'],
+      },
+      {
+        keyCombo: 'X / Shift+= / Numpad +',
+        description: t('footer.shortcuts.actions.increaseSpeed'),
+        controlLabel: t('footer.shortcuts.controls.increaseSpeed'),
+        contexts: ['play-run'],
+      },
+      {
+        keyCombo: 'Z / - / Numpad -',
+        description: t('footer.shortcuts.actions.decreaseSpeed'),
+        controlLabel: t('footer.shortcuts.controls.decreaseSpeed'),
+        contexts: ['play-run'],
+      },
+    ],
+    [t],
+  );
 
-  const activeShortcutContext: ShortcutContext | null = location.pathname === '/play'
-    ? (playMode === 'edit' ? 'play-edit' : 'play-run')
-    : null;
+  const activeShortcutContext: ShortcutContext | null =
+    location.pathname === '/play' ? (playMode === 'edit' ? 'play-edit' : 'play-run') : null;
 
   const availableNow = activeShortcutContext
     ? shortcutDefinitions.filter((entry) => entry.contexts.includes(activeShortcutContext))
     : [];
-  const playEditShortcuts = shortcutDefinitions.filter((entry) => entry.contexts.includes('play-edit'));
-  const playRunShortcuts = shortcutDefinitions.filter((entry) => entry.contexts.includes('play-run'));
+  const playEditShortcuts = shortcutDefinitions.filter((entry) =>
+    entry.contexts.includes('play-edit'),
+  );
+  const playRunShortcuts = shortcutDefinitions.filter((entry) =>
+    entry.contexts.includes('play-run'),
+  );
 
-  const currentContextLabel = location.pathname === '/play'
-    ? playMode === 'edit'
-      ? t('footer.shortcuts.contextPlayEdit')
-      : t('footer.shortcuts.contextPlayRun')
-    : location.pathname === '/play/select'
-      ? t('footer.shortcuts.contextPlaySelect')
-      : location.pathname === '/explore'
-        ? t('footer.shortcuts.contextExplore')
-        : location.pathname === '/about'
-          ? t('footer.shortcuts.contextAbout')
-          : location.pathname === '/profile'
-            ? t('footer.shortcuts.contextProfile')
-            : location.pathname === '/settings'
-              ? t('footer.shortcuts.contextSettings')
-              : t('footer.shortcuts.contextLanding');
+  const currentContextLabel =
+    location.pathname === '/play'
+      ? playMode === 'edit'
+        ? t('footer.shortcuts.contextPlayEdit')
+        : t('footer.shortcuts.contextPlayRun')
+      : location.pathname === '/play/select'
+        ? t('footer.shortcuts.contextPlaySelect')
+        : location.pathname === '/explore'
+          ? t('footer.shortcuts.contextExplore')
+          : location.pathname === '/about'
+            ? t('footer.shortcuts.contextAbout')
+            : location.pathname === '/profile'
+              ? t('footer.shortcuts.contextProfile')
+              : location.pathname === '/settings'
+                ? t('footer.shortcuts.contextSettings')
+                : t('footer.shortcuts.contextLanding');
 
   function closeShortcutsModal() {
     setIsShortcutsModalOpen(false);
@@ -133,7 +142,14 @@ function App() {
       <header className="docs-topbar">
         <div className="docs-topbar-inner">
           <Link className="docs-topbar-brand" to="/" aria-label={t('nav.home')}>
-            <img src={`${import.meta.env.BASE_URL}gol-mark.svg`} alt="" aria-hidden="true" className="docs-topbar-brand-icon" width="28" height="28" />
+            <img
+              src={`${import.meta.env.BASE_URL}gol-mark.svg`}
+              alt=""
+              aria-hidden="true"
+              className="docs-topbar-brand-icon"
+              width="28"
+              height="28"
+            />
             <span className="docs-topbar-brand-title-wrap">
               <h1>{t('app.title')}</h1>
               <span className="wm-badge wm-badge-neutral docs-topbar-alpha-badge">Alpha</span>
@@ -144,78 +160,104 @@ function App() {
             className={`docs-topbar-nav wm-app-nav-nowrap${isMobileNavOpen ? ' is-mobile-open' : ''}`}
             aria-label="Primary navigation"
           >
-          <NavLink
-            to="/play/select"
-            className={({ isActive }) => `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`}
-            aria-label={t('nav.play')}
-            onClick={() => setIsMobileNavOpen(false)}
-          >
-            {t('nav.play')}
-          </NavLink>
-          <NavLink
-            to="/explore"
-            className={({ isActive }) => `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`}
-            aria-label={t('nav.explore')}
-            onClick={() => setIsMobileNavOpen(false)}
-          >
-            {t('nav.explore')}
-          </NavLink>
-          <NavLink
-            to="/about"
-            className={({ isActive }) => `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`}
-            aria-label={t('nav.about')}
-            onClick={() => setIsMobileNavOpen(false)}
-          >
-            {t('nav.about')}
-          </NavLink>
-        </nav>
-        <div className="docs-topbar-actions">
-          <button
-            className="docs-topbar-mobile-nav-toggle"
-            type="button"
-            aria-controls="primary-navigation"
-            aria-expanded={isMobileNavOpen}
-            aria-label={isMobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}
-            title={isMobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}
-            onClick={() => setIsMobileNavOpen((isOpen) => !isOpen)}
-          >
-            {isMobileNavOpen ? <X size={16} aria-hidden="true" /> : <Menu size={16} aria-hidden="true" />}
-            <span>{isMobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}</span>
-          </button>
-          <details className="header-user-menu">
-            <summary className="header-user-menu-trigger" aria-label={t('nav.userMenu')} title={t('nav.userMenu')}>
-              <CircleUserRound size={16} aria-hidden="true" />
-              <span>{t('nav.user')}</span>
-              <ChevronDown size={14} aria-hidden="true" />
-            </summary>
-            <div className="header-user-menu-panel" role="menu" aria-label={t('nav.userMenu')}>
-              <NavLink
-                to="/profile"
-                className="header-user-menu-item"
-                role="menuitem"
-                onClick={(event) => (event.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open')}
+            <NavLink
+              to="/play/select"
+              className={({ isActive }) =>
+                `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`
+              }
+              aria-label={t('nav.play')}
+              onClick={() => setIsMobileNavOpen(false)}
+            >
+              {t('nav.play')}
+            </NavLink>
+            <NavLink
+              to="/explore"
+              className={({ isActive }) =>
+                `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`
+              }
+              aria-label={t('nav.explore')}
+              onClick={() => setIsMobileNavOpen(false)}
+            >
+              {t('nav.explore')}
+            </NavLink>
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                `docs-topbar-link-devdocs${isActive ? ' is-active' : ''}`
+              }
+              aria-label={t('nav.about')}
+              onClick={() => setIsMobileNavOpen(false)}
+            >
+              {t('nav.about')}
+            </NavLink>
+          </nav>
+          <div className="docs-topbar-actions">
+            <button
+              className="docs-topbar-mobile-nav-toggle"
+              type="button"
+              aria-controls="primary-navigation"
+              aria-expanded={isMobileNavOpen}
+              aria-label={isMobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+              title={isMobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}
+              onClick={() => setIsMobileNavOpen((isOpen) => !isOpen)}
+            >
+              {isMobileNavOpen ? (
+                <X size={16} aria-hidden="true" />
+              ) : (
+                <Menu size={16} aria-hidden="true" />
+              )}
+              <span>{isMobileNavOpen ? t('nav.closeMenu') : t('nav.openMenu')}</span>
+            </button>
+            <details className="header-user-menu">
+              <summary
+                className="header-user-menu-trigger"
+                aria-label={t('nav.userMenu')}
+                title={t('nav.userMenu')}
               >
-                {t('nav.profile')}
-              </NavLink>
-              <NavLink
-                to="/settings"
-                className="header-user-menu-item"
-                role="menuitem"
-                onClick={(event) => (event.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open')}
-              >
-                {t('nav.settings')}
-              </NavLink>
-              <NavLink
-                to="/sign-out"
-                className="header-user-menu-item"
-                role="menuitem"
-                onClick={(event) => (event.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open')}
-              >
-                {t('nav.signOut')}
-              </NavLink>
-            </div>
-          </details>
-        </div>
+                <CircleUserRound size={16} aria-hidden="true" />
+                <span>{t('nav.user')}</span>
+                <ChevronDown size={14} aria-hidden="true" />
+              </summary>
+              <div className="header-user-menu-panel" role="menu" aria-label={t('nav.userMenu')}>
+                <NavLink
+                  to="/profile"
+                  className="header-user-menu-item"
+                  role="menuitem"
+                  onClick={(event) =>
+                    (
+                      event.currentTarget.closest('details') as HTMLDetailsElement | null
+                    )?.removeAttribute('open')
+                  }
+                >
+                  {t('nav.profile')}
+                </NavLink>
+                <NavLink
+                  to="/settings"
+                  className="header-user-menu-item"
+                  role="menuitem"
+                  onClick={(event) =>
+                    (
+                      event.currentTarget.closest('details') as HTMLDetailsElement | null
+                    )?.removeAttribute('open')
+                  }
+                >
+                  {t('nav.settings')}
+                </NavLink>
+                <NavLink
+                  to="/sign-out"
+                  className="header-user-menu-item"
+                  role="menuitem"
+                  onClick={(event) =>
+                    (
+                      event.currentTarget.closest('details') as HTMLDetailsElement | null
+                    )?.removeAttribute('open')
+                  }
+                >
+                  {t('nav.signOut')}
+                </NavLink>
+              </div>
+            </details>
+          </div>
         </div>
       </header>
       <main className="app-main">
@@ -250,8 +292,20 @@ function App() {
                     />
                   </svg>
                 </a>
-                <a href="https://github.com/wintermuted/game-of-life" target="_blank" rel="noopener noreferrer">{t('footer.sourceLink')}</a>
-                <a href="https://github.com/wintermuted/game-of-life/releases/latest" target="_blank" rel="noopener noreferrer">{t('footer.releaseLink')}</a>
+                <a
+                  href="https://github.com/wintermuted/game-of-life"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('footer.sourceLink')}
+                </a>
+                <a
+                  href="https://github.com/wintermuted/game-of-life/releases/latest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('footer.releaseLink')}
+                </a>
               </span>
               <button
                 className="site-footer-shortcuts-btn"
@@ -288,7 +342,9 @@ function App() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="wm-modal-header">
-              <h3 id="keyboard-shortcuts-title" className="wm-modal-title">{t('footer.shortcuts.title')}</h3>
+              <h3 id="keyboard-shortcuts-title" className="wm-modal-title">
+                {t('footer.shortcuts.title')}
+              </h3>
             </div>
             <div className="wm-modal-body shortcuts-modal-body">
               <p className="shortcuts-context-line">
@@ -301,12 +357,19 @@ function App() {
                 {availableNow.length > 0 ? (
                   <ul className="shortcuts-list">
                     {availableNow.map((shortcut) => (
-                      <li key={`available-${shortcut.keyCombo}-${shortcut.description}`} className="shortcuts-list-item">
+                      <li
+                        key={`available-${shortcut.keyCombo}-${shortcut.description}`}
+                        className="shortcuts-list-item"
+                      >
                         <kbd>{shortcut.keyCombo}</kbd>
                         <span className="shortcuts-item-copy">
                           <span>{shortcut.description}</span>
                           {shortcut.controlLabel ? (
-                            <span className="shortcuts-item-control">{t('footer.shortcuts.controlPrefix', { control: shortcut.controlLabel })}</span>
+                            <span className="shortcuts-item-control">
+                              {t('footer.shortcuts.controlPrefix', {
+                                control: shortcut.controlLabel,
+                              })}
+                            </span>
                           ) : null}
                         </span>
                       </li>
@@ -320,19 +383,32 @@ function App() {
               <section className="shortcuts-section">
                 <h4 className="shortcuts-section-title">{t('footer.shortcuts.allShortcuts')}</h4>
                 <div className="shortcuts-context-grid">
-                  <article className={`shortcuts-context-card${activeShortcutContext === 'play-edit' ? ' is-current' : ''}`}>
+                  <article
+                    className={`shortcuts-context-card${activeShortcutContext === 'play-edit' ? ' is-current' : ''}`}
+                  >
                     <header className="shortcuts-context-card-header">
                       <span>{t('footer.shortcuts.contextPlayEdit')}</span>
-                      {activeShortcutContext === 'play-edit' ? <span className="shortcuts-current-badge">{t('footer.shortcuts.currentBadge')}</span> : null}
+                      {activeShortcutContext === 'play-edit' ? (
+                        <span className="shortcuts-current-badge">
+                          {t('footer.shortcuts.currentBadge')}
+                        </span>
+                      ) : null}
                     </header>
                     <ul className="shortcuts-list">
                       {playEditShortcuts.map((shortcut) => (
-                        <li key={`edit-${shortcut.keyCombo}-${shortcut.description}`} className="shortcuts-list-item">
+                        <li
+                          key={`edit-${shortcut.keyCombo}-${shortcut.description}`}
+                          className="shortcuts-list-item"
+                        >
                           <kbd>{shortcut.keyCombo}</kbd>
                           <span className="shortcuts-item-copy">
                             <span>{shortcut.description}</span>
                             {shortcut.controlLabel ? (
-                              <span className="shortcuts-item-control">{t('footer.shortcuts.controlPrefix', { control: shortcut.controlLabel })}</span>
+                              <span className="shortcuts-item-control">
+                                {t('footer.shortcuts.controlPrefix', {
+                                  control: shortcut.controlLabel,
+                                })}
+                              </span>
                             ) : null}
                           </span>
                         </li>
@@ -340,19 +416,32 @@ function App() {
                     </ul>
                   </article>
 
-                  <article className={`shortcuts-context-card${activeShortcutContext === 'play-run' ? ' is-current' : ''}`}>
+                  <article
+                    className={`shortcuts-context-card${activeShortcutContext === 'play-run' ? ' is-current' : ''}`}
+                  >
                     <header className="shortcuts-context-card-header">
                       <span>{t('footer.shortcuts.contextPlayRun')}</span>
-                      {activeShortcutContext === 'play-run' ? <span className="shortcuts-current-badge">{t('footer.shortcuts.currentBadge')}</span> : null}
+                      {activeShortcutContext === 'play-run' ? (
+                        <span className="shortcuts-current-badge">
+                          {t('footer.shortcuts.currentBadge')}
+                        </span>
+                      ) : null}
                     </header>
                     <ul className="shortcuts-list">
                       {playRunShortcuts.map((shortcut) => (
-                        <li key={`play-${shortcut.keyCombo}-${shortcut.description}`} className="shortcuts-list-item">
+                        <li
+                          key={`play-${shortcut.keyCombo}-${shortcut.description}`}
+                          className="shortcuts-list-item"
+                        >
                           <kbd>{shortcut.keyCombo}</kbd>
                           <span className="shortcuts-item-copy">
                             <span>{shortcut.description}</span>
                             {shortcut.controlLabel ? (
-                              <span className="shortcuts-item-control">{t('footer.shortcuts.controlPrefix', { control: shortcut.controlLabel })}</span>
+                              <span className="shortcuts-item-control">
+                                {t('footer.shortcuts.controlPrefix', {
+                                  control: shortcut.controlLabel,
+                                })}
+                              </span>
                             ) : null}
                           </span>
                         </li>

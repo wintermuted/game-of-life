@@ -37,7 +37,11 @@ function PlayStart() {
             </span>
           </h2>
           <p>{t('playStart.emptyDescription')}</p>
-          <button className="btn btn-sm btn-secondary-neutral" type="button" onClick={handleCreateEmptyBoard}>
+          <button
+            className="btn btn-sm btn-secondary-neutral"
+            type="button"
+            onClick={handleCreateEmptyBoard}
+          >
             {t('playStart.emptyAction')}
           </button>
         </article>
@@ -50,7 +54,11 @@ function PlayStart() {
             </span>
           </h2>
           <p>{t('playStart.randomDescription')}</p>
-          <button className="btn btn-sm btn-secondary-neutral" type="button" onClick={handleCreateRandomBoard}>
+          <button
+            className="btn btn-sm btn-secondary-neutral"
+            type="button"
+            onClick={handleCreateRandomBoard}
+          >
             {t('playStart.randomAction')}
           </button>
         </article>

@@ -8,7 +8,7 @@ interface ThemeProviderWrapperProps {
 export function ThemeProviderWrapper({ children }: ThemeProviderWrapperProps): React.ReactElement {
   const [mode, setMode] = useState<ThemeMode>(() => {
     const savedMode = localStorage.getItem('themeMode');
-    return (savedMode === 'dark' || savedMode === 'light') ? savedMode : 'light';
+    return savedMode === 'dark' || savedMode === 'light' ? savedMode : 'light';
   });
 
   const toggleTheme = () => {

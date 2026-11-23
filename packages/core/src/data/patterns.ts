@@ -22,96 +22,96 @@ export const patterns: Pattern[] = [
   {
     name: 'Block',
     category: 'Still Life',
-    grid: block
+    grid: block,
   },
   {
     name: 'Beehive',
     category: 'Still Life',
-    grid: beehive
+    grid: beehive,
   },
   {
     name: 'Tub',
     category: 'Still Life',
-    grid: tub
+    grid: tub,
   },
   {
     name: 'Boat',
     category: 'Still Life',
-    grid: boat
+    grid: boat,
   },
   {
     name: 'Loaf',
     category: 'Still Life',
-    grid: loaf
+    grid: loaf,
   },
   {
     name: 'Pond',
     category: 'Still Life',
-    grid: pond
+    grid: pond,
   },
   // Oscillators
   {
     name: 'Blinker',
     category: 'Oscillator',
-    grid: blinker
+    grid: blinker,
   },
   {
     name: 'Beacon',
     category: 'Oscillator',
-    grid: beacon
+    grid: beacon,
   },
   {
     name: 'Toad',
     category: 'Oscillator',
-    grid: toad
+    grid: toad,
   },
   {
     name: 'Pulsar',
     category: 'Oscillator',
-    grid: pulsar
+    grid: pulsar,
   },
   {
     name: 'Pentadecathlon',
     category: 'Oscillator',
-    grid: pentadecathlon
+    grid: pentadecathlon,
   },
   // Spaceships
   {
     name: 'Glider',
     category: 'Spaceship',
-    grid: glider
+    grid: glider,
   },
   {
     name: 'LWSS',
     category: 'Spaceship',
-    grid: lwss
+    grid: lwss,
   },
   // Guns
   {
     name: 'Gosper Glider Gun',
     category: 'Gun',
-    grid: gosperGliderGun
+    grid: gosperGliderGun,
   },
   {
     name: 'Simkin Glider Gun',
     category: 'Gun',
-    grid: simkinGliderGun
+    grid: simkinGliderGun,
   },
   // Methuselahs
   {
     name: 'R-Pentomino',
     category: 'Methuselah',
-    grid: rPentomino
+    grid: rPentomino,
   },
   {
     name: 'Diehard',
     category: 'Methuselah',
-    grid: diehard
+    grid: diehard,
   },
   {
     name: 'Acorn',
     category: 'Methuselah',
-    grid: acorn
+    grid: acorn,
   },
   // Replicators
   {
@@ -119,7 +119,7 @@ export const patterns: Pattern[] = [
     category: 'Replicator',
     grid: highLifeReplicator,
     rulesetId: 'highlife',
-    tags: ['period-12', 'diagonal']
+    tags: ['period-12', 'diagonal'],
   },
   {
     name: 'Day & Night Seed',
@@ -127,8 +127,9 @@ export const patterns: Pattern[] = [
     grid: dayAndNightSeed,
     rulesetId: 'day-and-night',
     tags: ['self-complementary'],
-    description: 'A compact seed for Day & Night, a self-complementary Life-like cellular automaton using B3678/S34678.',
-    referenceUrl: 'https://en.wikipedia.org/wiki/Day_and_Night_(cellular_automaton)'
+    description:
+      'A compact seed for Day & Night, a self-complementary Life-like cellular automaton using B3678/S34678.',
+    referenceUrl: 'https://en.wikipedia.org/wiki/Day_and_Night_(cellular_automaton)',
   },
   {
     name: 'Life without Death Ladder',
@@ -136,7 +137,8 @@ export const patterns: Pattern[] = [
     grid: lifeWithoutDeathSeed,
     rulesetId: 'life-without-death',
     tags: ['growth'],
-    description: 'A published 4c/9 ladder that grows continuously under Life without Death (B3/S012345678).',
-    referenceUrl: 'https://en.wikipedia.org/wiki/Life_without_Death'
-  }
+    description:
+      'A published 4c/9 ladder that grows continuously under Life without Death (B3/S012345678).',
+    referenceUrl: 'https://en.wikipedia.org/wiki/Life_without_Death',
+  },
 ];

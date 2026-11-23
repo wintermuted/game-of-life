@@ -14,7 +14,7 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+        "command": "npm run lint",
         "cwd": "packages/ui-controls"
       }
     }

@@ -8,7 +8,7 @@ describe('LanguageSwitcher', () => {
     render(
       <I18nextProvider i18n={i18n}>
         <LanguageSwitcher />
-      </I18nextProvider>
+      </I18nextProvider>,
     );
     expect(screen.getByRole('combobox', { name: /change language/i })).toBeInTheDocument();
   });
@@ -17,7 +17,7 @@ describe('LanguageSwitcher', () => {
     render(
       <I18nextProvider i18n={i18n}>
         <LanguageSwitcher />
-      </I18nextProvider>
+      </I18nextProvider>,
     );
 
     expect(screen.getByText('English')).toBeInTheDocument();
@@ -28,7 +28,7 @@ describe('LanguageSwitcher', () => {
     render(
       <I18nextProvider i18n={i18n}>
         <LanguageSwitcher />
-      </I18nextProvider>
+      </I18nextProvider>,
     );
 
     const languageSelect = screen.getByRole('combobox', { name: /change language/i });

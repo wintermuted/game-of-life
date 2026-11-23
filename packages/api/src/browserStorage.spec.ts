@@ -29,26 +29,30 @@ describe('browser-backed API', () => {
 
   test('reads existing saved-board records and legacy grid hashes without changing storage', () => {
     const hash = btoa(JSON.stringify({ '0,0': true, '1,0': '#ff0000' }));
-    const records = [{
-      hash,
-      title: ' Legacy board ',
-      tags: [' old ', 'old'],
-      updatedAt: 123,
-    }];
+    const records = [
+      {
+        hash,
+        title: ' Legacy board ',
+        tags: [' old ', 'old'],
+        updatedAt: 123,
+      },
+    ];
     const serialized = JSON.stringify(records);
     window.localStorage.setItem('gol.storage.savedBoards', serialized);
 
-    expect(getSavedBoards()).toStrictEqual([{
-      ...records[0],
-      title: 'Legacy board',
-      boardId: hash,
-      category: undefined,
-      description: undefined,
-      tags: ['old'],
-      visibility: 'private',
-      rules: undefined,
-      rulesLocked: true,
-    }]);
+    expect(getSavedBoards()).toStrictEqual([
+      {
+        ...records[0],
+        title: 'Legacy board',
+        boardId: hash,
+        category: undefined,
+        description: undefined,
+        tags: ['old'],
+        visibility: 'private',
+        rules: undefined,
+        rulesLocked: true,
+      },
+    ]);
     expect(hashToGrid(hash)).toStrictEqual(createLifeGrid({ '0,0': true, '1,0': '#ff0000' }));
     expect(window.localStorage.getItem('gol.storage.savedBoards')).toBe(serialized);
   });
@@ -57,7 +61,17 @@ describe('browser-backed API', () => {
     const originalHash = encodeGridToBase64(createLifeGrid({ '0,0': '#ff0000' }));
     const editedGrid = createLifeGrid({ '1,0': '#00ff00' });
     const editedHash = encodeGridToBase64(editedGrid);
-    upsertSavedBoard(originalHash, 'Original', 'board-1', 'Custom', 'Description', 'public', ['test'], DEFAULT_RULES, false);
+    upsertSavedBoard(
+      originalHash,
+      'Original',
+      'board-1',
+      'Custom',
+      'Description',
+      'public',
+      ['test'],
+      DEFAULT_RULES,
+      false,
+    );
     upsertSavedBoard(editedHash, ' Edited ', 'board-1');
 
     const records = getSavedBoards();
@@ -87,8 +101,13 @@ describe('browser-backed API', () => {
     ensureSeededSocialData([{ hash, title: 'Board', source: 'user' }]);
 
     const keys = [
-      'savedTemplateNames', 'savedBoards', 'recentBoards',
-      'favoriteBoards', 'forkOrigins', 'profileUser', 'socialSeed.v1',
+      'savedTemplateNames',
+      'savedBoards',
+      'recentBoards',
+      'favoriteBoards',
+      'forkOrigins',
+      'profileUser',
+      'socialSeed.v1',
     ].map((suffix) => `gol.storage.${suffix}`);
     const originalRecords = keys.map((key) => window.localStorage.getItem(key));
 
@@ -103,7 +122,9 @@ describe('browser-backed API', () => {
 
     window.sessionStorage.setItem('themeMode', 'dark');
     clearActiveBrowserStorageData();
-    expect(keys.map((key) => window.sessionStorage.getItem(key))).toStrictEqual(keys.map(() => null));
+    expect(keys.map((key) => window.sessionStorage.getItem(key))).toStrictEqual(
+      keys.map(() => null),
+    );
     expect(window.sessionStorage.getItem('themeMode')).toBe('dark');
     expect(getSavedBoards()).toStrictEqual([]);
     expect(keys.map((key) => window.localStorage.getItem(key))).toStrictEqual(originalRecords);
