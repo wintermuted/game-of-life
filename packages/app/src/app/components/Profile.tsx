@@ -39,6 +39,41 @@ interface FallbackBoard {
   source: 'system' | 'user';
 }
 
+const creatorProfileMap: Record<string, StoredProfileUser> = {
+  system: {
+    name: 'System Library',
+    email: 'system@example.com',
+    memberSince: 'January 1970',
+    timezone: 'UTC',
+    favoritePalette: 'Classic Green',
+    avatarInitials: 'SY',
+  },
+  'james-nyeholt': {
+    name: 'James Nyeholt',
+    email: 'james@example.com',
+    memberSince: 'April 2026',
+    timezone: 'America/Los_Angeles',
+    favoritePalette: 'Classic Green',
+    avatarInitials: 'JN',
+  },
+  'anika-shah': {
+    name: 'Anika Shah',
+    email: 'anika@example.com',
+    memberSince: 'May 2026',
+    timezone: 'America/New_York',
+    favoritePalette: 'Ocean Blue',
+    avatarInitials: 'AS',
+  },
+  'leo-martinez': {
+    name: 'Leo Martinez',
+    email: 'leo@example.com',
+    memberSince: 'June 2026',
+    timezone: 'America/Chicago',
+    favoritePalette: 'Solar Ember',
+    avatarInitials: 'LM',
+  },
+};
+
 function Profile() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -46,41 +81,6 @@ function Profile() {
   const [sectionViewMode, setSectionViewMode] = useState<'cards' | 'table'>('cards');
   const [favoriteRefreshToken, setFavoriteRefreshToken] = useState(0);
   const [profileFeedbackMessage, setProfileFeedbackMessage] = useState('');
-
-  const creatorProfileMap: Record<string, StoredProfileUser> = {
-    system: {
-      name: 'System Library',
-      email: 'system@example.com',
-      memberSince: 'January 1970',
-      timezone: 'UTC',
-      favoritePalette: 'Classic Green',
-      avatarInitials: 'SY',
-    },
-    'james-nyeholt': {
-      name: 'James Nyeholt',
-      email: 'james@example.com',
-      memberSince: 'April 2026',
-      timezone: 'America/Los_Angeles',
-      favoritePalette: 'Classic Green',
-      avatarInitials: 'JN',
-    },
-    'anika-shah': {
-      name: 'Anika Shah',
-      email: 'anika@example.com',
-      memberSince: 'May 2026',
-      timezone: 'America/New_York',
-      favoritePalette: 'Ocean Blue',
-      avatarInitials: 'AS',
-    },
-    'leo-martinez': {
-      name: 'Leo Martinez',
-      email: 'leo@example.com',
-      memberSince: 'June 2026',
-      timezone: 'America/Chicago',
-      favoritePalette: 'Solar Ember',
-      avatarInitials: 'LM',
-    },
-  };
 
   const defaultRecentBoards: FallbackBoard[] = [
     {

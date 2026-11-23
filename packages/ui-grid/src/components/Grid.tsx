@@ -216,9 +216,7 @@ function Grid({
   const { mode } = useThemeMode();
   const { t } = useTranslation();
 
-  if (!game) return null;
-
-  const gameStatus = game.getStatus ? game.getStatus() : {};
+  const gameStatus = game.getStatus();
   const birthDeathPreviewGrid = showBirthDeathPreview
     ? calculateNextGeneration(gameStatus, rules)
     : null;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DEFAULT_LIVE_CELL_COLOR, LifeGrid } from '@game-of-life/core';
 import { translateGridToViewport } from '@game-of-life/util';
 import { getCellFillColor } from '../util/cellColor';
@@ -204,22 +204,25 @@ function CanvasGrid({
   const calculatedGridRows = Math.max(2, Math.floor(canvasHeight / cellStride));
   const centerReferenceGridSize = Math.min(calculatedGridColumns, calculatedGridRows);
 
-  function getCanvasPositionFromCoordinate(coordinate: string) {
-    const [xString, yString] = coordinate.split(',');
-    const x = Number(xString);
-    const y = Number(yString);
+  const getCanvasPositionFromCoordinate = useCallback(
+    (coordinate: string) => {
+      const [xString, yString] = coordinate.split(',');
+      const x = Number(xString);
+      const y = Number(yString);
 
-    if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      return null;
-    }
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        return null;
+      }
 
-    const halfCols = Math.floor(calculatedGridColumns / 2);
-    const halfRows = Math.floor(calculatedGridRows / 2);
-    const canvasRowIndex = x + halfCols - offsetX;
-    const canvasColumnIndex = halfRows - 1 - y - offsetY;
+      const halfCols = Math.floor(calculatedGridColumns / 2);
+      const halfRows = Math.floor(calculatedGridRows / 2);
+      const canvasRowIndex = x + halfCols - offsetX;
+      const canvasColumnIndex = halfRows - 1 - y - offsetY;
 
-    return { canvasRowIndex, canvasColumnIndex };
-  }
+      return { canvasRowIndex, canvasColumnIndex };
+    },
+    [calculatedGridColumns, calculatedGridRows, offsetX, offsetY],
+  );
 
   function getHoveredCellFromPointer(
     event: React.MouseEvent<HTMLCanvasElement>,
@@ -273,46 +276,47 @@ function CanvasGrid({
     }
   }
 
-  function getStampPreviewCanvasCells(
-    nextHoveredCell: HoveredCell,
-  ): Array<{ rowIndex: number; columnIndex: number }> {
-    if (!stampPattern) return [];
+  const getStampPreviewCanvasCells = useCallback(
+    (nextHoveredCell: HoveredCell): Array<{ rowIndex: number; columnIndex: number }> => {
+      if (!stampPattern) return [];
 
-    const target = parseCoordinateKey(nextHoveredCell.coordinate);
-    const bounds = getGridBounds(stampPattern);
-    if (!target || !bounds) return [];
+      const target = parseCoordinateKey(nextHoveredCell.coordinate);
+      const bounds = getGridBounds(stampPattern);
+      if (!target || !bounds) return [];
 
-    const halfCols = Math.floor(calculatedGridColumns / 2);
-    const halfRows = Math.floor(calculatedGridRows / 2);
-    const anchorX = Math.floor((bounds.minX + bounds.maxX) / 2);
-    const anchorY = Math.floor((bounds.minY + bounds.maxY) / 2);
-    const deltaX = target.x - anchorX;
-    const deltaY = target.y - anchorY;
-    const stampCells: Array<{ rowIndex: number; columnIndex: number }> = [];
+      const halfCols = Math.floor(calculatedGridColumns / 2);
+      const halfRows = Math.floor(calculatedGridRows / 2);
+      const anchorX = Math.floor((bounds.minX + bounds.maxX) / 2);
+      const anchorY = Math.floor((bounds.minY + bounds.maxY) / 2);
+      const deltaX = target.x - anchorX;
+      const deltaY = target.y - anchorY;
+      const stampCells: Array<{ rowIndex: number; columnIndex: number }> = [];
 
-    for (const coordinate of Object.keys(stampPattern)) {
-      const parsed = parseCoordinateKey(coordinate);
-      if (!parsed) continue;
+      for (const coordinate of Object.keys(stampPattern)) {
+        const parsed = parseCoordinateKey(coordinate);
+        if (!parsed) continue;
 
-      const worldX = parsed.x + deltaX;
-      const worldY = parsed.y + deltaY;
-      const rowIndex = worldX + halfCols - offsetX;
-      const columnIndex = halfRows - 1 - worldY - offsetY;
+        const worldX = parsed.x + deltaX;
+        const worldY = parsed.y + deltaY;
+        const rowIndex = worldX + halfCols - offsetX;
+        const columnIndex = halfRows - 1 - worldY - offsetY;
 
-      if (
-        rowIndex < 0 ||
-        columnIndex < 0 ||
-        rowIndex >= calculatedGridColumns ||
-        columnIndex >= calculatedGridRows
-      ) {
-        continue;
+        if (
+          rowIndex < 0 ||
+          columnIndex < 0 ||
+          rowIndex >= calculatedGridColumns ||
+          columnIndex >= calculatedGridRows
+        ) {
+          continue;
+        }
+
+        stampCells.push({ rowIndex, columnIndex });
       }
 
-      stampCells.push({ rowIndex, columnIndex });
-    }
-
-    return stampCells;
-  }
+      return stampCells;
+    },
+    [stampPattern, calculatedGridColumns, calculatedGridRows, offsetX, offsetY],
+  );
 
   useEffect(() => {
     const handleWindowMouseUp = () => {
@@ -564,6 +568,11 @@ function CanvasGrid({
     stampPattern,
     activeDrawColor,
     birthDeathPreviewGrid,
+    selectionGrid,
+    selectionStartCoordinate,
+    selectionEndCoordinate,
+    getCanvasPositionFromCoordinate,
+    getStampPreviewCanvasCells,
   ]);
 
   const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {

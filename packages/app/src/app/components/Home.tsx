@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ChevronDown,
@@ -1054,11 +1054,7 @@ function Home() {
     }
   }, [boardNeedsInitialization, currentPattern, rules]);
 
-  useEffect(() => {
-    if (!currentBoardId) {
-      return;
-    }
-
+  const applySavedBoardRules = useEffectEvent(() => {
     const nextRules = savedBoardForRoute?.rules
       ? cloneGameRules(savedBoardForRoute.rules)
       : cloneGameRules(DEFAULT_RULES);
@@ -1068,6 +1064,14 @@ function Home() {
     if (game.setRules) {
       game.setRules(nextRules);
     }
+  });
+
+  useEffect(() => {
+    if (!currentBoardId) {
+      return;
+    }
+
+    applySavedBoardRules();
   }, [currentBoardId, savedBoardForRoute?.updatedAt]);
 
   useEffect(() => {
@@ -1076,6 +1080,10 @@ function Home() {
       setBoardStateOverlay(null);
     }
   }, [boardNeedsInitialization]);
+
+  const stopGameFromEffect = useEffectEvent(() => {
+    stopGame(true);
+  });
 
   useEffect(() => {
     if (!isGameRunning || isEditMode) {
@@ -1100,7 +1108,7 @@ function Home() {
 
     if (stats.liveCells === 0) {
       if (isGameRunning) {
-        stopGame(true);
+        stopGameFromEffect();
       }
       if (boardStateOverlay !== 'gameOver') {
         setBoardStateOverlay('gameOver');
@@ -1110,13 +1118,20 @@ function Home() {
 
     if (tracker.streak >= STABILITY_GENERATION_THRESHOLD && isStabilityOverlayEnabled) {
       if (isGameRunning) {
-        stopGame(true);
+        stopGameFromEffect();
       }
       if (boardStateOverlay !== 'stability') {
         setBoardStateOverlay('stability');
       }
     }
-  }, [generation, stats.liveCells, isGameRunning, boardStateOverlay, isStabilityOverlayEnabled]);
+  }, [
+    generation,
+    stats.liveCells,
+    isGameRunning,
+    isEditMode,
+    boardStateOverlay,
+    isStabilityOverlayEnabled,
+  ]);
 
   function runGameInterval(speed = generationSpeed) {
     intervalID = setInterval(() => {
@@ -1605,7 +1620,7 @@ function Home() {
 
     if (stats.liveCells === 0) {
       if (isGameRunning) {
-        stopGame(true);
+        stopGameFromEffect();
       }
       if (!suppressBoardStateOverlayRef.current && boardStateOverlay !== 'gameOver') {
         setBoardStateOverlay('gameOver');
@@ -1615,7 +1630,7 @@ function Home() {
 
     if (tracker.streak >= STABILITY_GENERATION_THRESHOLD && isStabilityOverlayEnabled) {
       if (isGameRunning) {
-        stopGame(true);
+        stopGameFromEffect();
       }
       if (!suppressBoardStateOverlayRef.current && boardStateOverlay === null) {
         setBoardStateOverlay('stability');
@@ -1683,116 +1698,108 @@ function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.repeat) return;
-      if (isInteractiveKeyboardTarget(event.target)) return;
+  const handleKeyboardShortcut = useEffectEvent((event: KeyboardEvent) => {
+    if (event.repeat) return;
+    if (isInteractiveKeyboardTarget(event.target)) return;
 
-      if (event.code === 'Space') {
-        event.preventDefault();
-        if (isEditMode) {
-          enterPlayMode();
-          return;
-        }
-
-        toggleGame();
-        return;
-      }
-
-      if (event.key.toLowerCase() === 'm') {
-        event.preventDefault();
-        if (isEditMode) {
-          enterPlayMode();
-        } else {
-          enterEditMode();
-        }
-        return;
-      }
-
-      const isIncreaseKey =
-        event.code === 'NumpadAdd' ||
-        (event.code === 'Equal' && event.shiftKey) ||
-        event.key.toLowerCase() === 'x';
-      const isDecreaseKey =
-        event.code === 'Minus' ||
-        event.code === 'NumpadSubtract' ||
-        event.key.toLowerCase() === 'z';
-
-      if (isEditMode && activeEditTool === 'stamp' && stampPattern) {
-        const key = event.key.toLowerCase();
-
-        if (event.key === ']') {
-          event.preventDefault();
-          rotateStampPattern();
-          setRotateStampKeyPressToken((previous) => previous + 1);
-          setSnackbarMessage(
-            t('messages.stampRotationUpdated', {
-              degrees: rotateStampRotationClockwise(stampRotation),
-            }),
-          );
-          setSnackbarOpen(true);
-          return;
-        }
-
-        if (event.key === '[') {
-          event.preventDefault();
-          rotateStampPatternCounterClockwise();
-          setRotateStampKeyPressToken((previous) => previous + 1);
-          setSnackbarMessage(
-            t('messages.stampRotationUpdated', {
-              degrees: rotateStampRotationCounterClockwise(stampRotation),
-            }),
-          );
-          setSnackbarOpen(true);
-          return;
-        }
-
-        if (key === 'r') {
-          event.preventDefault();
-          rotateStampPattern();
-          setRotateStampKeyPressToken((previous) => previous + 1);
-          setSnackbarMessage(
-            t('messages.stampRotationUpdated', {
-              degrees: rotateStampRotationClockwise(stampRotation),
-            }),
-          );
-          setSnackbarOpen(true);
-          return;
-        }
-      }
-
-      if (!isIncreaseKey && !isDecreaseKey) return;
-
+    if (event.code === 'Space') {
       event.preventDefault();
       if (isEditMode) {
-        setSnackbarMessage(t('messages.enterPlayModeToRun'));
+        enterPlayMode();
+        return;
+      }
+
+      toggleGame();
+      return;
+    }
+
+    if (event.key.toLowerCase() === 'm') {
+      event.preventDefault();
+      if (isEditMode) {
+        enterPlayMode();
+      } else {
+        enterEditMode();
+      }
+      return;
+    }
+
+    const isIncreaseKey =
+      event.code === 'NumpadAdd' ||
+      (event.code === 'Equal' && event.shiftKey) ||
+      event.key.toLowerCase() === 'x';
+    const isDecreaseKey =
+      event.code === 'Minus' || event.code === 'NumpadSubtract' || event.key.toLowerCase() === 'z';
+
+    if (isEditMode && activeEditTool === 'stamp' && stampPattern) {
+      const key = event.key.toLowerCase();
+
+      if (event.key === ']') {
+        event.preventDefault();
+        rotateStampPattern();
+        setRotateStampKeyPressToken((previous) => previous + 1);
+        setSnackbarMessage(
+          t('messages.stampRotationUpdated', {
+            degrees: rotateStampRotationClockwise(stampRotation),
+          }),
+        );
         setSnackbarOpen(true);
         return;
       }
 
-      const nextSpeed = clampGenerationSpeed(generationSpeed + (isIncreaseKey ? 1 : -1));
-      if (nextSpeed === generationSpeed) return;
+      if (event.key === '[') {
+        event.preventDefault();
+        rotateStampPatternCounterClockwise();
+        setRotateStampKeyPressToken((previous) => previous + 1);
+        setSnackbarMessage(
+          t('messages.stampRotationUpdated', {
+            degrees: rotateStampRotationCounterClockwise(stampRotation),
+          }),
+        );
+        setSnackbarOpen(true);
+        return;
+      }
 
-      updateGenerationSpeed(nextSpeed);
-      setSnackbarMessage(t('messages.generationSpeedChanged', { level: nextSpeed }));
+      if (key === 'r') {
+        event.preventDefault();
+        rotateStampPattern();
+        setRotateStampKeyPressToken((previous) => previous + 1);
+        setSnackbarMessage(
+          t('messages.stampRotationUpdated', {
+            degrees: rotateStampRotationClockwise(stampRotation),
+          }),
+        );
+        setSnackbarOpen(true);
+        return;
+      }
+    }
+
+    if (!isIncreaseKey && !isDecreaseKey) return;
+
+    event.preventDefault();
+    if (isEditMode) {
+      setSnackbarMessage(t('messages.enterPlayModeToRun'));
       setSnackbarOpen(true);
-    };
+      return;
+    }
 
+    const nextSpeed = clampGenerationSpeed(generationSpeed + (isIncreaseKey ? 1 : -1));
+    if (nextSpeed === generationSpeed) return;
+
+    updateGenerationSpeed(nextSpeed);
+    setSnackbarMessage(t('messages.generationSpeedChanged', { level: nextSpeed }));
+    setSnackbarOpen(true);
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      handleKeyboardShortcut(event);
+    };
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [
-    activeEditTool,
-    generationSpeed,
-    isEditMode,
-    isGameRunning,
-    isSystemPattern,
-    stampPattern,
-    stampRotation,
-    t,
-  ]);
+  }, []);
 
   function scheduleMaximizedControlsHide() {
     if (maximizeControlsHideTimer.current) clearTimeout(maximizeControlsHideTimer.current);

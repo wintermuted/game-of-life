@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowDown,
@@ -223,6 +223,24 @@ function detectPersistedRuleset(rules?: GameRules): string | undefined {
   return matchingRuleset?.id ?? CUSTOM_RULESET_ID;
 }
 
+function getPatternHash(patternGrid: LifeGrid): string {
+  return encodeGridToBase64(patternGrid);
+}
+
+function getPatternAuthorKey(pattern: ExplorePattern): string {
+  if (pattern.source === 'system') {
+    return SYSTEM_AUTHOR_KEY;
+  }
+
+  const authorName = pattern.creatorName?.trim();
+  return authorName && authorName.length > 0 ? authorName : UNKNOWN_USER_AUTHOR_KEY;
+}
+
+function getPatternRulesetId(pattern: ExplorePattern): string {
+  if (pattern.rulesetId) return pattern.rulesetId;
+  return pattern.source === 'system' ? 'standard' : CUSTOM_RULESET_ID;
+}
+
 function Explore() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -349,6 +367,71 @@ function Explore() {
     setPatternMetrics(buildPatternMetrics(allPatterns));
   }, [allPatterns, currentProfileName]);
 
+  const getAuthorLabel = useCallback(
+    (authorKey: string): string => {
+      if (authorKey === SYSTEM_AUTHOR_KEY) {
+        return t('patternSource.system');
+      }
+
+      if (authorKey === UNKNOWN_USER_AUTHOR_KEY) {
+        return t('patternSource.user');
+      }
+
+      return authorKey;
+    },
+    [t],
+  );
+
+  const getRulesetLabel = useCallback(
+    (rulesetId: string): string => {
+      if (rulesetId === CUSTOM_RULESET_ID) return t('explore.rulesetCustom');
+      if (rulesetId === 'standard') return t('diagnostics.rulesetStandardOption');
+      if (rulesetId === 'highlife') return t('diagnostics.rulesetHighlifeOption');
+      const ruleset = RULESETS.find((candidate) => candidate.id === rulesetId);
+      return ruleset ? `${ruleset.name} (${ruleset.classification})` : rulesetId;
+    },
+    [t],
+  );
+
+  const getPatternTags = useCallback(
+    (pattern: ExplorePattern): string[] => {
+      const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const sourceLabel =
+        pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
+      const visibilityLabel =
+        pattern.visibility === 'private'
+          ? t('playground.visibilityPrivate')
+          : t('playground.visibilityPublic');
+      const rulesetId = getPatternRulesetId(pattern);
+      const excludedValues = new Set(
+        [
+          pattern.category,
+          sourceLabel,
+          visibilityLabel,
+          pattern.creatorName ?? '',
+          rulesetId,
+          getRulesetLabel(rulesetId),
+        ]
+          .map(normalize)
+          .filter(Boolean),
+      );
+      const seenTags = new Set<string>();
+
+      return (pattern.tags ?? [])
+        .filter((tag) => {
+          const normalizedTag = normalize(tag.trim());
+          if (!normalizedTag || excludedValues.has(normalizedTag) || seenTags.has(normalizedTag)) {
+            return false;
+          }
+
+          seenTags.add(normalizedTag);
+          return true;
+        })
+        .slice(0, 3);
+    },
+    [getRulesetLabel, t],
+  );
+
   const categoryOptions = useMemo(() => {
     return ['all', ...Array.from(new Set(allPatterns.map((pattern) => pattern.category)))];
   }, [allPatterns]);
@@ -375,7 +458,7 @@ function Explore() {
       'all',
       ...Array.from(new Set(allPatterns.flatMap((pattern) => getPatternTags(pattern)))),
     ],
-    [allPatterns, t],
+    [allPatterns, getPatternTags],
   );
 
   const parsedQueryState = useMemo(() => {
@@ -450,53 +533,28 @@ function Explore() {
   useEffect(() => {
     isApplyingQueryState.current = true;
 
-    if (searchQuery !== parsedQueryState.search) {
-      setSearchQuery(parsedQueryState.search);
-    }
-
-    if (!setsMatch(selectedCategories, parsedQueryState.categories)) {
-      setSelectedCategories(new Set(parsedQueryState.categories));
-    }
-
-    if (selectedSource !== parsedQueryState.source) {
-      setSelectedSource(parsedQueryState.source);
-    }
-
-    if (!setsMatch(selectedAuthors, parsedQueryState.authors)) {
-      setSelectedAuthors(new Set(parsedQueryState.authors));
-    }
-
-    if (!setsMatch(selectedRulesets, parsedQueryState.rulesets)) {
-      setSelectedRulesets(new Set(parsedQueryState.rulesets));
-    }
-
-    if (!setsMatch(selectedTags, parsedQueryState.tags)) {
-      setSelectedTags(new Set(parsedQueryState.tags));
-    }
-
-    if (favoritesOnly !== parsedQueryState.favoritesOnly) {
-      setFavoritesOnly(parsedQueryState.favoritesOnly);
-    }
-
-    if (forkedOnly !== parsedQueryState.forkedOnly) {
-      setForkedOnly(parsedQueryState.forkedOnly);
-    }
-
-    if (sortField !== parsedQueryState.sortField) {
-      setSortField(parsedQueryState.sortField);
-    }
-
-    if (sortDirection !== parsedQueryState.sortDirection) {
-      setSortDirection(parsedQueryState.sortDirection);
-    }
-
-    if (groupMode !== parsedQueryState.groupMode) {
-      setGroupMode(parsedQueryState.groupMode);
-    }
-
-    if (viewMode !== parsedQueryState.viewMode) {
-      setViewMode(parsedQueryState.viewMode);
-    }
+    setSearchQuery(parsedQueryState.search);
+    setSelectedCategories((current) =>
+      setsMatch(current, parsedQueryState.categories)
+        ? current
+        : new Set(parsedQueryState.categories),
+    );
+    setSelectedSource(parsedQueryState.source);
+    setSelectedAuthors((current) =>
+      setsMatch(current, parsedQueryState.authors) ? current : new Set(parsedQueryState.authors),
+    );
+    setSelectedRulesets((current) =>
+      setsMatch(current, parsedQueryState.rulesets) ? current : new Set(parsedQueryState.rulesets),
+    );
+    setSelectedTags((current) =>
+      setsMatch(current, parsedQueryState.tags) ? current : new Set(parsedQueryState.tags),
+    );
+    setFavoritesOnly(parsedQueryState.favoritesOnly);
+    setForkedOnly(parsedQueryState.forkedOnly);
+    setSortField(parsedQueryState.sortField);
+    setSortDirection(parsedQueryState.sortDirection);
+    setGroupMode(parsedQueryState.groupMode);
+    setViewMode(parsedQueryState.viewMode);
   }, [parsedQueryState]);
 
   useEffect(() => {
@@ -620,30 +678,38 @@ function Explore() {
     viewMode,
   ]);
 
-  function patternMatchesSearch(pattern: ExplorePattern, normalizedQuery: string): boolean {
-    if (!normalizedQuery) return true;
+  const patternMatchesSearch = useCallback(
+    (pattern: ExplorePattern, normalizedQuery: string): boolean => {
+      if (!normalizedQuery) return true;
 
-    const sourceLabel =
-      pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
-    const visibilityLabel =
-      pattern.visibility === 'private'
-        ? t('playground.visibilityPrivate')
-        : t('playground.visibilityPublic');
-    const searchableValues = [
-      pattern.name,
-      pattern.category,
-      getRulesetLabel(getPatternRulesetId(pattern)),
-      sourceLabel,
-      visibilityLabel,
-      ...(pattern.tags ?? []),
-    ];
+      const sourceLabel =
+        pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
+      const visibilityLabel =
+        pattern.visibility === 'private'
+          ? t('playground.visibilityPrivate')
+          : t('playground.visibilityPublic');
+      const searchableValues = [
+        pattern.name,
+        pattern.category,
+        getRulesetLabel(getPatternRulesetId(pattern)),
+        sourceLabel,
+        visibilityLabel,
+        ...(pattern.tags ?? []),
+      ];
 
-    return searchableValues.some((value) => value.toLowerCase().includes(normalizedQuery));
-  }
+      return searchableValues.some((value) => value.toLowerCase().includes(normalizedQuery));
+    },
+    [getRulesetLabel, t],
+  );
 
-  function patternMatchesSelectedTags(pattern: ExplorePattern): boolean {
-    return selectedTags.size === 0 || getPatternTags(pattern).some((tag) => selectedTags.has(tag));
-  }
+  const patternMatchesSelectedTags = useCallback(
+    (pattern: ExplorePattern): boolean => {
+      return (
+        selectedTags.size === 0 || getPatternTags(pattern).some((tag) => selectedTags.has(tag))
+      );
+    },
+    [getPatternTags, selectedTags],
+  );
 
   const filteredPatterns = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -721,12 +787,13 @@ function Explore() {
     favoriteHashes,
     favoritesOnly,
     patternMetrics,
+    patternMatchesSearch,
+    patternMatchesSelectedTags,
     searchQuery,
     selectedAuthors,
     selectedCategories,
     selectedRulesets,
     selectedSource,
-    selectedTags,
     sortDirection,
     sortField,
     t,
@@ -760,11 +827,12 @@ function Explore() {
     browsablePatterns,
     favoriteHashes,
     favoritesOnly,
+    patternMatchesSearch,
+    patternMatchesSelectedTags,
     searchQuery,
     selectedAuthors,
     selectedRulesets,
     selectedSource,
-    selectedTags,
   ]);
 
   const categoryCounts = useMemo(() => {
@@ -807,11 +875,12 @@ function Explore() {
     browsablePatterns,
     favoriteHashes,
     favoritesOnly,
+    patternMatchesSearch,
+    patternMatchesSelectedTags,
     searchQuery,
     selectedCategories,
     selectedRulesets,
     selectedSource,
-    selectedTags,
   ]);
 
   const authorCounts = useMemo(() => {
@@ -843,12 +912,12 @@ function Explore() {
     browsablePatterns,
     favoriteHashes,
     favoritesOnly,
+    patternMatchesSearch,
+    patternMatchesSelectedTags,
     searchQuery,
     selectedAuthors,
     selectedCategories,
     selectedSource,
-    selectedTags,
-    t,
   ]);
 
   const rulesetCounts = useMemo(() => {
@@ -877,12 +946,12 @@ function Explore() {
     browsablePatterns,
     favoriteHashes,
     favoritesOnly,
+    patternMatchesSearch,
     searchQuery,
     selectedAuthors,
     selectedCategories,
     selectedRulesets,
     selectedSource,
-    t,
   ]);
 
   const tagCounts = useMemo(() => {
@@ -893,7 +962,7 @@ function Explore() {
       }
     }
     return next;
-  }, [tagCountBase, t]);
+  }, [tagCountBase, getPatternTags]);
 
   const sortedCategoryOptions = useMemo(
     () =>
@@ -919,13 +988,13 @@ function Explore() {
         authorCounts,
         (author) => getAuthorLabel(author),
       ),
-    [authorCounts, authorOptions, t],
+    [authorCounts, authorOptions, getAuthorLabel],
   );
 
   const sortedRulesetOptions = useMemo(
     () =>
       sortByCountThenLabel(rulesetOptions, rulesetCounts, (ruleset) => getRulesetLabel(ruleset)),
-    [rulesetCounts, rulesetOptions, t],
+    [rulesetCounts, rulesetOptions, getRulesetLabel],
   );
 
   const sortedTagOptions = useMemo(
@@ -989,7 +1058,7 @@ function Explore() {
     }
 
     return Array.from(grouped.entries());
-  }, [filteredPatterns, groupMode, t]);
+  }, [filteredPatterns, groupMode, getRulesetLabel, getAuthorLabel, t]);
 
   const groupOptions: { value: GroupMode; label: string; icon: typeof FolderTree }[] = [
     { value: 'none', label: t('explore.groupNone'), icon: Rows3 },
@@ -1082,10 +1151,6 @@ function Explore() {
     };
   }, [toastOpen]);
 
-  function getPatternHash(patternGrid: LifeGrid): string {
-    return encodeGridToBase64(patternGrid);
-  }
-
   function getPatternPlayUrl(pattern: ExplorePattern): string {
     const params = new URLSearchParams({ pattern: getPatternHash(pattern.grid) });
     if (pattern.boardId) {
@@ -1122,76 +1187,6 @@ function Explore() {
 
     setSortField(nextField);
     setSortDirection('desc');
-  }
-
-  function getPatternAuthorKey(pattern: ExplorePattern): string {
-    if (pattern.source === 'system') {
-      return SYSTEM_AUTHOR_KEY;
-    }
-
-    const authorName = pattern.creatorName?.trim();
-    return authorName && authorName.length > 0 ? authorName : UNKNOWN_USER_AUTHOR_KEY;
-  }
-
-  function getAuthorLabel(authorKey: string): string {
-    if (authorKey === SYSTEM_AUTHOR_KEY) {
-      return t('patternSource.system');
-    }
-
-    if (authorKey === UNKNOWN_USER_AUTHOR_KEY) {
-      return t('patternSource.user');
-    }
-
-    return authorKey;
-  }
-
-  function getPatternRulesetId(pattern: ExplorePattern): string {
-    if (pattern.rulesetId) return pattern.rulesetId;
-    return pattern.source === 'system' ? 'standard' : CUSTOM_RULESET_ID;
-  }
-
-  function getRulesetLabel(rulesetId: string): string {
-    if (rulesetId === CUSTOM_RULESET_ID) return t('explore.rulesetCustom');
-    if (rulesetId === 'standard') return t('diagnostics.rulesetStandardOption');
-    if (rulesetId === 'highlife') return t('diagnostics.rulesetHighlifeOption');
-    const ruleset = RULESETS.find((candidate) => candidate.id === rulesetId);
-    return ruleset ? `${ruleset.name} (${ruleset.classification})` : rulesetId;
-  }
-
-  function getPatternTags(pattern: ExplorePattern): string[] {
-    const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const sourceLabel =
-      pattern.source === 'system' ? t('patternSource.system') : t('patternSource.user');
-    const visibilityLabel =
-      pattern.visibility === 'private'
-        ? t('playground.visibilityPrivate')
-        : t('playground.visibilityPublic');
-    const rulesetId = getPatternRulesetId(pattern);
-    const excludedValues = new Set(
-      [
-        pattern.category,
-        sourceLabel,
-        visibilityLabel,
-        pattern.creatorName ?? '',
-        rulesetId,
-        getRulesetLabel(rulesetId),
-      ]
-        .map(normalize)
-        .filter(Boolean),
-    );
-    const seenTags = new Set<string>();
-
-    return (pattern.tags ?? [])
-      .filter((tag) => {
-        const normalizedTag = normalize(tag.trim());
-        if (!normalizedTag || excludedValues.has(normalizedTag) || seenTags.has(normalizedTag)) {
-          return false;
-        }
-
-        seenTags.add(normalizedTag);
-        return true;
-      })
-      .slice(0, 3);
   }
 
   function renderSourceBadge(pattern: ExplorePattern) {
