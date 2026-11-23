@@ -90,7 +90,10 @@ describe('ruleset definitions', () => {
       '0,1': true,
       '1,1': true,
     });
-    const surroundedNext = calculateNextGeneration(surroundedCell, LIFE_WITHOUT_DEATH_RULESET.rules);
+    const surroundedNext = calculateNextGeneration(
+      surroundedCell,
+      LIFE_WITHOUT_DEATH_RULESET.rules,
+    );
     expect(surroundedNext['0,0']).toBe('#22c55e');
   });
 
@@ -109,35 +112,35 @@ describe('ruleset definitions', () => {
 describe('calculateNextGeneration with custom rules', () => {
   test('disabling survival2 rule causes cells with 2 neighbors to die', () => {
     const grid = createLifeGrid({
-      "0,0": true,
-      "0,1": true,
-      "1,0": true
+      '0,0': true,
+      '0,1': true,
+      '1,0': true,
     });
 
     const customRules: GameRules = {
       ...DEFAULT_RULES,
-      survival2: { ...DEFAULT_RULES.survival2, enabled: false }
+      survival2: { ...DEFAULT_RULES.survival2, enabled: false },
     };
 
     const next = calculateNextGeneration(grid, customRules);
 
     // With survival2 disabled, cells with only 2 neighbors should die
     // Only the cell at 1,1 should be created (has 3 neighbors)
-    expect(next["1,1"]).toBe('#22c55e');
+    expect(next['1,1']).toBe('#22c55e');
     expect(Object.keys(next).length).toBe(1);
   });
 
   test('disabling survival3 rule causes cells with 3 neighbors to die', () => {
     const grid = createLifeGrid({
-      "0,0": true,
-      "0,1": true,
-      "1,0": true,
-      "1,1": true
+      '0,0': true,
+      '0,1': true,
+      '1,0': true,
+      '1,1': true,
     });
 
     const customRules: GameRules = {
       ...DEFAULT_RULES,
-      survival3: { ...DEFAULT_RULES.survival3, enabled: false }
+      survival3: { ...DEFAULT_RULES.survival3, enabled: false },
     };
 
     const next = calculateNextGeneration(grid, customRules);
@@ -151,32 +154,32 @@ describe('calculateNextGeneration with custom rules', () => {
 
   test('disabling birth3 rule prevents new cells from being born', () => {
     const grid = createLifeGrid({
-      "0,0": true,
-      "0,1": true,
-      "1,0": true
+      '0,0': true,
+      '0,1': true,
+      '1,0': true,
     });
 
     const customRules: GameRules = {
       ...DEFAULT_RULES,
-      birth3: { ...DEFAULT_RULES.birth3, enabled: false }
+      birth3: { ...DEFAULT_RULES.birth3, enabled: false },
     };
 
     const next = calculateNextGeneration(grid, customRules);
 
     // With birth3 disabled, no new cells should be born
     // All cells have 2 neighbors, so they survive
-    expect(next["0,0"]).toBe('#22c55e');
-    expect(next["0,1"]).toBe('#22c55e');
-    expect(next["1,0"]).toBe('#22c55e');
-    expect(next["1,1"]).toBeUndefined(); // This cell should not be born
+    expect(next['0,0']).toBe('#22c55e');
+    expect(next['0,1']).toBe('#22c55e');
+    expect(next['1,0']).toBe('#22c55e');
+    expect(next['1,1']).toBeUndefined(); // This cell should not be born
     expect(Object.keys(next).length).toBe(3);
   });
 
   test('disabling all rules results in empty grid', () => {
     const grid = createLifeGrid({
-      "0,0": true,
-      "0,1": true,
-      "1,0": true
+      '0,0': true,
+      '0,1': true,
+      '1,0': true,
     });
 
     const customRules: GameRules = {
@@ -184,10 +187,19 @@ describe('calculateNextGeneration with custom rules', () => {
       survival3: { ...DEFAULT_RULES.survival3, enabled: false },
       birth3: { ...DEFAULT_RULES.birth3, enabled: false },
       birth6: { ...DEFAULT_RULES.birth6, enabled: false },
-      experimentalSpeciesCompetitionBirth: { ...DEFAULT_RULES.experimentalSpeciesCompetitionBirth, enabled: false },
-      experimentalSpeciesCompetitionDominantBirth: { ...DEFAULT_RULES.experimentalSpeciesCompetitionDominantBirth, enabled: false },
-      experimentalSpeciesCompetitionTieBreakBirth: { ...DEFAULT_RULES.experimentalSpeciesCompetitionTieBreakBirth, enabled: false },
-      death: { ...DEFAULT_RULES.death, enabled: false }
+      experimentalSpeciesCompetitionBirth: {
+        ...DEFAULT_RULES.experimentalSpeciesCompetitionBirth,
+        enabled: false,
+      },
+      experimentalSpeciesCompetitionDominantBirth: {
+        ...DEFAULT_RULES.experimentalSpeciesCompetitionDominantBirth,
+        enabled: false,
+      },
+      experimentalSpeciesCompetitionTieBreakBirth: {
+        ...DEFAULT_RULES.experimentalSpeciesCompetitionTieBreakBirth,
+        enabled: false,
+      },
+      death: { ...DEFAULT_RULES.death, enabled: false },
     };
 
     const next = calculateNextGeneration(grid, customRules);
@@ -198,18 +210,18 @@ describe('calculateNextGeneration with custom rules', () => {
 
   test('default rules work as expected', () => {
     const grid = createLifeGrid({
-      "0,0": true,
-      "0,1": true,
-      "1,0": true
+      '0,0': true,
+      '0,1': true,
+      '1,0': true,
     });
 
     const next = calculateNextGeneration(grid, DEFAULT_RULES);
 
     // This should work like standard Conway's Game of Life
-    expect(next["0,0"]).toBe('#22c55e');
-    expect(next["0,1"]).toBe('#22c55e');
-    expect(next["1,0"]).toBe('#22c55e');
-    expect(next["1,1"]).toBe('#22c55e');
+    expect(next['0,0']).toBe('#22c55e');
+    expect(next['0,1']).toBe('#22c55e');
+    expect(next['1,0']).toBe('#22c55e');
+    expect(next['1,1']).toBe('#22c55e');
   });
 
   test('experimental species competition birth blocks evenly split mixed-species births', () => {

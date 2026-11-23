@@ -9,14 +9,18 @@ export default defineConfig({
     emptyOutDir: false,
     sourcemap: true,
     lib: {
-      entry: path.resolve(__dirname, 'src/index.ts'),
+      entry: path.resolve(import.meta.dirname, 'src/index.ts'),
       formats: ['es'],
       fileName: 'index',
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: [
-        /^react($|\/)/, /^react-dom($|\/)/, /^@game-of-life\//,
-        'react-i18next', 'i18next', 'lucide-react',
+        /^react($|\/)/,
+        /^react-dom($|\/)/,
+        /^@game-of-life\//,
+        'react-i18next',
+        'i18next',
+        'lucide-react',
       ],
     },
   },

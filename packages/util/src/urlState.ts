@@ -18,12 +18,12 @@ export function decodeBase64ToGrid(base64String: string): LifeGrid | null {
     // Use atob for base64 decoding in the browser
     const jsonString = atob(base64String);
     const grid = JSON.parse(jsonString);
-    
+
     // Validate that the decoded object is a valid LifeGrid
     if (typeof grid !== 'object' || grid === null) {
       return null;
     }
-    
+
     const seed: Record<string, boolean | string> = {};
 
     // Validate all keys are strings and all values are legacy booleans or color strings
@@ -34,7 +34,7 @@ export function decodeBase64ToGrid(base64String: string): LifeGrid | null {
 
       seed[key] = value;
     }
-    
+
     return createLifeGrid(seed);
   } catch (error) {
     console.error('Failed to decode grid from base64:', error);
@@ -48,11 +48,11 @@ export function decodeBase64ToGrid(base64String: string): LifeGrid | null {
 export function getGridFromURL(): LifeGrid | null {
   const params = new URLSearchParams(window.location.search);
   const patternParam = params.get('pattern');
-  
+
   if (!patternParam) {
     return null;
   }
-  
+
   return decodeBase64ToGrid(patternParam);
 }
 

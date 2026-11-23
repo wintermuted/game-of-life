@@ -5,5 +5,5 @@ throw new Error(
     '  npm run dev',
     '  npm run build',
     'or direct Vite from packages/app: npx -C packages/app vite',
-  ].join('\n')
+  ].join('\n'),
 );

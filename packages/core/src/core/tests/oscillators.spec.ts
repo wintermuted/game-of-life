@@ -1,6 +1,6 @@
-import { beacon, beaconA2, blinker2, toad, pulsar, pentadecathlon } from "../../data/oscillators";
-import gameOfLife from "../game";
-import { LifeGrid } from "../../interfaces";
+import { beacon, beaconA2, blinker2, toad, pulsar, pentadecathlon } from '../../data/oscillators';
+import gameOfLife from '../game';
+import { LifeGrid } from '../../interfaces';
 
 function toBooleanGrid(grid: LifeGrid): Record<string, true> {
   return Object.fromEntries(Object.keys(grid).map((coordinate) => [coordinate, true]));
@@ -13,30 +13,29 @@ describe('oscillators', () => {
     const gen3 = gameOfLife(gen2);
     const gen4 = gameOfLife(gen3);
 
-
     test('gen1', () => {
       expect(toBooleanGrid(gen1)).toStrictEqual({
-        "1,0": true,
-        "1,1": true,
-        "1,2": true,
-      })
-    })
+        '1,0': true,
+        '1,1': true,
+        '1,2': true,
+      });
+    });
 
-    test('gen2', () => {  
-      expect(toBooleanGrid(gen2)).toStrictEqual(toBooleanGrid(blinker2))
-    })
+    test('gen2', () => {
+      expect(toBooleanGrid(gen2)).toStrictEqual(toBooleanGrid(blinker2));
+    });
 
-    test('gen3', () => {  
+    test('gen3', () => {
       expect(toBooleanGrid(gen3)).toStrictEqual({
-        "1,0": true,
-        "1,1": true,
-        "1,2": true,
-      })
-    })
+        '1,0': true,
+        '1,1': true,
+        '1,2': true,
+      });
+    });
 
-    test('gen4', () => {  
-      expect(toBooleanGrid(gen4)).toStrictEqual(toBooleanGrid(blinker2))
-    })
+    test('gen4', () => {
+      expect(toBooleanGrid(gen4)).toStrictEqual(toBooleanGrid(blinker2));
+    });
   });
 
   describe('beacon', () => {
@@ -45,22 +44,21 @@ describe('oscillators', () => {
     const gen3 = gameOfLife(gen2);
     const gen4 = gameOfLife(gen3);
 
-
     test('gen1', () => {
-      expect(toBooleanGrid(gen1)).toStrictEqual(toBooleanGrid(beaconA2))
-    })
+      expect(toBooleanGrid(gen1)).toStrictEqual(toBooleanGrid(beaconA2));
+    });
 
-    test('gen2', () => {  
-      expect(toBooleanGrid(gen2)).toStrictEqual(toBooleanGrid(beacon))
-    })
+    test('gen2', () => {
+      expect(toBooleanGrid(gen2)).toStrictEqual(toBooleanGrid(beacon));
+    });
 
-    test('gen3', () => {  
-      expect(toBooleanGrid(gen3)).toStrictEqual(toBooleanGrid(beaconA2))
-    })
+    test('gen3', () => {
+      expect(toBooleanGrid(gen3)).toStrictEqual(toBooleanGrid(beaconA2));
+    });
 
-    test('gen4', () => {  
-      expect(toBooleanGrid(gen4)).toStrictEqual(toBooleanGrid(beacon))
-    })
+    test('gen4', () => {
+      expect(toBooleanGrid(gen4)).toStrictEqual(toBooleanGrid(beacon));
+    });
   });
 
   describe('toad', () => {
@@ -70,29 +68,29 @@ describe('oscillators', () => {
 
     test('gen1', () => {
       expect(toBooleanGrid(gen1)).toStrictEqual({
-        "0,0": true,
-        "0,1": true,
-        "1,2": true,
-        "2,-1": true,
-        "3,0": true,
-        "3,1": true
-      })
-    })
+        '0,0': true,
+        '0,1': true,
+        '1,2': true,
+        '2,-1': true,
+        '3,0': true,
+        '3,1': true,
+      });
+    });
 
-    test('gen2', () => {  
-      expect(toBooleanGrid(gen2)).toStrictEqual(toBooleanGrid(toad))
-    })
+    test('gen2', () => {
+      expect(toBooleanGrid(gen2)).toStrictEqual(toBooleanGrid(toad));
+    });
 
-    test('gen3', () => {  
+    test('gen3', () => {
       expect(toBooleanGrid(gen3)).toStrictEqual({
-        "0,0": true,
-        "0,1": true,
-        "1,2": true,
-        "2,-1": true,
-        "3,0": true,
-        "3,1": true
-      })
-    })
+        '0,0': true,
+        '0,1': true,
+        '1,2': true,
+        '2,-1': true,
+        '3,0': true,
+        '3,1': true,
+      });
+    });
   });
 
   describe('pulsar', () => {
@@ -102,28 +100,28 @@ describe('oscillators', () => {
     const gen4 = gameOfLife(gen3);
 
     test('oscillates with period 3 - gen3 returns to original', () => {
-      expect(toBooleanGrid(gen3)).toStrictEqual(toBooleanGrid(pulsar))
-    })
+      expect(toBooleanGrid(gen3)).toStrictEqual(toBooleanGrid(pulsar));
+    });
 
     test('gen1 is different from original', () => {
-      expect(gen1).not.toStrictEqual(pulsar)
-    })
+      expect(gen1).not.toStrictEqual(pulsar);
+    });
 
     test('gen2 is different from original', () => {
-      expect(gen2).not.toStrictEqual(pulsar)
-    })
+      expect(gen2).not.toStrictEqual(pulsar);
+    });
 
     test('gen4 returns to gen1', () => {
-      expect(gen4).toStrictEqual(gen1)
-    })
+      expect(gen4).toStrictEqual(gen1);
+    });
   });
 
   describe('pentadecathlon', () => {
     const gen1 = gameOfLife(pentadecathlon);
-    
+
     test('oscillates - gen1 is different from original', () => {
-      expect(gen1).not.toStrictEqual(pentadecathlon)
-    })
+      expect(gen1).not.toStrictEqual(pentadecathlon);
+    });
 
     test('remains alive after multiple generations', () => {
       let pattern: LifeGrid = pentadecathlon;
@@ -132,6 +130,6 @@ describe('oscillators', () => {
       }
       // Should still be alive
       expect(Object.keys(pattern).length).toBeGreaterThan(0);
-    })
+    });
   });
-})
+});

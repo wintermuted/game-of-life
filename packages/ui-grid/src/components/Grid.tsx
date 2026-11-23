@@ -1,5 +1,13 @@
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Game, getCellColor, isLiveCell, LifeGrid, GameRules, calculateNextGeneration, DEFAULT_RULES } from "@game-of-life/core";
+import {
+  Game,
+  getCellColor,
+  isLiveCell,
+  LifeGrid,
+  GameRules,
+  calculateNextGeneration,
+  DEFAULT_RULES,
+} from '@game-of-life/core';
 import '../styles/Grid.css';
 import CanvasGrid from './CanvasGrid';
 import { ColorPalette, useThemeMode } from '@game-of-life/ui';
@@ -127,13 +135,47 @@ function isInteractiveKeyboardTarget(target: EventTarget | null): boolean {
 }
 
 // Inline SVG icons for grid controls
-const IconUp = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15"/></svg>;
-const IconDown = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>;
-const IconLeft = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>;
-const IconRight = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>;
-const IconCenter = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>;
-const IconZoomIn = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>;
-const IconZoomOut = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>;
+const IconUp = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="18 15 12 9 6 15" />
+  </svg>
+);
+const IconDown = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+const IconLeft = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+const IconRight = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+const IconCenter = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+  </svg>
+);
+const IconZoomIn = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    <line x1="11" y1="8" x2="11" y2="14" />
+    <line x1="8" y1="11" x2="14" y2="11" />
+  </svg>
+);
+const IconZoomOut = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    <line x1="8" y1="11" x2="14" y2="11" />
+  </svg>
+);
 
 function Grid({
   game,
@@ -174,18 +216,21 @@ function Grid({
   const { mode } = useThemeMode();
   const { t } = useTranslation();
 
-  if (!game) return null;
+  const gameStatus = game.getStatus();
+  const birthDeathPreviewGrid = showBirthDeathPreview
+    ? calculateNextGeneration(gameStatus, rules)
+    : null;
 
-  const gameStatus = game.getStatus ? game.getStatus() : {};
-  const birthDeathPreviewGrid = showBirthDeathPreview ? calculateNextGeneration(gameStatus, rules) : null;
-
-  const handlePanUp = () => setOffsetY(prev => clampBoardOffset(prev - PAN_AMOUNT));
-  const handlePanDown = () => setOffsetY(prev => clampBoardOffset(prev + PAN_AMOUNT));
-  const handlePanLeft = () => setOffsetX(prev => clampBoardOffset(prev - PAN_AMOUNT));
-  const handlePanRight = () => setOffsetX(prev => clampBoardOffset(prev + PAN_AMOUNT));
-  const handleCenter = () => { setOffsetX(0); setOffsetY(0); };
-  const handleZoomIn = () => setCellSize(prev => Math.min(prev + ZOOM_STEP, MAX_CELL_SIZE));
-  const handleZoomOut = () => setCellSize(prev => Math.max(prev - ZOOM_STEP, MIN_CELL_SIZE));
+  const handlePanUp = () => setOffsetY((prev) => clampBoardOffset(prev - PAN_AMOUNT));
+  const handlePanDown = () => setOffsetY((prev) => clampBoardOffset(prev + PAN_AMOUNT));
+  const handlePanLeft = () => setOffsetX((prev) => clampBoardOffset(prev - PAN_AMOUNT));
+  const handlePanRight = () => setOffsetX((prev) => clampBoardOffset(prev + PAN_AMOUNT));
+  const handleCenter = () => {
+    setOffsetX(0);
+    setOffsetY(0);
+  };
+  const handleZoomIn = () => setCellSize((prev) => Math.min(prev + ZOOM_STEP, MAX_CELL_SIZE));
+  const handleZoomOut = () => setCellSize((prev) => Math.max(prev - ZOOM_STEP, MIN_CELL_SIZE));
   const panUpLabel = t('controls.panUp');
   const panLeftLabel = t('controls.panLeft');
   const centerViewLabel = t('controls.centerView');
@@ -208,8 +253,8 @@ function Grid({
 
     const halfCols = Math.floor(viewportMetrics.columns / 2);
     const halfRows = Math.floor(viewportMetrics.rows / 2);
-    const centerX = ((viewportMetrics.columns - 1) / 2) - halfCols + viewportMetrics.offsetX;
-    const centerY = (halfRows - 1) - ((viewportMetrics.rows - 1) / 2) - viewportMetrics.offsetY;
+    const centerX = (viewportMetrics.columns - 1) / 2 - halfCols + viewportMetrics.offsetX;
+    const centerY = halfRows - 1 - (viewportMetrics.rows - 1) / 2 - viewportMetrics.offsetY;
 
     return {
       x: Math.round(centerX),
@@ -269,14 +314,34 @@ function Grid({
     };
 
     const previousCenter = miniMapCenterRef.current;
-    let nextCenterX = applyFollowAxis(previousCenter.x, viewportCenterX, minHalfWidthFromViewport, viewportHalfWidth);
-    let nextCenterY = applyFollowAxis(previousCenter.y, viewportCenterY, minHalfHeightFromViewport, viewportHalfHeight);
+    let nextCenterX = applyFollowAxis(
+      previousCenter.x,
+      viewportCenterX,
+      minHalfWidthFromViewport,
+      viewportHalfWidth,
+    );
+    let nextCenterY = applyFollowAxis(
+      previousCenter.y,
+      viewportCenterY,
+      minHalfHeightFromViewport,
+      viewportHalfHeight,
+    );
 
     const minHalfWidthFromLiveRaw = liveBounds
-      ? Math.ceil(Math.max(Math.abs(liveBounds.minX - nextCenterX), Math.abs(liveBounds.maxX - nextCenterX)))
+      ? Math.ceil(
+          Math.max(
+            Math.abs(liveBounds.minX - nextCenterX),
+            Math.abs(liveBounds.maxX - nextCenterX),
+          ),
+        )
       : 0;
     const minHalfHeightFromLiveRaw = liveBounds
-      ? Math.ceil(Math.max(Math.abs(liveBounds.minY - nextCenterY), Math.abs(liveBounds.maxY - nextCenterY)))
+      ? Math.ceil(
+          Math.max(
+            Math.abs(liveBounds.minY - nextCenterY),
+            Math.abs(liveBounds.maxY - nextCenterY),
+          ),
+        )
       : 0;
 
     const minHalfWidthFromLive = Math.min(minHalfWidthFromLiveRaw, MINIMAP_MAX_HALF_WORLD);
@@ -286,7 +351,12 @@ function Grid({
     const halfWorldHeight = Math.max(minHalfHeightFromViewport, minHalfHeightFromLive) + 2;
 
     nextCenterX = applyFollowAxis(nextCenterX, viewportCenterX, halfWorldWidth, viewportHalfWidth);
-    nextCenterY = applyFollowAxis(nextCenterY, viewportCenterY, halfWorldHeight, viewportHalfHeight);
+    nextCenterY = applyFollowAxis(
+      nextCenterY,
+      viewportCenterY,
+      halfWorldHeight,
+      viewportHalfHeight,
+    );
     miniMapCenterRef.current = { x: nextCenterX, y: nextCenterY };
 
     const nextContentBounds: Bounds = {
@@ -306,31 +376,37 @@ function Grid({
 
     const worldWidth = Math.max(1, contentBounds.maxX - contentBounds.minX);
     const worldHeight = Math.max(1, contentBounds.maxY - contentBounds.minY);
-    const drawableSize = MINIMAP_SIZE - (MINIMAP_PADDING * 2);
+    const drawableSize = MINIMAP_SIZE - MINIMAP_PADDING * 2;
     const baseScale = Math.min(drawableSize / worldWidth, drawableSize / worldHeight);
     const scale = Math.max(0.0001, baseScale * MINIMAP_ZOOM_FACTOR);
     const scaledWorldWidth = worldWidth * scale;
     const scaledWorldHeight = worldHeight * scale;
-    const contentOffsetX = MINIMAP_PADDING + ((drawableSize - scaledWorldWidth) / 2);
-    const contentOffsetY = MINIMAP_PADDING + ((drawableSize - scaledWorldHeight) / 2);
+    const contentOffsetX = MINIMAP_PADDING + (drawableSize - scaledWorldWidth) / 2;
+    const contentOffsetY = MINIMAP_PADDING + (drawableSize - scaledWorldHeight) / 2;
 
     const worldToMiniMap = (x: number, y: number) => {
-      const miniX = contentOffsetX + ((x - contentBounds.minX) * scale);
-      const miniY = contentOffsetY + ((contentBounds.maxY - y) * scale);
+      const miniX = contentOffsetX + (x - contentBounds.minX) * scale;
+      const miniY = contentOffsetY + (contentBounds.maxY - y) * scale;
       return { miniX, miniY };
     };
 
     const cellPixelSize = Math.max(1, Math.floor(scale));
-    
+
     // Viewport outline: map the actual viewport bounds to minimap coordinates
     // This ensures the outline is positioned correctly even when panned away from center
     const halfViewportWidth = viewportMetrics.columns / 2;
     const halfViewportHeight = viewportMetrics.rows / 2;
-    
+
     // Map viewport corners to minimap
-    const viewportTopLeft = worldToMiniMap(viewportCenterX - halfViewportWidth, viewportCenterY + halfViewportHeight);
-    const viewportBottomRight = worldToMiniMap(viewportCenterX + halfViewportWidth, viewportCenterY - halfViewportHeight);
-    
+    const viewportTopLeft = worldToMiniMap(
+      viewportCenterX - halfViewportWidth,
+      viewportCenterY + halfViewportHeight,
+    );
+    const viewportBottomRight = worldToMiniMap(
+      viewportCenterX + halfViewportWidth,
+      viewportCenterY - halfViewportHeight,
+    );
+
     const viewportOutlineX = viewportTopLeft.miniX;
     const viewportOutlineY = viewportTopLeft.miniY;
     const outlineWidth = viewportBottomRight.miniX - viewportTopLeft.miniX;
@@ -373,34 +449,43 @@ function Grid({
     });
   }, []);
 
-  const centerViewportOnWorldCoordinate = useCallback((targetX: number, targetY: number) => {
-    if (!viewportMetrics) return;
+  const centerViewportOnWorldCoordinate = useCallback(
+    (targetX: number, targetY: number) => {
+      if (!viewportMetrics) return;
 
-    const halfCols = Math.floor(viewportMetrics.columns / 2);
-    const halfRows = Math.floor(viewportMetrics.rows / 2);
-    const nextOffsetX = Math.round(targetX + halfCols - ((viewportMetrics.columns - 1) / 2));
-    const nextOffsetY = Math.round((halfRows - 1) - ((viewportMetrics.rows - 1) / 2) - targetY);
+      const halfCols = Math.floor(viewportMetrics.columns / 2);
+      const halfRows = Math.floor(viewportMetrics.rows / 2);
+      const nextOffsetX = Math.round(targetX + halfCols - (viewportMetrics.columns - 1) / 2);
+      const nextOffsetY = Math.round(halfRows - 1 - (viewportMetrics.rows - 1) / 2 - targetY);
 
-    setOffsetX(clampBoardOffset(nextOffsetX));
-    setOffsetY(clampBoardOffset(nextOffsetY));
-  }, [viewportMetrics]);
+      setOffsetX(clampBoardOffset(nextOffsetX));
+      setOffsetY(clampBoardOffset(nextOffsetY));
+    },
+    [viewportMetrics],
+  );
 
-  const panViewportToWorldCoordinate = useCallback((targetX: number, targetY: number) => {
-    if (!viewportMetrics) return;
+  const panViewportToWorldCoordinate = useCallback(
+    (targetX: number, targetY: number) => {
+      if (!viewportMetrics) return;
 
-    const halfCols = Math.floor(viewportMetrics.columns / 2);
-    const halfRows = Math.floor(viewportMetrics.rows / 2);
+      const halfCols = Math.floor(viewportMetrics.columns / 2);
+      const halfRows = Math.floor(viewportMetrics.rows / 2);
 
-    const currentCenterX = ((viewportMetrics.columns - 1) / 2) - halfCols + viewportMetrics.offsetX;
-    const currentCenterY = (halfRows - 1) - ((viewportMetrics.rows - 1) / 2) - viewportMetrics.offsetY;
-    const blendedCenterX = currentCenterX + ((targetX - currentCenterX) * MINIMAP_PAN_SENSITIVITY);
-    const blendedCenterY = currentCenterY + ((targetY - currentCenterY) * MINIMAP_PAN_SENSITIVITY);
-    const nextOffsetX = Math.round(blendedCenterX + halfCols - ((viewportMetrics.columns - 1) / 2));
-    const nextOffsetY = Math.round((halfRows - 1) - ((viewportMetrics.rows - 1) / 2) - blendedCenterY);
+      const currentCenterX = (viewportMetrics.columns - 1) / 2 - halfCols + viewportMetrics.offsetX;
+      const currentCenterY =
+        halfRows - 1 - (viewportMetrics.rows - 1) / 2 - viewportMetrics.offsetY;
+      const blendedCenterX = currentCenterX + (targetX - currentCenterX) * MINIMAP_PAN_SENSITIVITY;
+      const blendedCenterY = currentCenterY + (targetY - currentCenterY) * MINIMAP_PAN_SENSITIVITY;
+      const nextOffsetX = Math.round(blendedCenterX + halfCols - (viewportMetrics.columns - 1) / 2);
+      const nextOffsetY = Math.round(
+        halfRows - 1 - (viewportMetrics.rows - 1) / 2 - blendedCenterY,
+      );
 
-    setOffsetX(clampBoardOffset(nextOffsetX));
-    setOffsetY(clampBoardOffset(nextOffsetY));
-  }, [viewportMetrics]);
+      setOffsetX(clampBoardOffset(nextOffsetX));
+      setOffsetY(clampBoardOffset(nextOffsetY));
+    },
+    [viewportMetrics],
+  );
 
   useEffect(() => {
     setOffsetX((previous) => clampBoardOffset(previous));
@@ -416,33 +501,50 @@ function Grid({
     centerViewportOnWorldCoordinate(parsed.x, parsed.y);
   }, [centerCoordinateRequest, centerViewportOnWorldCoordinate]);
 
-  const handleMiniMapPointer = useCallback((clientX: number, clientY: number, svg: SVGSVGElement) => {
-    if (!miniMapGeometry) return;
+  const handleMiniMapPointer = useCallback(
+    (clientX: number, clientY: number, svg: SVGSVGElement) => {
+      if (!miniMapGeometry) return;
 
-    const rect = svg.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return;
+      const rect = svg.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
 
-    const viewBoxX = ((clientX - rect.left) / rect.width) * MINIMAP_SIZE;
-    const viewBoxY = ((clientY - rect.top) / rect.height) * MINIMAP_SIZE;
-    const clampedX = Math.max(MINIMAP_PADDING, Math.min(MINIMAP_SIZE - MINIMAP_PADDING, viewBoxX));
-    const clampedY = Math.max(MINIMAP_PADDING, Math.min(MINIMAP_SIZE - MINIMAP_PADDING, viewBoxY));
-    const worldX = miniMapGeometry.contentBounds.minX + ((clampedX - MINIMAP_PADDING) / miniMapGeometry.scale);
-    const worldY = miniMapGeometry.contentBounds.maxY - ((clampedY - MINIMAP_PADDING) / miniMapGeometry.scale);
+      const viewBoxX = ((clientX - rect.left) / rect.width) * MINIMAP_SIZE;
+      const viewBoxY = ((clientY - rect.top) / rect.height) * MINIMAP_SIZE;
+      const clampedX = Math.max(
+        MINIMAP_PADDING,
+        Math.min(MINIMAP_SIZE - MINIMAP_PADDING, viewBoxX),
+      );
+      const clampedY = Math.max(
+        MINIMAP_PADDING,
+        Math.min(MINIMAP_SIZE - MINIMAP_PADDING, viewBoxY),
+      );
+      const worldX =
+        miniMapGeometry.contentBounds.minX + (clampedX - MINIMAP_PADDING) / miniMapGeometry.scale;
+      const worldY =
+        miniMapGeometry.contentBounds.maxY - (clampedY - MINIMAP_PADDING) / miniMapGeometry.scale;
 
-    panViewportToWorldCoordinate(worldX, worldY);
-  }, [miniMapGeometry, panViewportToWorldCoordinate]);
+      panViewportToWorldCoordinate(worldX, worldY);
+    },
+    [miniMapGeometry, panViewportToWorldCoordinate],
+  );
 
-  const handleMiniMapMouseDown = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    event.preventDefault();
-    isMiniMapPanningRef.current = true;
-    setIsMiniMapPanning(true);
-    handleMiniMapPointer(event.clientX, event.clientY, event.currentTarget);
-  }, [handleMiniMapPointer]);
+  const handleMiniMapMouseDown = useCallback(
+    (event: React.MouseEvent<SVGSVGElement>) => {
+      event.preventDefault();
+      isMiniMapPanningRef.current = true;
+      setIsMiniMapPanning(true);
+      handleMiniMapPointer(event.clientX, event.clientY, event.currentTarget);
+    },
+    [handleMiniMapPointer],
+  );
 
-  const handleMiniMapMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    if (!isMiniMapPanningRef.current || (event.buttons & 1) === 0) return;
-    handleMiniMapPointer(event.clientX, event.clientY, event.currentTarget);
-  }, [handleMiniMapPointer]);
+  const handleMiniMapMouseMove = useCallback(
+    (event: React.MouseEvent<SVGSVGElement>) => {
+      if (!isMiniMapPanningRef.current || (event.buttons & 1) === 0) return;
+      handleMiniMapPointer(event.clientX, event.clientY, event.currentTarget);
+    },
+    [handleMiniMapPointer],
+  );
 
   const handleMiniMapPanEnd = useCallback(() => {
     isMiniMapPanningRef.current = false;
@@ -499,11 +601,11 @@ function Grid({
   return (
     <div className="Grid">
       <div className="grid-stage" data-theme-mode={mode}>
-        <CanvasGrid 
-          grid={gameStatus} 
+        <CanvasGrid
+          grid={gameStatus}
           onHoverCoordinateChange={onHoverCoordinateChange}
           onContextCoordinateRequest={onContextCoordinateRequest}
-          gridSize={100} 
+          gridSize={100}
           cellSize={cellSize}
           offsetX={offsetX}
           offsetY={offsetY}
@@ -567,24 +669,34 @@ function Grid({
                   );
                 })}
                 {/* Grid origin lines (x=0 and y=0) */}
-                {miniMapGeometry.contentBounds.minX <= 0 && miniMapGeometry.contentBounds.maxX >= 0 && (
-                  <line
-                    x1={miniMapGeometry.worldToMiniMap(0, miniMapGeometry.contentBounds.minY).miniX}
-                    y1={MINIMAP_PADDING}
-                    x2={miniMapGeometry.worldToMiniMap(0, miniMapGeometry.contentBounds.minY).miniX}
-                    y2={MINIMAP_SIZE - MINIMAP_PADDING}
-                    className="grid-overlay-minimap-origin-line"
-                  />
-                )}
-                {miniMapGeometry.contentBounds.minY <= 0 && miniMapGeometry.contentBounds.maxY >= 0 && (
-                  <line
-                    x1={MINIMAP_PADDING}
-                    y1={miniMapGeometry.worldToMiniMap(miniMapGeometry.contentBounds.minX, 0).miniY}
-                    x2={MINIMAP_SIZE - MINIMAP_PADDING}
-                    y2={miniMapGeometry.worldToMiniMap(miniMapGeometry.contentBounds.minX, 0).miniY}
-                    className="grid-overlay-minimap-origin-line"
-                  />
-                )}
+                {miniMapGeometry.contentBounds.minX <= 0 &&
+                  miniMapGeometry.contentBounds.maxX >= 0 && (
+                    <line
+                      x1={
+                        miniMapGeometry.worldToMiniMap(0, miniMapGeometry.contentBounds.minY).miniX
+                      }
+                      y1={MINIMAP_PADDING}
+                      x2={
+                        miniMapGeometry.worldToMiniMap(0, miniMapGeometry.contentBounds.minY).miniX
+                      }
+                      y2={MINIMAP_SIZE - MINIMAP_PADDING}
+                      className="grid-overlay-minimap-origin-line"
+                    />
+                  )}
+                {miniMapGeometry.contentBounds.minY <= 0 &&
+                  miniMapGeometry.contentBounds.maxY >= 0 && (
+                    <line
+                      x1={MINIMAP_PADDING}
+                      y1={
+                        miniMapGeometry.worldToMiniMap(miniMapGeometry.contentBounds.minX, 0).miniY
+                      }
+                      x2={MINIMAP_SIZE - MINIMAP_PADDING}
+                      y2={
+                        miniMapGeometry.worldToMiniMap(miniMapGeometry.contentBounds.minX, 0).miniY
+                      }
+                      className="grid-overlay-minimap-origin-line"
+                    />
+                  )}
                 <rect
                   x={miniMapGeometry.viewportX}
                   y={miniMapGeometry.viewportY}
@@ -595,21 +707,69 @@ function Grid({
                 />
               </svg>
 
-              <span className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-up" data-tooltip={panUpLabel}>
-                <button className="grid-overlay-btn" aria-label={panUpLabel} onClick={handlePanUp} type="button"><IconUp /></button>
+              <span
+                className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-up"
+                data-tooltip={panUpLabel}
+              >
+                <button
+                  className="grid-overlay-btn"
+                  aria-label={panUpLabel}
+                  onClick={handlePanUp}
+                  type="button"
+                >
+                  <IconUp />
+                </button>
               </span>
-              <span className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-left" data-tooltip={panLeftLabel}>
-                <button className="grid-overlay-btn" aria-label={panLeftLabel} onClick={handlePanLeft} type="button"><IconLeft /></button>
+              <span
+                className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-left"
+                data-tooltip={panLeftLabel}
+              >
+                <button
+                  className="grid-overlay-btn"
+                  aria-label={panLeftLabel}
+                  onClick={handlePanLeft}
+                  type="button"
+                >
+                  <IconLeft />
+                </button>
               </span>
-              <span className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-right" data-tooltip={panRightLabel}>
-                <button className="grid-overlay-btn" aria-label={panRightLabel} onClick={handlePanRight} type="button"><IconRight /></button>
+              <span
+                className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-right"
+                data-tooltip={panRightLabel}
+              >
+                <button
+                  className="grid-overlay-btn"
+                  aria-label={panRightLabel}
+                  onClick={handlePanRight}
+                  type="button"
+                >
+                  <IconRight />
+                </button>
               </span>
-              <span className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-down" data-tooltip={panDownLabel}>
-                <button className="grid-overlay-btn" aria-label={panDownLabel} onClick={handlePanDown} type="button"><IconDown /></button>
+              <span
+                className="control-tooltip-trigger grid-overlay-minimap-pan-btn grid-overlay-minimap-pan-down"
+                data-tooltip={panDownLabel}
+              >
+                <button
+                  className="grid-overlay-btn"
+                  aria-label={panDownLabel}
+                  onClick={handlePanDown}
+                  type="button"
+                >
+                  <IconDown />
+                </button>
               </span>
             </div>
-            <div className="grid-overlay-minimap-zoom-row" role="group" aria-label="Minimap view controls">
-              <div className="grid-overlay-minimap-zoom-group" role="group" aria-label="Minimap zoom controls">
+            <div
+              className="grid-overlay-minimap-zoom-row"
+              role="group"
+              aria-label="Minimap view controls"
+            >
+              <div
+                className="grid-overlay-minimap-zoom-group"
+                role="group"
+                aria-label="Minimap zoom controls"
+              >
                 <span className="control-tooltip-trigger" data-tooltip={zoomOutLabel}>
                   <button
                     className="grid-overlay-btn"
@@ -621,7 +781,10 @@ function Grid({
                     <IconZoomOut />
                   </button>
                 </span>
-                <span className="grid-overlay-btn grid-overlay-btn-static grid-overlay-minimap-zoom-value" aria-live="polite">
+                <span
+                  className="grid-overlay-btn grid-overlay-btn-static grid-overlay-minimap-zoom-value"
+                  aria-live="polite"
+                >
                   {cellSize}
                 </span>
                 <span className="control-tooltip-trigger" data-tooltip={zoomInLabel}>
@@ -648,7 +811,10 @@ function Grid({
                   </button>
                 </span>
                 {toggleBoardMaximized && (
-                  <span className="control-tooltip-trigger" data-tooltip={isBoardMaximized ? restoreViewLabel : maximizeViewLabel}>
+                  <span
+                    className="control-tooltip-trigger"
+                    data-tooltip={isBoardMaximized ? restoreViewLabel : maximizeViewLabel}
+                  >
                     <button
                       className="grid-overlay-btn"
                       aria-label={isBoardMaximized ? restoreViewLabel : maximizeViewLabel}
@@ -669,8 +835,12 @@ function Grid({
           </div>
         )}
         <div className="grid-overlay-readout grid-overlay-readout-bottom-right" aria-live="polite">
-          <span className="grid-overlay-readout-coordinates">Center: ({viewportCenter.x}, {viewportCenter.y})</span>
-          <span className="grid-overlay-readout-coordinates">{cursorLabel}: {hoveredCellValue}</span>
+          <span className="grid-overlay-readout-coordinates">
+            Center: ({viewportCenter.x}, {viewportCenter.y})
+          </span>
+          <span className="grid-overlay-readout-coordinates">
+            {cursorLabel}: {hoveredCellValue}
+          </span>
         </div>
         {playOverlayContent && (
           <div className="grid-overlay-controls grid-overlay-controls-top-left">

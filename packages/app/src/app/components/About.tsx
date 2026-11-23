@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 function About() {
   const { t } = useTranslation();
-  
+
   return (
     <div style={{ maxWidth: '768px', margin: '0 auto', padding: '2rem 1.25rem' }}>
       <h1 style={{ marginBottom: '2rem' }}>{t('about.title')}</h1>

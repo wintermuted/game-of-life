@@ -18,7 +18,7 @@ beforeAll(() => {
 describe('PatternPreview', () => {
   test('renders without crashing', () => {
     const { container } = render(<PatternPreview grid={block} palette={testPalette} />);
-    
+
     // Check that a canvas element is rendered
     const canvas = container.querySelector('canvas');
     expect(canvas).toBeInTheDocument();
@@ -26,7 +26,7 @@ describe('PatternPreview', () => {
 
   test('renders with default size', () => {
     const { container } = render(<PatternPreview grid={block} palette={testPalette} />);
-    
+
     const canvas = container.querySelector('canvas');
     expect(canvas).toHaveAttribute('width', '60');
     expect(canvas).toHaveAttribute('height', '60');
@@ -34,7 +34,7 @@ describe('PatternPreview', () => {
 
   test('renders with custom size', () => {
     const { container } = render(<PatternPreview grid={block} size={100} palette={testPalette} />);
-    
+
     const canvas = container.querySelector('canvas');
     expect(canvas).toHaveAttribute('width', '100');
     expect(canvas).toHaveAttribute('height', '100');
@@ -42,7 +42,7 @@ describe('PatternPreview', () => {
 
   test('renders with empty grid', () => {
     const { container } = render(<PatternPreview grid={{}} palette={testPalette} />);
-    
+
     // Should still render canvas even with empty grid
     const canvas = container.querySelector('canvas');
     expect(canvas).toBeInTheDocument();

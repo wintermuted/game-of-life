@@ -24,15 +24,15 @@ describe('PatternSelector', () => {
   test('renders all patterns', () => {
     const mockHandler = vi.fn();
     render(<PatternSelector onSelectPattern={mockHandler} />);
-    
+
     // Check that all pattern names are rendered
-    patterns.forEach(pattern => {
+    patterns.forEach((pattern) => {
       expect(screen.getByText(formatPatternTitle(pattern.name))).toBeInTheDocument();
     });
-    
+
     // Check that categories are rendered (some may appear multiple times)
-    const categories = new Set(patterns.map(p => p.category));
-    categories.forEach(category => {
+    const categories = new Set(patterns.map((p) => p.category));
+    categories.forEach((category) => {
       expect(screen.getAllByText(category).length).toBeGreaterThan(0);
     });
   });
@@ -40,11 +40,11 @@ describe('PatternSelector', () => {
   test('calls onSelectPattern when a pattern is clicked', () => {
     const mockHandler = vi.fn();
     render(<PatternSelector onSelectPattern={mockHandler} />);
-    
+
     // Click on the first pattern
     const firstPattern = screen.getByText(formatPatternTitle(patterns[0].name));
     fireEvent.click(firstPattern);
-    
+
     // Check that the handler was called with the correct grid
     expect(mockHandler).toHaveBeenCalledWith(patterns[0].grid, patterns[0].rulesetId);
   });
@@ -77,11 +77,11 @@ describe('PatternSelector', () => {
   test('does not call onSelectPattern when disabled', () => {
     const mockHandler = vi.fn();
     render(<PatternSelector onSelectPattern={mockHandler} disabled={true} />);
-    
+
     // Try to click on a pattern
     const firstPattern = screen.getByText(formatPatternTitle(patterns[0].name));
     fireEvent.click(firstPattern);
-    
+
     // Handler should not be called when disabled
     expect(mockHandler).not.toHaveBeenCalled();
   });
@@ -89,7 +89,7 @@ describe('PatternSelector', () => {
   test('displays pattern categories correctly', () => {
     const mockHandler = vi.fn();
     render(<PatternSelector onSelectPattern={mockHandler} />);
-    
+
     // Check that different categories are displayed
     // Using getAllByText since categories can appear multiple times
     expect(screen.getAllByText('Still Life').length).toBeGreaterThan(0);
@@ -104,7 +104,11 @@ describe('PatternSelector', () => {
 
     const ladderButton = screen.getByText('Life Without Death Ladder').closest('button');
     expect(ladderButton).not.toBeNull();
-    expect(within(ladderButton as HTMLButtonElement).getByText('Alternative Rules')).toHaveClass('pattern-selector-badge');
-    expect(within(ladderButton as HTMLButtonElement).getByText('Life without Death')).toHaveClass('pattern-selector-badge');
+    expect(within(ladderButton as HTMLButtonElement).getByText('Alternative Rules')).toHaveClass(
+      'pattern-selector-badge',
+    );
+    expect(within(ladderButton as HTMLButtonElement).getByText('Life without Death')).toHaveClass(
+      'pattern-selector-badge',
+    );
   });
 });

@@ -35,19 +35,19 @@ Add Day & Night (`B3678/S34678`) and Life without Death (`B3/S012345678`) as imp
 
 ## Relevant Files
 
-| File | Purpose |
-| --- | --- |
-| `packages/core/src/interfaces/index.ts` | Rules profile and pattern metadata types |
-| `packages/core/src/core/game.ts` | Ruleset definitions and generation behavior |
-| `packages/core/src/core/game.rules.spec.ts` | Focused ruleset behavior coverage |
-| `packages/core/src/data/patterns.ts` | Starter pattern registration and metadata |
-| `packages/core/src/data/alternativeRules.ts` | New representative preset seeds |
-| `packages/core/src/index.ts` | Core exports |
-| `packages/app/src/app/components/Home.tsx` | Ruleset restoration and Pattern info metadata/link rendering |
-| `packages/app/src/app/components/RulesPanel.tsx` | Ruleset selector and generalized profile display |
-| `packages/app/src/app/components/RulesPanel.test.tsx` | Selector/profile UI coverage |
-| `packages/app/src/app/components/PatternSelector.test.tsx` | Starter pattern ruleset selection coverage |
-| `packages/app/src/app/components/Explore.tsx` | Persisted ruleset detection and Explore metadata |
+| File                                                       | Purpose                                                      |
+| ---------------------------------------------------------- | ------------------------------------------------------------ |
+| `packages/core/src/interfaces/index.ts`                    | Rules profile and pattern metadata types                     |
+| `packages/core/src/core/game.ts`                           | Ruleset definitions and generation behavior                  |
+| `packages/core/src/core/game.rules.spec.ts`                | Focused ruleset behavior coverage                            |
+| `packages/core/src/data/patterns.ts`                       | Starter pattern registration and metadata                    |
+| `packages/core/src/data/alternativeRules.ts`               | New representative preset seeds                              |
+| `packages/core/src/index.ts`                               | Core exports                                                 |
+| `packages/app/src/app/components/Home.tsx`                 | Ruleset restoration and Pattern info metadata/link rendering |
+| `packages/app/src/app/components/RulesPanel.tsx`           | Ruleset selector and generalized profile display             |
+| `packages/app/src/app/components/RulesPanel.test.tsx`      | Selector/profile UI coverage                                 |
+| `packages/app/src/app/components/PatternSelector.test.tsx` | Starter pattern ruleset selection coverage                   |
+| `packages/app/src/app/components/Explore.tsx`              | Persisted ruleset detection and Explore metadata             |
 
 ## Verification
 

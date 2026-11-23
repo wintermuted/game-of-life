@@ -10,7 +10,7 @@ import { createLiveCell, createLifeGrid, isLiveCell } from './cells';
  */
 export function parseCoordinates(input: string): LifeGrid {
   const trimmedInput = input.trim();
-  
+
   if (!trimmedInput) {
     throw new Error('Input cannot be empty');
   }
@@ -52,22 +52,22 @@ export function parseCoordinates(input: string): LifeGrid {
   //           "1,0,2,0" → ["1", "0", "2", "0"]
   //           "1,0 2,0" → ["1", "0", "2", "0"]
   const grid: LifeGrid = {};
-  const coordinates = trimmedInput.split(/[\s,]+/).filter(s => s.length > 0);
-  
+  const coordinates = trimmedInput.split(/[\s,]+/).filter((s) => s.length > 0);
+
   // Process coordinates in pairs (x, y)
   for (let i = 0; i < coordinates.length; i += 2) {
     if (i + 1 >= coordinates.length) {
       throw new Error('Coordinates must come in x,y pairs');
     }
-    
+
     const x = coordinates[i];
     const y = coordinates[i + 1];
-    
+
     // Validate that x and y are integers
     if (!isInteger(x) || !isInteger(y)) {
       throw new Error(`Invalid coordinate: ${x},${y} - coordinates must be integers`);
     }
-    
+
     const coord = `${x},${y}`;
     grid[coord] = createLiveCell();
   }

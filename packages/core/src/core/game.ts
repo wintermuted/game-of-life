@@ -1,5 +1,12 @@
 import { forEach } from 'lodash';
-import { LifeGrid, GameRule, GameRuleKey, GameStats, GameRules, GameRulesetDefinition } from '../interfaces';
+import {
+  LifeGrid,
+  GameRule,
+  GameRuleKey,
+  GameStats,
+  GameRules,
+  GameRulesetDefinition,
+} from '../interfaces';
 import { getLiveNeighborCount, getNeighborCoordinates } from './coordinates';
 import { createLiveCell, getCellColor, isLiveCell } from './cells';
 
@@ -13,50 +20,54 @@ export const DEFAULT_RULES: GameRules = {
     id: 'survival2',
     name: 'Underpopulation',
     description: 'Live cells with fewer than two live neighbors die, as if by underpopulation.',
-    enabled: true
+    enabled: true,
   },
   survival3: {
     id: 'survival3',
     name: 'Survival',
     description: 'Live cells with two or three live neighbors live on to the next generation.',
-    enabled: true
+    enabled: true,
   },
   birth3: {
     id: 'birth3',
     name: 'Reproduction',
-    description: 'Dead cells with exactly three live neighbors become live cells, as if by reproduction.',
-    enabled: true
+    description:
+      'Dead cells with exactly three live neighbors become live cells, as if by reproduction.',
+    enabled: true,
   },
   birth6: {
     id: 'birth6',
     name: 'HighLife Reproduction (B6)',
     description: 'Dead cells with exactly six live neighbors become live cells (HighLife B6 rule).',
-    enabled: false
+    enabled: false,
   },
   experimentalSpeciesCompetitionBirth: {
     id: 'experimentalSpeciesCompetitionBirth',
     name: 'Experimental Species Competition Birth',
-    description: 'Mixed-species births use competition modifiers instead of default color assignment',
-    enabled: false
+    description:
+      'Mixed-species births use competition modifiers instead of default color assignment',
+    enabled: false,
   },
   experimentalSpeciesCompetitionDominantBirth: {
     id: 'experimentalSpeciesCompetitionDominantBirth',
     name: 'Experimental Species Competition Dominant Birth',
-    description: 'When mixed-species births occur, the color with the highest neighbor count wins reproduction',
-    enabled: false
+    description:
+      'When mixed-species births occur, the color with the highest neighbor count wins reproduction',
+    enabled: false,
   },
   experimentalSpeciesCompetitionTieBreakBirth: {
     id: 'experimentalSpeciesCompetitionTieBreakBirth',
     name: 'Experimental Species Competition Tie-Break Birth',
-    description: 'When species competition ties, births randomly choose among the tied colors instead of failing',
-    enabled: false
+    description:
+      'When species competition ties, births randomly choose among the tied colors instead of failing',
+    enabled: false,
   },
   death: {
     id: 'death',
     name: 'Overpopulation',
     description: 'Live cells with more than three live neighbors die, as if by overpopulation.',
-    enabled: true
-  }
+    enabled: true,
+  },
 };
 
 function cloneRules(rules: GameRules): GameRules {
@@ -139,19 +150,22 @@ export const RULESETS: GameRulesetDefinition[] = [
 // Death occurs implicitly when survival conditions aren't met.
 // This rule is included for UI completeness but doesn't affect execution.
 
-export function calculateNextGeneration(grid: LifeGrid, rules: GameRules = DEFAULT_RULES): LifeGrid {
+export function calculateNextGeneration(
+  grid: LifeGrid,
+  rules: GameRules = DEFAULT_RULES,
+): LifeGrid {
   const nextGrid: LifeGrid = {};
 
   forEach(grid, (value: string, coordinate: string) => {
     const neighborCoordinates = getNeighborCoordinates(coordinate);
-    const liveNeighbors = getLiveNeighborCount(coordinate, grid)
+    const liveNeighbors = getLiveNeighborCount(coordinate, grid);
 
     // Status Quo - check if cell survives
     const survives = rules.lifeLikeProfile
       ? rules.lifeLikeProfile.survival.includes(liveNeighbors)
       : (rules.survival2.enabled && liveNeighbors === 2) ||
         (rules.survival3.enabled && liveNeighbors === 3);
-    
+
     if (survives) {
       nextGrid[coordinate] = value;
     }
@@ -176,7 +190,7 @@ export function calculateNextGeneration(grid: LifeGrid, rules: GameRules = DEFAU
           nextGrid[neighborCoordinate] = birthColor;
         }
       }
-    });    
+    });
   });
 
   return nextGrid;
@@ -185,20 +199,20 @@ export function calculateNextGeneration(grid: LifeGrid, rules: GameRules = DEFAU
 export function calculateStats(previousGrid: LifeGrid, nextGrid: LifeGrid): GameStats {
   const previousCells = Object.keys(previousGrid);
   const nextCells = Object.keys(nextGrid);
-  
+
   const liveCells = nextCells.length;
-  
+
   // Births: cells that are in nextGrid but not in previousGrid
-  const births = nextCells.filter(coord => !previousGrid[coord]).length;
-  
+  const births = nextCells.filter((coord) => !previousGrid[coord]).length;
+
   // Deaths: cells that are in previousGrid but not in nextGrid
-  const deaths = previousCells.filter(coord => !nextGrid[coord]).length;
-  
+  const deaths = previousCells.filter((coord) => !nextGrid[coord]).length;
+
   return { liveCells, births, deaths };
 }
 
-function gameOfLife (grid: LifeGrid, rules?: GameRules): LifeGrid {
-  return calculateNextGeneration(grid, rules)
+function gameOfLife(grid: LifeGrid, rules?: GameRules): LifeGrid {
+  return calculateNextGeneration(grid, rules);
 }
 
 function getBirthColor(coordinate: string, grid: LifeGrid, rules: GameRules): string | null {

@@ -55,7 +55,11 @@ function Settings() {
         <h2 className="settings-section-title">{t('settings.storage.title')}</h2>
         <p className="profile-persistence-note">{t('settings.storage.description')}</p>
 
-        <div className="settings-options-grid" role="radiogroup" aria-label={t('settings.storage.title')}>
+        <div
+          className="settings-options-grid"
+          role="radiogroup"
+          aria-label={t('settings.storage.title')}
+        >
           <label className="settings-option-card">
             <input
               type="radio"
@@ -85,7 +89,11 @@ function Settings() {
         </div>
 
         <div className="settings-actions-row">
-          <button className="btn btn-sm btn-secondary-neutral" type="button" onClick={handleClearData}>
+          <button
+            className="btn btn-sm btn-secondary-neutral"
+            type="button"
+            onClick={handleClearData}
+          >
             {t('settings.storage.clearActive')}
           </button>
         </div>

@@ -25,14 +25,25 @@ function RulesPanel({
   activeRulesetClassification = STANDARD_RULESET.classification,
 }: Props) {
   const { t } = useTranslation();
-  const [hoverPopover, setHoverPopover] = useState<null | { text: string; left: number; top: number }>(null);
+  const [hoverPopover, setHoverPopover] = useState<null | {
+    text: string;
+    left: number;
+    top: number;
+  }>(null);
 
-  const allRuleEntries = Object.entries(rules).filter(([key]) => key !== 'lifeLikeProfile') as Array<[GameRuleKey, GameRule]>;
-  const standardRuleEntries = allRuleEntries.filter(([key]) => !String(key).startsWith('experimental') && key !== 'birth6');
-  const experimentalRuleEntries = allRuleEntries.filter(([key]) => String(key).startsWith('experimental'));
+  const allRuleEntries = Object.entries(rules).filter(
+    ([key]) => key !== 'lifeLikeProfile',
+  ) as Array<[GameRuleKey, GameRule]>;
+  const standardRuleEntries = allRuleEntries.filter(
+    ([key]) => !String(key).startsWith('experimental') && key !== 'birth6',
+  );
+  const experimentalRuleEntries = allRuleEntries.filter(([key]) =>
+    String(key).startsWith('experimental'),
+  );
   const lifeLikeProfile = rules.lifeLikeProfile;
-  
-  const getExperimentalRuleLabel = (ruleName: string): string => ruleName.replace(/^Experimental Species /, '');
+
+  const getExperimentalRuleLabel = (ruleName: string): string =>
+    ruleName.replace(/^Experimental Species /, '');
 
   const getRuleDisplayName = (ruleName: string, isExperimental: boolean): string => {
     return isExperimental ? getExperimentalRuleLabel(ruleName) : ruleName;
@@ -59,7 +70,7 @@ function RulesPanel({
       onRulesetChange(event.target.value);
     }
   };
-  
+
   const handleToggle = (ruleId: GameRuleKey) => {
     if (rulesLocked || disabled) {
       return;
@@ -69,8 +80,8 @@ function RulesPanel({
       ...rules,
       [ruleId]: {
         ...rules[ruleId],
-        enabled: !rules[ruleId].enabled
-      }
+        enabled: !rules[ruleId].enabled,
+      },
     };
     onRulesChange(updatedRules);
   };
@@ -95,7 +106,11 @@ function RulesPanel({
           <h4>{t('rules.title')}</h4>
         </div>
       )}
-      <div className={embedded ? 'rules-panel-body rules-panel-body-embedded' : 'card-body rules-panel-body'}>
+      <div
+        className={
+          embedded ? 'rules-panel-body rules-panel-body-embedded' : 'card-body rules-panel-body'
+        }
+      >
         <div className="rules-preset-block">
           <label className="rules-preset-select-label" htmlFor="ruleset-select-in-panel">
             {t('diagnostics.activeRulesetLabel')}
@@ -108,7 +123,9 @@ function RulesPanel({
             disabled={disabled || rulesLocked}
           >
             {RULESETS.filter((ruleset) => ruleset.implemented).map((ruleset) => (
-              <option key={ruleset.id} value={ruleset.id}>{ruleset.name}</option>
+              <option key={ruleset.id} value={ruleset.id}>
+                {ruleset.name}
+              </option>
             ))}
             {selectedRulesetId === 'custom' ? (
               <option value="custom">{t('diagnostics.rulesetCustomOption')}</option>
@@ -118,7 +135,9 @@ function RulesPanel({
 
         <details className="rules-subsection rules-subsection-collapsible" open>
           <summary className="rules-subsection-summary">
-            <h5 className="rules-subsection-heading">{t('rules.standardSection')} ({activeRulesetClassification})</h5>
+            <h5 className="rules-subsection-heading">
+              {t('rules.standardSection')} ({activeRulesetClassification})
+            </h5>
           </summary>
           <div className="rules-subsection-content">
             {lifeLikeProfile ? (
@@ -132,44 +151,50 @@ function RulesPanel({
                 <div className="rules-toggle-item">
                   <span className="rules-checkbox-main">
                     <span className="rules-checkbox-label">Survival</span>
-                    <code className="rules-rule-notation">S{lifeLikeProfile.survival.join('')}</code>
+                    <code className="rules-rule-notation">
+                      S{lifeLikeProfile.survival.join('')}
+                    </code>
                   </span>
                 </div>
               </div>
             ) : (
               <div className="wm-toggle-list">
                 {standardRuleEntries.map(([key, rule]) => (
-                <div key={rule.id} className="rules-toggle-item">
-                  <span className="rules-checkbox-main">
-                    <label className="rules-checkbox-row">
-                      <input
-                        type="checkbox"
-                        className="rules-checkbox-input"
-                        checked={rule.enabled}
-                        onChange={() => handleToggle(key)}
-                        disabled={disabled || rulesLocked}
-                      />
-                      <span className="rules-checkbox-label">{getRuleDisplayName(rule.name, false)}</span>
-                      {getRuleNotation(key) ? (
-                        <code className="rules-rule-notation">{getRuleNotation(key)}</code>
-                      ) : null}
-                      {key === 'birth3' && rules.birth6.enabled ? (
-                        <span className="rules-rule-tag">{t('rules.highlifeTag')}</span>
-                      ) : null}
-                    </label>
-                    <span className="rules-popover-wrap">
-                      <span
-                        className="rules-popover-trigger"
-                        aria-label={getRuleDescription(key)}
-                        role="img"
-                        onMouseEnter={(event) => showPopover(event, getRuleDescription(key))}
-                        onMouseLeave={hidePopover}
-                      >
-                        <span className="rules-popover-trigger-icon" aria-hidden="true">i</span>
+                  <div key={rule.id} className="rules-toggle-item">
+                    <span className="rules-checkbox-main">
+                      <label className="rules-checkbox-row">
+                        <input
+                          type="checkbox"
+                          className="rules-checkbox-input"
+                          checked={rule.enabled}
+                          onChange={() => handleToggle(key)}
+                          disabled={disabled || rulesLocked}
+                        />
+                        <span className="rules-checkbox-label">
+                          {getRuleDisplayName(rule.name, false)}
+                        </span>
+                        {getRuleNotation(key) ? (
+                          <code className="rules-rule-notation">{getRuleNotation(key)}</code>
+                        ) : null}
+                        {key === 'birth3' && rules.birth6.enabled ? (
+                          <span className="rules-rule-tag">{t('rules.highlifeTag')}</span>
+                        ) : null}
+                      </label>
+                      <span className="rules-popover-wrap">
+                        <span
+                          className="rules-popover-trigger"
+                          aria-label={getRuleDescription(key)}
+                          role="img"
+                          onMouseEnter={(event) => showPopover(event, getRuleDescription(key))}
+                          onMouseLeave={hidePopover}
+                        >
+                          <span className="rules-popover-trigger-icon" aria-hidden="true">
+                            i
+                          </span>
+                        </span>
                       </span>
                     </span>
-                  </span>
-                </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -194,7 +219,9 @@ function RulesPanel({
                           onChange={() => handleToggle(key)}
                           disabled={disabled || rulesLocked}
                         />
-                        <span className="rules-checkbox-label">{getRuleDisplayName(rule.name, true)}</span>
+                        <span className="rules-checkbox-label">
+                          {getRuleDisplayName(rule.name, true)}
+                        </span>
                       </label>
                       <span className="rules-popover-wrap">
                         <span
@@ -204,7 +231,9 @@ function RulesPanel({
                           onMouseEnter={(event) => showPopover(event, rule.description)}
                           onMouseLeave={hidePopover}
                         >
-                          <span className="rules-popover-trigger-icon" aria-hidden="true">i</span>
+                          <span className="rules-popover-trigger-icon" aria-hidden="true">
+                            i
+                          </span>
                         </span>
                       </span>
                     </span>
@@ -215,16 +244,18 @@ function RulesPanel({
           </details>
         )}
       </div>
-      {hoverPopover ? createPortal(
-        <span
-          className="rules-popover-floating"
-          role="tooltip"
-          style={{ left: `${hoverPopover.left}px`, top: `${hoverPopover.top}px` }}
-        >
-          {hoverPopover.text}
-        </span>,
-        document.body,
-      ) : null}
+      {hoverPopover
+        ? createPortal(
+            <span
+              className="rules-popover-floating"
+              role="tooltip"
+              style={{ left: `${hoverPopover.left}px`, top: `${hoverPopover.top}px` }}
+            >
+              {hoverPopover.text}
+            </span>,
+            document.body,
+          )
+        : null}
     </>
   );
 

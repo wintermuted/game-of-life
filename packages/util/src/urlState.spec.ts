@@ -1,5 +1,10 @@
 import { vi } from 'vitest';
-import { encodeGridToBase64, decodeBase64ToGrid, getGridFromURL, updateURLWithGrid } from '@game-of-life/util';
+import {
+  encodeGridToBase64,
+  decodeBase64ToGrid,
+  getGridFromURL,
+  updateURLWithGrid,
+} from '@game-of-life/util';
 import { createLifeGrid, DEFAULT_LIVE_CELL_COLOR, LifeGrid } from '@game-of-life/core';
 
 describe('urlState utilities', () => {
@@ -124,7 +129,7 @@ describe('urlState utilities', () => {
     beforeEach(() => {
       // Mock window.history.pushState
       window.history.pushState = vi.fn();
-      
+
       // Mock window.location
       delete (window as any).location;
       (window as any).location = {
@@ -141,18 +146,18 @@ describe('urlState utilities', () => {
     test('should update URL with encoded grid pattern', () => {
       const grid: LifeGrid = createLifeGrid({ '0,0': true, '1,1': true });
       updateURLWithGrid(grid);
-      
+
       expect(window.history.pushState).toHaveBeenCalled();
       const callArgs = (window.history.pushState as jest.Mock).mock.calls[0];
       const newUrl = callArgs[2];
-      
+
       expect(newUrl).toContain('pattern=');
-      
+
       // Extract and verify the pattern
       const url = new URL(newUrl);
       const pattern = url.searchParams.get('pattern');
       expect(pattern).toBeTruthy();
-      
+
       if (pattern) {
         const decoded = decodeBase64ToGrid(pattern);
         expect(decoded).toStrictEqual(grid);

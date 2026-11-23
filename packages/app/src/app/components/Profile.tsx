@@ -2,13 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Clock3, Cpu, GitFork, LayoutGrid, Rows3, Star, User } from 'lucide-react';
-import {
-  LifeGrid,
-  glider,
-  blinker,
-  pulsar,
-  patterns,
-} from '@game-of-life/core';
+import { LifeGrid, glider, blinker, pulsar, patterns } from '@game-of-life/core';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
 import { PatternPreview } from '@game-of-life/ui-patterns';
 import { encodeGridToBase64, formatRelativeTime } from '@game-of-life/util';
@@ -45,6 +39,41 @@ interface FallbackBoard {
   source: 'system' | 'user';
 }
 
+const creatorProfileMap: Record<string, StoredProfileUser> = {
+  system: {
+    name: 'System Library',
+    email: 'system@example.com',
+    memberSince: 'January 1970',
+    timezone: 'UTC',
+    favoritePalette: 'Classic Green',
+    avatarInitials: 'SY',
+  },
+  'james-nyeholt': {
+    name: 'James Nyeholt',
+    email: 'james@example.com',
+    memberSince: 'April 2026',
+    timezone: 'America/Los_Angeles',
+    favoritePalette: 'Classic Green',
+    avatarInitials: 'JN',
+  },
+  'anika-shah': {
+    name: 'Anika Shah',
+    email: 'anika@example.com',
+    memberSince: 'May 2026',
+    timezone: 'America/New_York',
+    favoritePalette: 'Ocean Blue',
+    avatarInitials: 'AS',
+  },
+  'leo-martinez': {
+    name: 'Leo Martinez',
+    email: 'leo@example.com',
+    memberSince: 'June 2026',
+    timezone: 'America/Chicago',
+    favoritePalette: 'Solar Ember',
+    avatarInitials: 'LM',
+  },
+};
+
 function Profile() {
   const { t } = useTranslation();
   const location = useLocation();
@@ -52,41 +81,6 @@ function Profile() {
   const [sectionViewMode, setSectionViewMode] = useState<'cards' | 'table'>('cards');
   const [favoriteRefreshToken, setFavoriteRefreshToken] = useState(0);
   const [profileFeedbackMessage, setProfileFeedbackMessage] = useState('');
-
-  const creatorProfileMap: Record<string, StoredProfileUser> = {
-    system: {
-      name: 'System Library',
-      email: 'system@example.com',
-      memberSince: 'January 1970',
-      timezone: 'UTC',
-      favoritePalette: 'Classic Green',
-      avatarInitials: 'SY',
-    },
-    'james-nyeholt': {
-      name: 'James Nyeholt',
-      email: 'james@example.com',
-      memberSince: 'April 2026',
-      timezone: 'America/Los_Angeles',
-      favoritePalette: 'Classic Green',
-      avatarInitials: 'JN',
-    },
-    'anika-shah': {
-      name: 'Anika Shah',
-      email: 'anika@example.com',
-      memberSince: 'May 2026',
-      timezone: 'America/New_York',
-      favoritePalette: 'Ocean Blue',
-      avatarInitials: 'AS',
-    },
-    'leo-martinez': {
-      name: 'Leo Martinez',
-      email: 'leo@example.com',
-      memberSince: 'June 2026',
-      timezone: 'America/Chicago',
-      favoritePalette: 'Solar Ember',
-      avatarInitials: 'LM',
-    },
-  };
 
   const defaultRecentBoards: FallbackBoard[] = [
     {
@@ -141,7 +135,9 @@ function Profile() {
         hash: entry.hash,
         boardId: entry.boardId,
         grid,
-        updatedLabel: formatRelativeTime(entry.updatedAt, (value, unit) => relativeFormatter.format(value, unit)),
+        updatedLabel: formatRelativeTime(entry.updatedAt, (value, unit) =>
+          relativeFormatter.format(value, unit),
+        ),
         source: libraryPatternHashes.has(entry.hash) ? 'system' : 'user',
       } as BoardGalleryItem;
     })
@@ -158,7 +154,9 @@ function Profile() {
         hash: entry.hash,
         boardId: entry.boardId,
         grid,
-        updatedLabel: formatRelativeTime(entry.openedAt, (value, unit) => relativeFormatter.format(value, unit)),
+        updatedLabel: formatRelativeTime(entry.openedAt, (value, unit) =>
+          relativeFormatter.format(value, unit),
+        ),
         source: libraryPatternHashes.has(entry.hash) ? 'system' : 'user',
       } as BoardGalleryItem;
     })
@@ -176,24 +174,30 @@ function Profile() {
         hash: entry.hash,
         boardId: entry.hash,
         grid,
-        updatedLabel: formatRelativeTime(entry.favoritedAt, (value, unit) => relativeFormatter.format(value, unit)),
+        updatedLabel: formatRelativeTime(entry.favoritedAt, (value, unit) =>
+          relativeFormatter.format(value, unit),
+        ),
         source: libraryPatternHashes.has(entry.hash) ? 'system' : 'user',
       } as BoardGalleryItem;
     })
     .filter((entry): entry is BoardGalleryItem => entry !== null);
 
-  const favoriteBoardIds = new Set(favoriteBoardsFromStorage.map((board) => board.boardId ?? board.hash));
+  const favoriteBoardIds = new Set(
+    favoriteBoardsFromStorage.map((board) => board.boardId ?? board.hash),
+  );
 
-  const userForkedBoards = savedBoardsFromStorage.filter((board) => {
-    const forkOrigin = getForkOrigin(board.boardId ?? board.hash);
-    return !!forkOrigin && (forkOrigin.forkerName ?? '').trim() === viewedUser.name;
-  }).map((board) => {
-    const forkOrigin = getForkOrigin(board.boardId ?? board.hash);
-    return {
-      ...board,
-      forkOriginTitle: forkOrigin?.parentTitle,
-    };
-  });
+  const userForkedBoards = savedBoardsFromStorage
+    .filter((board) => {
+      const forkOrigin = getForkOrigin(board.boardId ?? board.hash);
+      return !!forkOrigin && (forkOrigin.forkerName ?? '').trim() === viewedUser.name;
+    })
+    .map((board) => {
+      const forkOrigin = getForkOrigin(board.boardId ?? board.hash);
+      return {
+        ...board,
+        forkOriginTitle: forkOrigin?.parentTitle,
+      };
+    });
 
   const userForkedBoardIds = new Set(userForkedBoards.map((board) => board.boardId ?? board.hash));
 
@@ -210,17 +214,18 @@ function Profile() {
     return board.source === 'user';
   });
 
-  const recentBoards: BoardGalleryItem[] = recentBoardsFromStorage.length > 0
-    ? recentBoardsFromStorage
-    : defaultRecentBoards.map((board) => ({
-      id: board.id,
-      title: t(board.titleKey),
-      hash: encodeGridToBase64(board.grid),
-      boardId: encodeGridToBase64(board.grid),
-      grid: board.grid,
-      updatedLabel: t(board.updatedKey),
-      source: board.source,
-    }));
+  const recentBoards: BoardGalleryItem[] =
+    recentBoardsFromStorage.length > 0
+      ? recentBoardsFromStorage
+      : defaultRecentBoards.map((board) => ({
+          id: board.id,
+          title: t(board.titleKey),
+          hash: encodeGridToBase64(board.grid),
+          boardId: encodeGridToBase64(board.grid),
+          grid: board.grid,
+          updatedLabel: t(board.updatedKey),
+          source: board.source,
+        }));
 
   const favoriteBoards: BoardGalleryItem[] = favoriteBoardsFromStorage;
   const emptyBoardHash = encodeGridToBase64({});
@@ -231,7 +236,9 @@ function Profile() {
     const nextStarred = toggleFavoriteBoard(board.hash, board.title, user.name);
     setFavoriteRefreshToken((value) => value + 1);
     setProfileFeedbackMessage(
-      t(nextStarred ? 'messages.patternFavorited' : 'messages.patternUnfavorited', { name: board.title }),
+      t(nextStarred ? 'messages.patternFavorited' : 'messages.patternUnfavorited', {
+        name: board.title,
+      }),
     );
   }
 
@@ -293,21 +300,41 @@ function Profile() {
                       </h3>
                       <span className="wm-badge wm-badge-neutral">
                         <span className="pattern-source-badge-content">
-                          {board.source === 'system' ? <Cpu size={11} aria-hidden="true" /> : <User size={11} aria-hidden="true" />}
-                          <span>{board.source === 'system' ? t('patternSource.system') : t('patternSource.user')}</span>
+                          {board.source === 'system' ? (
+                            <Cpu size={11} aria-hidden="true" />
+                          ) : (
+                            <User size={11} aria-hidden="true" />
+                          )}
+                          <span>
+                            {board.source === 'system'
+                              ? t('patternSource.system')
+                              : t('patternSource.user')}
+                          </span>
                         </span>
                       </span>
                     </div>
                     <p>{board.updatedLabel}</p>
                     {board.forkOriginTitle ? (
-                      <p className="profile-board-owner-line">{t('profile.forkedFrom', { name: board.forkOriginTitle })}</p>
+                      <p className="profile-board-owner-line">
+                        {t('profile.forkedFrom', { name: board.forkOriginTitle })}
+                      </p>
                     ) : null}
-                    {board.source === 'user' && !board.forkOriginTitle ? <p className="profile-board-owner-line">{t('patternSource.byUser', { name: viewedUser.name })}</p> : null}
+                    {board.source === 'user' && !board.forkOriginTitle ? (
+                      <p className="profile-board-owner-line">
+                        {t('patternSource.byUser', { name: viewedUser.name })}
+                      </p>
+                    ) : null}
                   </div>
-                  <p className="profile-board-stats">{t('profile.liveCells', { count: getLiveCellCount(board.grid) })}</p>
+                  <p className="profile-board-stats">
+                    {t('profile.liveCells', { count: getLiveCellCount(board.grid) })}
+                  </p>
                   {showUnstarAction ? (
                     <div className="profile-board-actions-row">
-                      <button className="btn btn-sm btn-secondary-neutral" type="button" onClick={() => handleToggleStar(board)}>
+                      <button
+                        className="btn btn-sm btn-secondary-neutral"
+                        type="button"
+                        onClick={() => handleToggleStar(board)}
+                      >
                         <Star size={13} aria-hidden="true" fill="currentColor" />
                         <span>{t('profile.removeStar')}</span>
                       </button>
@@ -347,8 +374,16 @@ function Profile() {
                       <td>
                         <span className="wm-badge wm-badge-neutral">
                           <span className="pattern-source-badge-content">
-                            {board.source === 'system' ? <Cpu size={11} aria-hidden="true" /> : <User size={11} aria-hidden="true" />}
-                            <span>{board.source === 'system' ? t('patternSource.system') : t('patternSource.user')}</span>
+                            {board.source === 'system' ? (
+                              <Cpu size={11} aria-hidden="true" />
+                            ) : (
+                              <User size={11} aria-hidden="true" />
+                            )}
+                            <span>
+                              {board.source === 'system'
+                                ? t('patternSource.system')
+                                : t('patternSource.user')}
+                            </span>
                           </span>
                         </span>
                       </td>
@@ -357,11 +392,19 @@ function Profile() {
                       <td>{getLiveCellCount(board.grid)}</td>
                       <td>
                         <div className="profile-board-actions-row">
-                          <Link className="btn btn-sm btn-secondary-neutral" to={getBoardHref(board.hash, board.boardId)} onClick={() => handleOpenBoard(board.hash, board.boardId, board.title)}>
+                          <Link
+                            className="btn btn-sm btn-secondary-neutral"
+                            to={getBoardHref(board.hash, board.boardId)}
+                            onClick={() => handleOpenBoard(board.hash, board.boardId, board.title)}
+                          >
                             {t('profile.openBoard')}
                           </Link>
                           {showUnstarAction ? (
-                            <button className="btn btn-sm btn-secondary-neutral" type="button" onClick={() => handleToggleStar(board)}>
+                            <button
+                              className="btn btn-sm btn-secondary-neutral"
+                              type="button"
+                              onClick={() => handleToggleStar(board)}
+                            >
                               <Star size={13} aria-hidden="true" fill="currentColor" />
                               <span>{t('profile.removeStar')}</span>
                             </button>
@@ -381,7 +424,9 @@ function Profile() {
               <Link
                 className="btn btn-sm btn-secondary-neutral"
                 to={getBoardHref(emptyBoardHash)}
-                onClick={() => handleOpenBoard(emptyBoardHash, undefined, t('profile.emptyBoardTitle'))}
+                onClick={() =>
+                  handleOpenBoard(emptyBoardHash, undefined, t('profile.emptyBoardTitle'))
+                }
               >
                 {t('profile.createEmptyBoard')}
               </Link>
@@ -426,7 +471,9 @@ function Profile() {
         <aside className="profile-sidebar" aria-label="Profile summary">
           <section className="card card-body profile-card">
             <div className="profile-identity-row">
-              <div className="profile-avatar" aria-hidden="true">{viewedUser.avatarInitials}</div>
+              <div className="profile-avatar" aria-hidden="true">
+                {viewedUser.avatarInitials}
+              </div>
               <div>
                 <h2 className="profile-identity-name">{viewedUser.name}</h2>
                 <p className="profile-identity-handle">{viewedUser.email}</p>
@@ -453,17 +500,26 @@ function Profile() {
             </dl>
 
             <p className="profile-storage-mode-line">
-              {t('profile.storageModeLabel')}: {storageMode === 'local' ? t('settings.storage.local') : t('settings.storage.session')}
+              {t('profile.storageModeLabel')}:{' '}
+              {storageMode === 'local'
+                ? t('settings.storage.local')
+                : t('settings.storage.session')}
             </p>
             <p className="profile-persistence-note">{t('profile.persistenceNote')}</p>
           </section>
         </aside>
 
         <div className="profile-main-column">
-          {profileFeedbackMessage ? <p className="profile-status-message">{profileFeedbackMessage}</p> : null}
+          {profileFeedbackMessage ? (
+            <p className="profile-status-message">{profileFeedbackMessage}</p>
+          ) : null}
           <div className="profile-view-toggle-row">
             <span className="profile-view-toggle-label">{t('explore.viewModeLabel')}</span>
-            <div className="explore-view-toggle" role="group" aria-label={t('explore.viewModeLabel')}>
+            <div
+              className="explore-view-toggle"
+              role="group"
+              aria-label={t('explore.viewModeLabel')}
+            >
               <button
                 className={`btn btn-sm btn-secondary-neutral explore-view-toggle-btn${sectionViewMode === 'cards' ? ' is-active' : ''}`}
                 type="button"

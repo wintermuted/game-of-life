@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@game-of-life/ui': path.resolve(__dirname, './src/index.ts'),
+      '@game-of-life/ui': path.resolve(import.meta.dirname, './src/index.ts'),
     },
   },
   build: {
@@ -14,17 +14,12 @@ export default defineConfig({
     emptyOutDir: false,
     sourcemap: true,
     lib: {
-      entry: path.resolve(__dirname, 'src/index.ts'),
+      entry: path.resolve(import.meta.dirname, 'src/index.ts'),
       formats: ['es'],
       fileName: 'index',
     },
-    rollupOptions: {
-      external: [
-        /^react($|\/)/,
-        /^react-dom($|\/)/,
-        'react-i18next',
-        'i18next',
-      ],
+    rolldownOptions: {
+      external: [/^react($|\/)/, /^react-dom($|\/)/, 'react-i18next', 'i18next'],
     },
   },
   test: {

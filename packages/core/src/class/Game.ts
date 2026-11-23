@@ -1,6 +1,6 @@
-import { calculateNextGeneration, calculateStats, DEFAULT_RULES } from "../core/game";
-import { createLiveCell } from "../core/cells";
-import { LifeGrid, GameStats, GameRules } from "../interfaces";
+import { calculateNextGeneration, calculateStats, DEFAULT_RULES } from '../core/game';
+import { createLiveCell } from '../core/cells';
+import { LifeGrid, GameStats, GameRules } from '../interfaces';
 
 class Game {
   grid: LifeGrid;
@@ -38,14 +38,14 @@ class Game {
   next() {
     const previousGrid = this.grid;
     this.grid = calculateNextGeneration(this.grid, this.rules);
-    
+
     const stats = calculateStats(previousGrid, this.grid);
     this.totalLiveCells = stats.liveCells;
     this.totalBirths += stats.births;
     this.totalDeaths += stats.deaths;
-    
+
     this.generations = this.generations + 1;
-    
+
     return this.grid;
   }
 
@@ -53,7 +53,7 @@ class Game {
     return {
       liveCells: this.totalLiveCells,
       births: this.totalBirths,
-      deaths: this.totalDeaths
+      deaths: this.totalDeaths,
     };
   }
 

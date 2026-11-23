@@ -1,14 +1,44 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, GitFork, Lock, LockOpen, Pencil, Save, SaveAll, Settings, Star, Tag } from 'lucide-react';
+import {
+  ChevronDown,
+  GitFork,
+  Lock,
+  LockOpen,
+  Pencil,
+  Save,
+  SaveAll,
+  Settings,
+  Star,
+  Tag,
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Cpu, User } from 'lucide-react';
 import { ThemeTabs, DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
 import { Grid } from '@game-of-life/ui-grid';
 import { PatternInput, PatternSelector, PatternPreview } from '@game-of-life/ui-patterns';
 import { GridControls, RulesPanel } from '@game-of-life/ui-controls';
-import { createLifeGrid, getCellColor, getNeighborCoordinates, Game, rPentomino, LifeGrid, GameRule, GameRuleKey, GameStats, GameRules, DEFAULT_RULES, RULESETS, patterns } from '@game-of-life/core';
-import { getGenerationSpeed, encodeGridToBase64, getGridFromURL, updateURLWithGrid } from '@game-of-life/util';
+import {
+  createLifeGrid,
+  getCellColor,
+  getNeighborCoordinates,
+  Game,
+  rPentomino,
+  LifeGrid,
+  GameRule,
+  GameRuleKey,
+  GameStats,
+  GameRules,
+  DEFAULT_RULES,
+  RULESETS,
+  patterns,
+} from '@game-of-life/core';
+import {
+  getGenerationSpeed,
+  encodeGridToBase64,
+  getGridFromURL,
+  updateURLWithGrid,
+} from '@game-of-life/util';
 import { useTranslation } from 'react-i18next';
 import {
   ensureSeededSocialData,
@@ -27,20 +57,24 @@ import {
 } from '@game-of-life/api';
 
 let game: Game = {} as Game;
-let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
+let intervalID: ReturnType<typeof window.setInterval> | undefined;
 
 const baseGame = rPentomino;
 const GENERATION_SPEED_MIN = 1;
 const GENERATION_SPEED_MAX = 10;
 const STABILITY_GENERATION_THRESHOLD = 20;
 
-
 type PatternSource = 'system' | 'user';
 type NameModalMode = 'rename' | 'fork';
 type DraftSaveModalMode = 'save' | 'edit';
 type EditTool = 'pencil' | 'eraser' | 'selection' | 'grab' | 'stamp';
 type StampRotation = 0 | 90 | 180 | 270;
-type RulesetSelectionId = 'standard' | 'highlife' | 'day-and-night' | 'life-without-death' | 'custom';
+type RulesetSelectionId =
+  | 'standard'
+  | 'highlife'
+  | 'day-and-night'
+  | 'life-without-death'
+  | 'custom';
 
 interface CenterCoordinateRequest {
   coordinate: string;
@@ -112,7 +146,11 @@ function getDominantColor(colorCounts: Record<string, number>): string | null {
   return sorted[0]?.[0] ?? null;
 }
 
-function analyzeGenerationInteractions(previousGrid: LifeGrid, nextGrid: LifeGrid, rules: GameRules): GenerationInteractionMetrics {
+function analyzeGenerationInteractions(
+  previousGrid: LifeGrid,
+  nextGrid: LifeGrid,
+  rules: GameRules,
+): GenerationInteractionMetrics {
   const metrics: GenerationInteractionMetrics = {
     overcrowdingDeathsByPressureColor: {},
     experimentalBirthsByColor: {},
@@ -131,7 +169,9 @@ function analyzeGenerationInteractions(previousGrid: LifeGrid, nextGrid: LifeGri
       continue;
     }
 
-    const foreignNeighborColors = liveNeighborColors.filter((neighborColor) => neighborColor !== ownColor);
+    const foreignNeighborColors = liveNeighborColors.filter(
+      (neighborColor) => neighborColor !== ownColor,
+    );
     if (foreignNeighborColors.length === 0) {
       continue;
     }
@@ -196,72 +236,74 @@ function mergeColorCountLedger(
   return merged;
 }
 
-const seededUserPatternMetadata: PlayPatternMetadata[] = ([
-  {
-    name: 'Signal Weave',
-    category: 'User Creations',
-    source: 'user',
-    creatorName: 'James Nyeholt',
-    favoriteCount: 21,
-    forkCount: 8,
-    grid: createLifeGrid({
-      '-2,0': true,
-      '-1,0': true,
-      '0,0': true,
-      '1,1': true,
-      '2,2': true,
-      '2,-2': true,
-      '3,1': true,
-      '3,-1': true,
-      '4,0': true,
-      '5,0': true,
-    }),
-  },
-  {
-    name: 'Twin Lantern',
-    category: 'User Creations',
-    source: 'user',
-    creatorName: 'Anika Shah',
-    favoriteCount: 16,
-    forkCount: 5,
-    grid: createLifeGrid({
-      '-3,-1': true,
-      '-3,0': true,
-      '-2,-2': true,
-      '-2,1': true,
-      '-1,-2': true,
-      '-1,1': true,
-      '1,-1': true,
-      '1,0': true,
-      '2,-2': true,
-      '2,1': true,
-      '3,-2': true,
-      '3,1': true,
-    }),
-  },
-  {
-    name: 'Orbit Stack',
-    category: 'User Creations',
-    source: 'user',
-    creatorName: 'Leo Martinez',
-    favoriteCount: 14,
-    forkCount: 4,
-    grid: createLifeGrid({
-      '-2,-2': true,
-      '-2,-1': true,
-      '-1,-2': true,
-      '-1,-1': true,
-      '0,1': true,
-      '1,2': true,
-      '2,0': true,
-      '2,1': true,
-      '3,1': true,
-      '4,2': true,
-      '4,3': true,
-      '5,2': true,
-    }),
-  },
-] as SeededPlayPatternMetadata[]).map((entry) => {
+const seededUserPatternMetadata: PlayPatternMetadata[] = (
+  [
+    {
+      name: 'Signal Weave',
+      category: 'User Creations',
+      source: 'user',
+      creatorName: 'James Nyeholt',
+      favoriteCount: 21,
+      forkCount: 8,
+      grid: createLifeGrid({
+        '-2,0': true,
+        '-1,0': true,
+        '0,0': true,
+        '1,1': true,
+        '2,2': true,
+        '2,-2': true,
+        '3,1': true,
+        '3,-1': true,
+        '4,0': true,
+        '5,0': true,
+      }),
+    },
+    {
+      name: 'Twin Lantern',
+      category: 'User Creations',
+      source: 'user',
+      creatorName: 'Anika Shah',
+      favoriteCount: 16,
+      forkCount: 5,
+      grid: createLifeGrid({
+        '-3,-1': true,
+        '-3,0': true,
+        '-2,-2': true,
+        '-2,1': true,
+        '-1,-2': true,
+        '-1,1': true,
+        '1,-1': true,
+        '1,0': true,
+        '2,-2': true,
+        '2,1': true,
+        '3,-2': true,
+        '3,1': true,
+      }),
+    },
+    {
+      name: 'Orbit Stack',
+      category: 'User Creations',
+      source: 'user',
+      creatorName: 'Leo Martinez',
+      favoriteCount: 14,
+      forkCount: 4,
+      grid: createLifeGrid({
+        '-2,-2': true,
+        '-2,-1': true,
+        '-1,-2': true,
+        '-1,-1': true,
+        '0,1': true,
+        '1,2': true,
+        '2,0': true,
+        '2,1': true,
+        '3,1': true,
+        '4,2': true,
+        '4,3': true,
+        '5,2': true,
+      }),
+    },
+  ] as SeededPlayPatternMetadata[]
+).map((entry) => {
   return {
     name: entry.name,
     category: entry.category,
@@ -339,8 +381,12 @@ function parseCoordinateKey(coordinate: string): ParsedCoordinate | null {
   return { x, y };
 }
 
-function getGridBounds(grid: LifeGrid): { minX: number; maxX: number; minY: number; maxY: number } | null {
-  const coordinates = Object.keys(grid).map(parseCoordinateKey).filter((entry): entry is ParsedCoordinate => entry !== null);
+function getGridBounds(
+  grid: LifeGrid,
+): { minX: number; maxX: number; minY: number; maxY: number } | null {
+  const coordinates = Object.keys(grid)
+    .map(parseCoordinateKey)
+    .filter((entry): entry is ParsedCoordinate => entry !== null);
   if (coordinates.length === 0) return null;
 
   return coordinates.reduce(
@@ -359,7 +405,11 @@ function getGridBounds(grid: LifeGrid): { minX: number; maxX: number; minY: numb
   );
 }
 
-function getSelectionGrid(grid: LifeGrid, startCoordinate: string, endCoordinate: string): LifeGrid {
+function getSelectionGrid(
+  grid: LifeGrid,
+  startCoordinate: string,
+  endCoordinate: string,
+): LifeGrid {
   const start = parseCoordinateKey(startCoordinate);
   const end = parseCoordinateKey(endCoordinate);
 
@@ -419,7 +469,8 @@ function areRuleConfigurationsEquivalent(left: GameRules, right: GameRules): boo
     return Boolean(leftRule?.enabled) === Boolean(rightRule?.enabled);
   });
 
-  const profilesMatch = JSON.stringify(left.lifeLikeProfile ?? null) === JSON.stringify(right.lifeLikeProfile ?? null);
+  const profilesMatch =
+    JSON.stringify(left.lifeLikeProfile ?? null) === JSON.stringify(right.lifeLikeProfile ?? null);
   return togglesMatch && profilesMatch;
 }
 
@@ -441,13 +492,21 @@ function getImplementedRulesetById(rulesetId: string) {
   return RULESETS.find((ruleset) => ruleset.id === rulesetId && ruleset.implemented);
 }
 
-function clearBoardStateOverlaySuppressionIfBoardExpanded(previousGrid: LifeGrid, nextGrid: LifeGrid, suppressRef: { current: boolean }) {
+function clearBoardStateOverlaySuppressionIfBoardExpanded(
+  previousGrid: LifeGrid,
+  nextGrid: LifeGrid,
+  suppressRef: { current: boolean },
+) {
   if (getLiveCellCount(nextGrid) > getLiveCellCount(previousGrid)) {
     suppressRef.current = false;
   }
 }
 
-function mergeGridAtCoordinate(baseGrid: LifeGrid, additionGrid: LifeGrid, targetCoordinate: string): LifeGrid {
+function mergeGridAtCoordinate(
+  baseGrid: LifeGrid,
+  additionGrid: LifeGrid,
+  targetCoordinate: string,
+): LifeGrid {
   const target = parseCoordinateKey(targetCoordinate);
   const bounds = getGridBounds(additionGrid);
 
@@ -649,7 +708,9 @@ function toCreatorSlug(name: string): string {
 function Home() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [activeSidebarTab, setActiveSidebarTab] = useState<'patterns' | 'diagnostics'>('diagnostics');
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'patterns' | 'diagnostics'>(
+    'diagnostics',
+  );
   const [boardNeedsInitialization, setBoardInitialization] = useState(true);
   const [generation, setGeneration] = useState(0);
   const [generationSpeed, setGenerationSpeed] = useState(5);
@@ -682,28 +743,39 @@ function Home() {
   const [selectedCellsGrid, setSelectedCellsGrid] = useState<LifeGrid | null>(null);
   const [selectionStartCoordinate, setSelectionStartCoordinate] = useState<string | null>(null);
   const [selectionEndCoordinate, setSelectionEndCoordinate] = useState<string | null>(null);
-  const [lastGenerationInteractions, setLastGenerationInteractions] = useState<GenerationInteractionMetrics>(EMPTY_GENERATION_INTERACTION_METRICS);
-  const [overcrowdingDeathLedgerByPressureColor, setOvercrowdingDeathLedgerByPressureColor] = useState<Record<string, number>>({});
+  const [lastGenerationInteractions, setLastGenerationInteractions] =
+    useState<GenerationInteractionMetrics>(EMPTY_GENERATION_INTERACTION_METRICS);
+  const [overcrowdingDeathLedgerByPressureColor, setOvercrowdingDeathLedgerByPressureColor] =
+    useState<Record<string, number>>({});
   const [isStabilityOverlayEnabled, setIsStabilityOverlayEnabled] = useState(true);
   const [isBirthDeathPreviewEnabled, setIsBirthDeathPreviewEnabled] = useState(true);
-  const [settingsHoverPopover, setSettingsHoverPopover] = useState<null | { text: string; left: number; top: number }>(null);
+  const [settingsHoverPopover, setSettingsHoverPopover] = useState<null | {
+    text: string;
+    left: number;
+    top: number;
+  }>(null);
   const toastHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const maximizeControlsHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectionAnchorRef = useRef<string | null>(null);
   const suppressBoardStateOverlayRef = useRef(false);
-  const liveCellStabilityTracker = useRef<{ lastLiveCells: number | null; streak: number }>({ lastLiveCells: null, streak: 0 });
+  const liveCellStabilityTracker = useRef<{ lastLiveCells: number | null; streak: number }>({
+    lastLiveCells: null,
+    streak: 0,
+  });
   const [stats, setStats] = useState<GameStats>({ liveCells: 0, births: 0, deaths: 0 });
   const [boardStateOverlay, setBoardStateOverlay] = useState<'stability' | 'gameOver' | null>(null);
   const [rules, setRules] = useState<GameRules>(() => getRulesetFromURL());
   const [isRulesLocked, setIsRulesLocked] = useState(getInitialRulesLocked);
   const selectedRulesetId = detectRulesetSelection(rules);
   const selectedRulesetDefinition = RULESETS.find((ruleset) => ruleset.id === selectedRulesetId);
-  const activeRulesetClassification = selectedRulesetId === 'custom'
-    ? t('diagnostics.rulesetCustomClassification')
-    : (selectedRulesetDefinition?.classification ?? t('diagnostics.rulesetCustomClassification'));
-  const activeRulesetName = selectedRulesetId === 'custom'
-    ? t('diagnostics.rulesetCustomOption')
-    : (selectedRulesetDefinition?.name ?? t('diagnostics.rulesetCustomOption'));
+  const activeRulesetClassification =
+    selectedRulesetId === 'custom'
+      ? t('diagnostics.rulesetCustomClassification')
+      : (selectedRulesetDefinition?.classification ?? t('diagnostics.rulesetCustomClassification'));
+  const activeRulesetName =
+    selectedRulesetId === 'custom'
+      ? t('diagnostics.rulesetCustomOption')
+      : (selectedRulesetDefinition?.name ?? t('diagnostics.rulesetCustomOption'));
   const [selectedPaletteId, setSelectedPaletteId] = useState(DEFAULT_PALETTE_ID);
   const [drawColor, setDrawColor] = useState(() => getPaletteById(DEFAULT_PALETTE_ID).liveCell);
   const [activeEditTool, setActiveEditTool] = useState<EditTool>('pencil');
@@ -712,15 +784,25 @@ function Home() {
   const [rotateStampKeyPressToken, setRotateStampKeyPressToken] = useState(0);
   const [hoveredCoordinate, setHoveredCoordinate] = useState<string | null>(null);
   const [contextInsertCoordinate, setContextInsertCoordinate] = useState<string | null>(null);
-  const [centerCoordinateRequest, setCenterCoordinateRequest] = useState<CenterCoordinateRequest | null>(null);
-  const [savedTemplateNames, setSavedTemplateNamesState] = useState<Record<string, string>>(() => getSavedTemplateNames());
-  const [activePopularityModal, setActivePopularityModal] = useState<'stars' | 'forks' | null>(null);
+  const [centerCoordinateRequest, setCenterCoordinateRequest] =
+    useState<CenterCoordinateRequest | null>(null);
+  const [savedTemplateNames, setSavedTemplateNamesState] = useState<Record<string, string>>(() =>
+    getSavedTemplateNames(),
+  );
+  const [activePopularityModal, setActivePopularityModal] = useState<'stars' | 'forks' | null>(
+    null,
+  );
   const selectedPalette = getPaletteById(selectedPaletteId);
-  const rotatedStampPattern = stampPattern ? rotateGridAroundBoundsCenter(stampPattern, stampRotation) : null;
+  const rotatedStampPattern = stampPattern
+    ? rotateGridAroundBoundsCenter(stampPattern, stampRotation)
+    : null;
   const activeDrawColor = drawColor;
-  const tintedStampPreviewPattern = rotatedStampPattern ? tintGridCells(rotatedStampPattern, activeDrawColor) : null;
+  const tintedStampPreviewPattern = rotatedStampPattern
+    ? tintGridCells(rotatedStampPattern, activeDrawColor)
+    : null;
   const stampPatternName = stampPattern
-    ? patterns.find((pattern) => getGridSignature(pattern.grid) === getGridSignature(stampPattern))?.name ?? t('patterns.custom')
+    ? (patterns.find((pattern) => getGridSignature(pattern.grid) === getGridSignature(stampPattern))
+        ?.name ?? t('patterns.custom'))
     : '';
   const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
 
@@ -736,7 +818,9 @@ function Home() {
   const activeForkRecord = currentBoardId ? getForkOrigin(currentBoardId) : null;
   const effectivePatternHash = activeForkRecord?.hash ?? currentBoardId ?? currentGridHash;
   const savedBoards = getSavedBoards();
-  const savedBoardsByBoardId = savedBoards.reduce<Record<string, ReturnType<typeof getSavedBoards>[number]>>((acc, entry) => {
+  const savedBoardsByBoardId = savedBoards.reduce<
+    Record<string, ReturnType<typeof getSavedBoards>[number]>
+  >((acc, entry) => {
     acc[entry.boardId ?? entry.hash] = entry;
     return acc;
   }, {});
@@ -758,13 +842,16 @@ function Home() {
           getSavedTemplateNames()[activeForkRecord.hash] ||
           activeForkRecord.forkedPatternTitle ||
           `${activeForkRecord.parentTitle} (${t('playground.forkSuffix')})`,
-        category: knownPatternMetadataByHash[activeForkRecord.parentHash]?.category ?? t('playground.categoryUnknown'),
+        category:
+          knownPatternMetadataByHash[activeForkRecord.parentHash]?.category ??
+          t('playground.categoryUnknown'),
         source: 'user' as const,
         creatorName: activeForkRecord.forkerName || storedProfileName,
         favoriteCount: 0,
-        forkCount: getForkOrigins().filter((entry) => entry.parentHash === activeForkRecord.hash).length,
+        forkCount: getForkOrigins().filter((entry) => entry.parentHash === activeForkRecord.hash)
+          .length,
       }
-    : catalogPatternMetadata ?? knownPatternMetadataByHash[effectivePatternHash];
+    : (catalogPatternMetadata ?? knownPatternMetadataByHash[effectivePatternHash]);
   useEffect(() => {
     ensureSeededSocialData(
       Object.values(knownPatternMetadataByHash).map((pattern) => ({
@@ -777,7 +864,9 @@ function Home() {
   }, []);
 
   const isSystemPattern = currentPatternMetadata?.source === 'system';
-  const isCurrentUserPattern = currentPatternMetadata?.source === 'user' && currentPatternMetadata.creatorName === storedProfileName;
+  const isCurrentUserPattern =
+    currentPatternMetadata?.source === 'user' &&
+    currentPatternMetadata.creatorName === storedProfileName;
   const socialPatternHash = isSystemPattern ? currentPatternMetadata.hash : effectivePatternHash;
   const forkOrigin = activeForkRecord ?? getForkOrigin(effectivePatternHash);
   const currentGridSignature = getGridSignature(currentPattern);
@@ -790,18 +879,29 @@ function Home() {
     savedBoardForRoute ||
     savedBoardForCurrent ||
     (!currentPatternMetadata && isUnsavedDraftBoard) ||
-    isCurrentUserPattern
+    isCurrentUserPattern,
   );
   const emptyBoardHash = encodeGridToBase64({});
-  const isUnsavedEmptyBoard = isUnsavedDraftBoard && currentGridHash === emptyBoardHash && Object.keys(currentPattern).length === 0;
-  const todayLabel = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date());
+  const isUnsavedEmptyBoard =
+    isUnsavedDraftBoard &&
+    currentGridHash === emptyBoardHash &&
+    Object.keys(currentPattern).length === 0;
+  const todayLabel = new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date());
   const unsavedBoardDefaultName = `${storedProfileName}'s New Game - ${todayLabel}`;
   const headerTitle = isUnsavedEmptyBoard
     ? unsavedBoardDefaultName
     : savedTitle || currentPatternMetadata?.name || presetTitle || unsavedBoardDefaultName;
   const uncategorizedCategory = t('playground.categoryUncategorized');
   const supportedDraftCategories = Array.from(
-    new Set(Object.values(knownPatternMetadataByHash).map((pattern) => pattern.category).filter((category) => category.trim().length > 0)),
+    new Set(
+      Object.values(knownPatternMetadataByHash)
+        .map((pattern) => pattern.category)
+        .filter((category) => category.trim().length > 0),
+    ),
   ).sort((left, right) => left.localeCompare(right));
   const draftCategoryOptions = [...supportedDraftCategories, uncategorizedCategory];
   const patternCategoryLabel = currentPatternMetadata
@@ -812,7 +912,7 @@ function Home() {
   const patternCreatorLabel = currentPatternMetadata
     ? currentPatternMetadata.source === 'system'
       ? t('patternSource.system')
-      : currentPatternMetadata.creatorName ?? t('patternSource.user')
+      : (currentPatternMetadata.creatorName ?? t('patternSource.user'))
     : isUnsavedDraftBoard
       ? null
       : t('patternSource.user');
@@ -821,7 +921,9 @@ function Home() {
       ? '/profile?creator=system'
       : `/profile?creator=${encodeURIComponent(toCreatorSlug(currentPatternMetadata.creatorName ?? 'user'))}`
     : null;
-  const categoryExploreHref = patternCategoryLabel ? `/explore?category=${encodeURIComponent(patternCategoryLabel)}` : null;
+  const categoryExploreHref = patternCategoryLabel
+    ? `/explore?category=${encodeURIComponent(patternCategoryLabel)}`
+    : null;
   const rulesetExploreHref = `/explore?ruleset=${encodeURIComponent(selectedRulesetId)}`;
   const forkParentHref = forkOrigin
     ? (() => {
@@ -838,25 +940,40 @@ function Home() {
         return `/play?${params.toString()}`;
       })()
     : null;
-  const infoDescriptionBase = currentPatternMetadata?.source === 'system' && patternCategoryLabel
-    ? t('playground.infoDescriptionSystem', { category: patternCategoryLabel })
-    : currentPatternMetadata?.creatorName && patternCategoryLabel && patternCreatorLabel
-      ? t('playground.infoDescriptionUser', { category: patternCategoryLabel, creator: patternCreatorLabel })
+  const infoDescriptionBase =
+    currentPatternMetadata?.source === 'system' && patternCategoryLabel
+      ? t('playground.infoDescriptionSystem', { category: patternCategoryLabel })
+      : currentPatternMetadata?.creatorName && patternCategoryLabel && patternCreatorLabel
+        ? t('playground.infoDescriptionUser', {
+            category: patternCategoryLabel,
+            creator: patternCreatorLabel,
+          })
+        : '';
+  const infoDescription =
+    !isUnsavedDraftBoard && infoDescriptionBase
+      ? forkOrigin
+        ? `${infoDescriptionBase} ${t('playground.infoDescriptionForked', { name: forkOrigin.parentTitle })}`
+        : infoDescriptionBase
       : '';
-  const infoDescription = !isUnsavedDraftBoard && infoDescriptionBase
-    ? forkOrigin
-      ? `${infoDescriptionBase} ${t('playground.infoDescriptionForked', { name: forkOrigin.parentTitle })}`
-      : infoDescriptionBase
-    : '';
-  const effectiveDescription = savedBoardDescription || currentPatternMetadata?.description || (!isUnsavedDraftBoard ? infoDescription : '');
+  const effectiveDescription =
+    savedBoardDescription ||
+    currentPatternMetadata?.description ||
+    (!isUnsavedDraftBoard ? infoDescription : '');
   const infoAuthorValue = patternCreatorLabel ?? storedProfileName;
   const infoCategoryValue = patternCategoryLabel ?? uncategorizedCategory;
-  const infoDescriptionValue = effectiveDescription || t('playground.infoDescriptionUser', { category: infoCategoryValue, creator: infoAuthorValue });
-  const infoSourceTag = currentPatternMetadata?.source === 'system' ? t('patternSource.system') : t('patternSource.user');
-  const infoVisibilityTag = isSystemPattern || savedBoardForCurrent?.visibility === 'public'
-    ? t('playground.visibilityPublic')
-    : t('playground.visibilityPrivate');
-  const candidateInfoTags = savedBoardTags.length > 0 ? savedBoardTags : currentPatternMetadata?.tags ?? [];
+  const infoDescriptionValue =
+    effectiveDescription ||
+    t('playground.infoDescriptionUser', { category: infoCategoryValue, creator: infoAuthorValue });
+  const infoSourceTag =
+    currentPatternMetadata?.source === 'system'
+      ? t('patternSource.system')
+      : t('patternSource.user');
+  const infoVisibilityTag =
+    isSystemPattern || savedBoardForCurrent?.visibility === 'public'
+      ? t('playground.visibilityPublic')
+      : t('playground.visibilityPrivate');
+  const candidateInfoTags =
+    savedBoardTags.length > 0 ? savedBoardTags : (currentPatternMetadata?.tags ?? []);
   const infoTags = getDescriptiveTags(candidateInfoTags, [
     infoCategoryValue,
     infoSourceTag,
@@ -877,10 +994,16 @@ function Home() {
 
     return `/explore?tag=${encodeURIComponent(tag)}`;
   }
-  const favoriteRecordsForPattern = isUnsavedEditableBoard ? [] : getFavoriteBoards().filter((entry) => entry.hash === socialPatternHash);
+  const favoriteRecordsForPattern = isUnsavedEditableBoard
+    ? []
+    : getFavoriteBoards().filter((entry) => entry.hash === socialPatternHash);
   const patternStars = favoriteRecordsForPattern.length;
-  const patternForks = isUnsavedEditableBoard ? 0 : getForkOrigins().filter((entry) => entry.parentHash === socialPatternHash).length;
-  const isStarredByCurrentUser = favoriteRecordsForPattern.some((entry) => (entry.actorName || storedProfileName) === storedProfileName);
+  const patternForks = isUnsavedEditableBoard
+    ? 0
+    : getForkOrigins().filter((entry) => entry.parentHash === socialPatternHash).length;
+  const isStarredByCurrentUser = favoriteRecordsForPattern.some(
+    (entry) => (entry.actorName || storedProfileName) === storedProfileName,
+  );
   const starredByUsers = getFavoriteBoards()
     .filter((entry) => entry.hash === socialPatternHash)
     .map((entry) => entry.actorName || storedProfileName);
@@ -904,7 +1027,8 @@ function Home() {
       pattern: entry.forkedPatternTitle || forkingPatternTitle,
       forkedAt: dateFormatter.format(new Date(entry.createdAt)),
       updatedAt: dateFormatter.format(new Date(savedBoard?.updatedAt ?? entry.createdAt)),
-      stars: getFavoriteBoards().filter((favoriteEntry) => favoriteEntry.hash === entry.hash).length,
+      stars: getFavoriteBoards().filter((favoriteEntry) => favoriteEntry.hash === entry.hash)
+        .length,
     };
   });
   const forkedByRecords = forkRecordsFromStorage;
@@ -920,8 +1044,8 @@ function Home() {
 
   useEffect(() => {
     if (boardNeedsInitialization) {
-      console.info('Board needs Initialization')
-      game = new Game(currentPattern, rules)
+      console.info('Board needs Initialization');
+      game = new Game(currentPattern, rules);
       setBoardInitialization(false);
       setGeneration(0);
       setStats(game.getStats());
@@ -930,18 +1054,24 @@ function Home() {
     }
   }, [boardNeedsInitialization, currentPattern, rules]);
 
-  useEffect(() => {
-    if (!currentBoardId) {
-      return;
-    }
-
-    const nextRules = savedBoardForRoute?.rules ? cloneGameRules(savedBoardForRoute.rules) : cloneGameRules(DEFAULT_RULES);
+  const applySavedBoardRules = useEffectEvent(() => {
+    const nextRules = savedBoardForRoute?.rules
+      ? cloneGameRules(savedBoardForRoute.rules)
+      : cloneGameRules(DEFAULT_RULES);
     setRules(nextRules);
     setIsRulesLocked(savedBoardForRoute?.rulesLocked ?? true);
 
     if (game.setRules) {
       game.setRules(nextRules);
     }
+  });
+
+  useEffect(() => {
+    if (!currentBoardId) {
+      return;
+    }
+
+    applySavedBoardRules();
   }, [currentBoardId, savedBoardForRoute?.updatedAt]);
 
   useEffect(() => {
@@ -950,6 +1080,10 @@ function Home() {
       setBoardStateOverlay(null);
     }
   }, [boardNeedsInitialization]);
+
+  const stopGameFromEffect = useEffectEvent(() => {
+    stopGame(true);
+  });
 
   useEffect(() => {
     if (!isGameRunning || isEditMode) {
@@ -974,7 +1108,7 @@ function Home() {
 
     if (stats.liveCells === 0) {
       if (isGameRunning) {
-        stopGame(true);
+        stopGameFromEffect();
       }
       if (boardStateOverlay !== 'gameOver') {
         setBoardStateOverlay('gameOver');
@@ -984,36 +1118,46 @@ function Home() {
 
     if (tracker.streak >= STABILITY_GENERATION_THRESHOLD && isStabilityOverlayEnabled) {
       if (isGameRunning) {
-        stopGame(true);
+        stopGameFromEffect();
       }
       if (boardStateOverlay !== 'stability') {
         setBoardStateOverlay('stability');
       }
     }
-  }, [generation, stats.liveCells, isGameRunning, boardStateOverlay, isStabilityOverlayEnabled]);
+  }, [
+    generation,
+    stats.liveCells,
+    isGameRunning,
+    isEditMode,
+    boardStateOverlay,
+    isStabilityOverlayEnabled,
+  ]);
 
   function runGameInterval(speed = generationSpeed) {
-    intervalID = setInterval(() => {
+    intervalID = window.setInterval(() => {
       const previousGrid = { ...game.getStatus() };
       const nextGrid = game.next();
       const generationInteractions = analyzeGenerationInteractions(previousGrid, nextGrid, rules);
       setLastGenerationInteractions(generationInteractions);
       setOvercrowdingDeathLedgerByPressureColor((previousLedger) =>
-        mergeColorCountLedger(previousLedger, generationInteractions.overcrowdingDeathsByPressureColor),
+        mergeColorCountLedger(
+          previousLedger,
+          generationInteractions.overcrowdingDeathsByPressureColor,
+        ),
       );
-      setGeneration(game.getGenerations())
+      setGeneration(game.getGenerations());
       setStats(game.getStats());
-    }, getGenerationSpeed(speed))
+    }, getGenerationSpeed(speed));
   }
 
   function stopGame(updateUrl = true) {
-    clearInterval(intervalID);
+    window.clearInterval(intervalID);
     setIsGameRunning(false);
 
     if (updateUrl) {
       const currentGrid = game.getStatus();
       updateURLWithGrid(currentGrid);
-      updateCatalogPatternInURL(isSystemPattern ? currentPatternMetadata?.name ?? null : null);
+      updateCatalogPatternInURL(isSystemPattern ? (currentPatternMetadata?.name ?? null) : null);
     }
   }
 
@@ -1074,12 +1218,12 @@ function Home() {
     }
 
     if (isGameRunning) {
-      console.info("Pausing game.");
+      console.info('Pausing game.');
       stopGame(true);
       setSnackbarMessage(t('messages.simulationPaused'));
       setSnackbarOpen(true);
     } else {
-      console.info("Starting game.");
+      console.info('Starting game.');
       runGameInterval();
       setIsGameRunning(true);
       setSnackbarMessage(t('messages.simulationStarted'));
@@ -1121,32 +1265,35 @@ function Home() {
   }
 
   function nextGeneration(_e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    console.info('Next generation pushed')
+    console.info('Next generation pushed');
     const previousGrid = { ...game.getStatus() };
     const nextGrid = game.next();
     const generationInteractions = analyzeGenerationInteractions(previousGrid, nextGrid, rules);
     setLastGenerationInteractions(generationInteractions);
     setOvercrowdingDeathLedgerByPressureColor((previousLedger) =>
-      mergeColorCountLedger(previousLedger, generationInteractions.overcrowdingDeathsByPressureColor),
+      mergeColorCountLedger(
+        previousLedger,
+        generationInteractions.overcrowdingDeathsByPressureColor,
+      ),
     );
-    setGeneration(game.getGenerations())
+    setGeneration(game.getGenerations());
     setStats(game.getStats());
   }
 
   function updateGenerationSpeed(value: number) {
     const nextSpeed = clampGenerationSpeed(value);
-    console.info('Generation Speed updated', nextSpeed)
+    console.info('Generation Speed updated', nextSpeed);
 
-    setGenerationSpeed(nextSpeed)
+    setGenerationSpeed(nextSpeed);
 
     if (isGameRunning) {
-      clearInterval(intervalID)
+      window.clearInterval(intervalID);
       runGameInterval(nextSpeed);
     }
   }
 
   function resetBoard() {
-    console.info("Reset board pushed.");
+    console.info('Reset board pushed.');
     setRules(cloneGameRules(DEFAULT_RULES));
     setIsRulesLocked(!isUnsavedEditableBoard);
     if (game.setRules) {
@@ -1175,7 +1322,7 @@ function Home() {
   }
 
   function loadCustomPattern(grid: LifeGrid, rulesetId = 'standard') {
-    console.info("Loading custom pattern", grid);
+    console.info('Loading custom pattern', grid);
     const ruleset = getImplementedRulesetById(rulesetId);
     const nextRules = cloneGameRules(ruleset?.rules ?? DEFAULT_RULES);
     const systemPreset = patterns.find(
@@ -1195,7 +1342,7 @@ function Home() {
     suppressBoardStateOverlayRef.current = false;
     setCurrentPattern(grid);
     setBoardInitialization(true);
-    
+
     // Update URL when pattern is selected
     updateURLWithGrid(grid);
     updateCatalogPatternInURL(systemPreset?.name ?? null);
@@ -1250,7 +1397,7 @@ function Home() {
       return;
     }
 
-    console.info("Rules updated", newRules);
+    console.info('Rules updated', newRules);
     setRules(newRules);
     if (game.setRules) {
       game.setRules(newRules);
@@ -1283,7 +1430,9 @@ function Home() {
 
     const nextRules = cloneGameRules(ruleset.rules);
     handleRulesChange(nextRules);
-    setSnackbarMessage(t('messages.rulesetApplied', { name: ruleset.name, classification: ruleset.classification }));
+    setSnackbarMessage(
+      t('messages.rulesetApplied', { name: ruleset.name, classification: ruleset.classification }),
+    );
     setSnackbarOpen(true);
   }
 
@@ -1337,7 +1486,7 @@ function Home() {
   }
 
   function handlePaletteChange(paletteId: string) {
-    console.info("Palette changed", paletteId);
+    console.info('Palette changed', paletteId);
     setSelectedPaletteId(paletteId);
     setDrawColor(getPaletteById(paletteId).liveCell);
   }
@@ -1372,7 +1521,11 @@ function Home() {
     const coloredStampPattern = tintGridCells(rotatedStampPattern, activeDrawColor);
     const nextGrid = mergeGridAtCoordinate(currentGrid, coloredStampPattern, coordinate);
 
-    clearBoardStateOverlaySuppressionIfBoardExpanded(currentGrid, nextGrid, suppressBoardStateOverlayRef);
+    clearBoardStateOverlaySuppressionIfBoardExpanded(
+      currentGrid,
+      nextGrid,
+      suppressBoardStateOverlayRef,
+    );
     if (!suppressBoardStateOverlayRef.current) {
       setBoardStateOverlay(null);
     }
@@ -1467,7 +1620,7 @@ function Home() {
 
     if (stats.liveCells === 0) {
       if (isGameRunning) {
-        stopGame(true);
+        stopGameFromEffect();
       }
       if (!suppressBoardStateOverlayRef.current && boardStateOverlay !== 'gameOver') {
         setBoardStateOverlay('gameOver');
@@ -1477,13 +1630,20 @@ function Home() {
 
     if (tracker.streak >= STABILITY_GENERATION_THRESHOLD && isStabilityOverlayEnabled) {
       if (isGameRunning) {
-        stopGame(true);
+        stopGameFromEffect();
       }
       if (!suppressBoardStateOverlayRef.current && boardStateOverlay === null) {
         setBoardStateOverlay('stability');
       }
     }
-  }, [generation, stats.liveCells, isGameRunning, isEditMode, boardStateOverlay, isStabilityOverlayEnabled]);
+  }, [
+    generation,
+    stats.liveCells,
+    isGameRunning,
+    isEditMode,
+    boardStateOverlay,
+    isStabilityOverlayEnabled,
+  ]);
 
   function handleSnackbarClose() {
     setSnackbarOpen(false);
@@ -1538,89 +1698,108 @@ function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.repeat) return;
-      if (isInteractiveKeyboardTarget(event.target)) return;
+  const handleKeyboardShortcut = useEffectEvent((event: KeyboardEvent) => {
+    if (event.repeat) return;
+    if (isInteractiveKeyboardTarget(event.target)) return;
 
-      if (event.code === 'Space') {
-        event.preventDefault();
-        if (isEditMode) {
-          enterPlayMode();
-          return;
-        }
-
-        toggleGame();
-        return;
-      }
-
-      if (event.key.toLowerCase() === 'm') {
-        event.preventDefault();
-        if (isEditMode) {
-          enterPlayMode();
-        } else {
-          enterEditMode();
-        }
-        return;
-      }
-
-      const isIncreaseKey = event.code === 'NumpadAdd' || (event.code === 'Equal' && event.shiftKey) || event.key.toLowerCase() === 'x';
-      const isDecreaseKey = event.code === 'Minus' || event.code === 'NumpadSubtract' || event.key.toLowerCase() === 'z';
-
-      if (isEditMode && activeEditTool === 'stamp' && stampPattern) {
-        const key = event.key.toLowerCase();
-
-        if (event.key === ']') {
-          event.preventDefault();
-          rotateStampPattern();
-          setRotateStampKeyPressToken((previous) => previous + 1);
-          setSnackbarMessage(t('messages.stampRotationUpdated', { degrees: rotateStampRotationClockwise(stampRotation) }));
-          setSnackbarOpen(true);
-          return;
-        }
-
-        if (event.key === '[') {
-          event.preventDefault();
-          rotateStampPatternCounterClockwise();
-          setRotateStampKeyPressToken((previous) => previous + 1);
-          setSnackbarMessage(t('messages.stampRotationUpdated', { degrees: rotateStampRotationCounterClockwise(stampRotation) }));
-          setSnackbarOpen(true);
-          return;
-        }
-
-        if (key === 'r') {
-          event.preventDefault();
-          rotateStampPattern();
-          setRotateStampKeyPressToken((previous) => previous + 1);
-          setSnackbarMessage(t('messages.stampRotationUpdated', { degrees: rotateStampRotationClockwise(stampRotation) }));
-          setSnackbarOpen(true);
-          return;
-        }
-      }
-
-      if (!isIncreaseKey && !isDecreaseKey) return;
-
+    if (event.code === 'Space') {
       event.preventDefault();
       if (isEditMode) {
-        setSnackbarMessage(t('messages.enterPlayModeToRun'));
+        enterPlayMode();
+        return;
+      }
+
+      toggleGame();
+      return;
+    }
+
+    if (event.key.toLowerCase() === 'm') {
+      event.preventDefault();
+      if (isEditMode) {
+        enterPlayMode();
+      } else {
+        enterEditMode();
+      }
+      return;
+    }
+
+    const isIncreaseKey =
+      event.code === 'NumpadAdd' ||
+      (event.code === 'Equal' && event.shiftKey) ||
+      event.key.toLowerCase() === 'x';
+    const isDecreaseKey =
+      event.code === 'Minus' || event.code === 'NumpadSubtract' || event.key.toLowerCase() === 'z';
+
+    if (isEditMode && activeEditTool === 'stamp' && stampPattern) {
+      const key = event.key.toLowerCase();
+
+      if (event.key === ']') {
+        event.preventDefault();
+        rotateStampPattern();
+        setRotateStampKeyPressToken((previous) => previous + 1);
+        setSnackbarMessage(
+          t('messages.stampRotationUpdated', {
+            degrees: rotateStampRotationClockwise(stampRotation),
+          }),
+        );
         setSnackbarOpen(true);
         return;
       }
 
-      const nextSpeed = clampGenerationSpeed(generationSpeed + (isIncreaseKey ? 1 : -1));
-      if (nextSpeed === generationSpeed) return;
+      if (event.key === '[') {
+        event.preventDefault();
+        rotateStampPatternCounterClockwise();
+        setRotateStampKeyPressToken((previous) => previous + 1);
+        setSnackbarMessage(
+          t('messages.stampRotationUpdated', {
+            degrees: rotateStampRotationCounterClockwise(stampRotation),
+          }),
+        );
+        setSnackbarOpen(true);
+        return;
+      }
 
-      updateGenerationSpeed(nextSpeed);
-      setSnackbarMessage(t('messages.generationSpeedChanged', { level: nextSpeed }));
+      if (key === 'r') {
+        event.preventDefault();
+        rotateStampPattern();
+        setRotateStampKeyPressToken((previous) => previous + 1);
+        setSnackbarMessage(
+          t('messages.stampRotationUpdated', {
+            degrees: rotateStampRotationClockwise(stampRotation),
+          }),
+        );
+        setSnackbarOpen(true);
+        return;
+      }
+    }
+
+    if (!isIncreaseKey && !isDecreaseKey) return;
+
+    event.preventDefault();
+    if (isEditMode) {
+      setSnackbarMessage(t('messages.enterPlayModeToRun'));
       setSnackbarOpen(true);
-    };
+      return;
+    }
 
+    const nextSpeed = clampGenerationSpeed(generationSpeed + (isIncreaseKey ? 1 : -1));
+    if (nextSpeed === generationSpeed) return;
+
+    updateGenerationSpeed(nextSpeed);
+    setSnackbarMessage(t('messages.generationSpeedChanged', { level: nextSpeed }));
+    setSnackbarOpen(true);
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      handleKeyboardShortcut(event);
+    };
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeEditTool, generationSpeed, isEditMode, isGameRunning, isSystemPattern, stampPattern, stampRotation, t]);
+  }, []);
 
   function scheduleMaximizedControlsHide() {
     if (maximizeControlsHideTimer.current) clearTimeout(maximizeControlsHideTimer.current);
@@ -1639,14 +1818,17 @@ function Home() {
 
   function copyCurrentURL() {
     const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-      setSnackbarMessage(t('messages.urlCopied'));
-      setSnackbarOpen(true);
-    }).catch((err) => {
-      console.error('Failed to copy URL:', err);
-      setSnackbarMessage(t('messages.urlCopyFailed'));
-      setSnackbarOpen(true);
-    });
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        setSnackbarMessage(t('messages.urlCopied'));
+        setSnackbarOpen(true);
+      })
+      .catch((err) => {
+        console.error('Failed to copy URL:', err);
+        setSnackbarMessage(t('messages.urlCopyFailed'));
+        setSnackbarOpen(true);
+      });
   }
 
   function persistSavedTemplateNames(next: Record<string, string>) {
@@ -1668,7 +1850,8 @@ function Home() {
     const hash = effectivePatternHash;
     if (!hash) return;
 
-    let nextTitle = options?.title?.trim() || savedTemplateNames[hash] || presetTitle || unsavedBoardDefaultName;
+    let nextTitle =
+      options?.title?.trim() || savedTemplateNames[hash] || presetTitle || unsavedBoardDefaultName;
 
     if (!options?.skipPrompt && (saveAs || !savedTemplateNames[hash])) {
       const entered = window.prompt(t('playground.savePrompt'), nextTitle);
@@ -1725,20 +1908,32 @@ function Home() {
   function confirmDraftSave() {
     const normalizedName = draftSaveName.trim();
     const normalizedCategory = draftSaveCategory.trim();
-    const parsedTags = getDescriptiveTags(Array.from(new Set(
-      draftSaveTags
-        .split(',')
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0),
-    )), [
-      normalizedCategory,
-      infoSourceTag,
-      draftSaveVisibility === 'public' ? t('playground.visibilityPublic') : t('playground.visibilityPrivate'),
-      infoAuthorValue,
-      activeRulesetName,
-      selectedRulesetId,
-    ]);
-    if (!normalizedName || !normalizedCategory || !draftCategoryOptions.includes(normalizedCategory)) return;
+    const parsedTags = getDescriptiveTags(
+      Array.from(
+        new Set(
+          draftSaveTags
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0),
+        ),
+      ),
+      [
+        normalizedCategory,
+        infoSourceTag,
+        draftSaveVisibility === 'public'
+          ? t('playground.visibilityPublic')
+          : t('playground.visibilityPrivate'),
+        infoAuthorValue,
+        activeRulesetName,
+        selectedRulesetId,
+      ],
+    );
+    if (
+      !normalizedName ||
+      !normalizedCategory ||
+      !draftCategoryOptions.includes(normalizedCategory)
+    )
+      return;
     saveTemplate(false, {
       skipPrompt: true,
       title: normalizedName,
@@ -1793,7 +1988,17 @@ function Home() {
         ...savedTemplateNames,
         [forkBoardId]: trimmed,
       });
-      upsertSavedBoard(currentGridHash, trimmed, forkBoardId, undefined, undefined, undefined, undefined, rules, isRulesLocked);
+      upsertSavedBoard(
+        currentGridHash,
+        trimmed,
+        forkBoardId,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        rules,
+        isRulesLocked,
+      );
       upsertForkOrigin(forkBoardId, {
         parentHash: socialPatternHash,
         parentTitle: headerTitle,
@@ -1806,7 +2011,9 @@ function Home() {
       setSnackbarMessage(t('messages.patternForked', { name: headerTitle }));
       setSnackbarOpen(true);
       closeEditNameModal();
-      navigate(`/play?pattern=${encodeURIComponent(currentGridHash)}&board=${encodeURIComponent(forkBoardId)}`);
+      navigate(
+        `/play?pattern=${encodeURIComponent(currentGridHash)}&board=${encodeURIComponent(forkBoardId)}`,
+      );
       return;
     }
 
@@ -1820,7 +2027,17 @@ function Home() {
       ...savedTemplateNames,
       [hash]: trimmed,
     });
-    upsertSavedBoard(currentGridHash, trimmed, hash, undefined, undefined, undefined, undefined, rules, isRulesLocked);
+    upsertSavedBoard(
+      currentGridHash,
+      trimmed,
+      hash,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      rules,
+      isRulesLocked,
+    );
     trackRecentBoard(currentGridHash, trimmed, hash);
     setSnackbarMessage(t('messages.templateSaved'));
     setSnackbarOpen(true);
@@ -1833,7 +2050,9 @@ function Home() {
 
     const nextStarred = toggleFavoriteBoard(hash, headerTitle, storedProfileName);
     setSnackbarMessage(
-      t(nextStarred ? 'messages.patternFavorited' : 'messages.patternUnfavorited', { name: headerTitle }),
+      t(nextStarred ? 'messages.patternFavorited' : 'messages.patternUnfavorited', {
+        name: headerTitle,
+      }),
     );
     setSnackbarOpen(true);
   }
@@ -1894,25 +2113,29 @@ function Home() {
   function handleCellPaint(coordinate: string, nextCellColor: string | null) {
     if (!isEditMode || isGameRunning || isSystemPattern) return;
     clearSelectionGrid();
-    
+
     const currentGrid = game.getStatus();
     const newGrid = { ...currentGrid };
-    
+
     if (nextCellColor) {
       newGrid[coordinate] = nextCellColor;
     } else {
       delete newGrid[coordinate];
     }
 
-    clearBoardStateOverlaySuppressionIfBoardExpanded(currentGrid, newGrid, suppressBoardStateOverlayRef);
+    clearBoardStateOverlaySuppressionIfBoardExpanded(
+      currentGrid,
+      newGrid,
+      suppressBoardStateOverlayRef,
+    );
     if (!suppressBoardStateOverlayRef.current) {
       setBoardStateOverlay(null);
     }
-    
+
     // Update the game with the new grid
     setCurrentPattern(newGrid);
     setBoardInitialization(true);
-    
+
     // Update URL to allow sharing custom patterns
     updateURLWithGrid(newGrid);
   }
@@ -1922,9 +2145,12 @@ function Home() {
 
     const currentGrid = game.getStatus();
     const selectedCoordinates = selectedCellsGrid ? Object.keys(selectedCellsGrid) : [];
-    const fillCoordinates = selectedCoordinates.length > 0
-      ? selectedCoordinates
-      : (hoveredCoordinate ? getContiguousLiveRegionByColor(currentGrid, hoveredCoordinate) : []);
+    const fillCoordinates =
+      selectedCoordinates.length > 0
+        ? selectedCoordinates
+        : hoveredCoordinate
+          ? getContiguousLiveRegionByColor(currentGrid, hoveredCoordinate)
+          : [];
 
     if (fillCoordinates.length === 0) {
       return;
@@ -1937,7 +2163,11 @@ function Home() {
     }
 
     setUndoBoardSnapshot({ ...currentGrid });
-    clearBoardStateOverlaySuppressionIfBoardExpanded(currentGrid, nextGrid, suppressBoardStateOverlayRef);
+    clearBoardStateOverlaySuppressionIfBoardExpanded(
+      currentGrid,
+      nextGrid,
+      suppressBoardStateOverlayRef,
+    );
     if (!suppressBoardStateOverlayRef.current) {
       setBoardStateOverlay(null);
     }
@@ -1961,12 +2191,15 @@ function Home() {
   const canSaveTemplate = !isSystemPattern && generation > 0 && boardModified;
   const gridJSON = JSON.stringify(gameStatus, null, 2);
   const cellDataEntries = Object.entries(gameStatus);
-  const liveColorCounts = Object.values(gameStatus).reduce<Record<string, number>>((accumulator, cellColor) => {
-    if (typeof cellColor !== 'string') return accumulator;
-    const normalized = cellColor.toLowerCase();
-    accumulator[normalized] = (accumulator[normalized] || 0) + 1;
-    return accumulator;
-  }, {});
+  const liveColorCounts = Object.values(gameStatus).reduce<Record<string, number>>(
+    (accumulator, cellColor) => {
+      if (typeof cellColor !== 'string') return accumulator;
+      const normalized = cellColor.toLowerCase();
+      accumulator[normalized] = (accumulator[normalized] || 0) + 1;
+      return accumulator;
+    },
+    {},
+  );
   const liveColorLeaderboard = Object.entries(liveColorCounts)
     .map(([color, count]) => ({ color, count }))
     .sort((left, right) => right.count - left.count);
@@ -1975,17 +2208,24 @@ function Home() {
     .map(([color, count]) => ({ color, count }))
     .sort((left, right) => right.count - left.count);
   const maxOvercrowdingPressureCount = overcrowdingPressureLeaderboard[0]?.count || 0;
-  const experimentalBirthLeaderboard = Object.entries(lastGenerationInteractions.experimentalBirthsByColor)
-    .map(([color, count]) => ({ color, count, tieBreakCount: lastGenerationInteractions.tieBreakBirthsByColor[color] ?? 0 }))
+  const experimentalBirthLeaderboard = Object.entries(
+    lastGenerationInteractions.experimentalBirthsByColor,
+  )
+    .map(([color, count]) => ({
+      color,
+      count,
+      tieBreakCount: lastGenerationInteractions.tieBreakBirthsByColor[color] ?? 0,
+    }))
     .sort((left, right) => right.count - left.count);
   const maxExperimentalBirthCount = experimentalBirthLeaderboard[0]?.count || 0;
   const hasExperimentalRulesEnabled =
     rules.experimentalSpeciesCompetitionBirth.enabled ||
     rules.experimentalSpeciesCompetitionDominantBirth.enabled ||
     rules.experimentalSpeciesCompetitionTieBreakBirth.enabled;
-  const selectionCount = selectionStartCoordinate && selectionEndCoordinate
-    ? Object.keys(selectedCellsGrid ?? {}).length
-    : 0;
+  const selectionCount =
+    selectionStartCoordinate && selectionEndCoordinate
+      ? Object.keys(selectedCellsGrid ?? {}).length
+      : 0;
 
   return (
     <div className="App">
@@ -1994,7 +2234,7 @@ function Home() {
           <div className="playground-header-title-block">
             <div className="playground-header-title-wrap">
               <h3 className="playground-header-title">
-              <span className="playground-header-title-text">{headerTitle}</span>
+                <span className="playground-header-title-text">{headerTitle}</span>
               </h3>
               {!isSystemPattern ? (
                 <button
@@ -2007,18 +2247,23 @@ function Home() {
                   <Pencil size={13} aria-hidden="true" />
                 </button>
               ) : null}
-                {!isEditMode && !isUnsavedDraftBoard && forkOrigin ? (
-                  <div className="playground-header-meta-row" aria-label={t('playground.patternMetadata')}>
-                    <span className="wm-badge wm-badge-neutral playground-header-meta-badge">
-                      {t('playground.forkedFrom', { name: forkOrigin.parentTitle })}
-                    </span>
-                  </div>
-                ) : null}
+              {!isEditMode && !isUnsavedDraftBoard && forkOrigin ? (
+                <div
+                  className="playground-header-meta-row"
+                  aria-label={t('playground.patternMetadata')}
+                >
+                  <span className="wm-badge wm-badge-neutral playground-header-meta-badge">
+                    {t('playground.forkedFrom', { name: forkOrigin.parentTitle })}
+                  </span>
+                </div>
+              ) : null}
             </div>
           </div>
           {isUnsavedEditableBoard ? (
             <div className="playground-header-unsaved-note-row">
-              <span className="playground-header-unsaved-note">{t('playground.unsavedEmptyBoardNotice')}</span>
+              <span className="playground-header-unsaved-note">
+                {t('playground.unsavedEmptyBoardNotice')}
+              </span>
             </div>
           ) : null}
           <div className="playground-header-actions">
@@ -2028,7 +2273,9 @@ function Home() {
                   className="btn btn-sm btn-secondary-neutral"
                   type="button"
                   onClick={toggleCurrentPatternStar}
-                  aria-label={isStarredByCurrentUser ? t('explore.favorited') : t('explore.favorite')}
+                  aria-label={
+                    isStarredByCurrentUser ? t('explore.favorited') : t('explore.favorite')
+                  }
                   title={isStarredByCurrentUser ? t('explore.favorited') : t('explore.favorite')}
                 >
                   <Star size={12} fill={isStarredByCurrentUser ? 'currentColor' : 'none'} />
@@ -2061,7 +2308,11 @@ function Home() {
                   <span>{t('playground.save')}</span>
                 </button>
               ) : (
-                <div className="playground-save-compound" role="group" aria-label={t('playground.save')}>
+                <div
+                  className="playground-save-compound"
+                  role="group"
+                  aria-label={t('playground.save')}
+                >
                   <button
                     className="btn btn-sm btn-secondary-neutral"
                     type="button"
@@ -2074,10 +2325,18 @@ function Home() {
                     <span>{t('playground.save')}</span>
                   </button>
                   <details className="playground-save-menu">
-                    <summary className="playground-save-menu-trigger" aria-label={t('playground.saveOptions')} title={t('playground.saveOptions')}>
+                    <summary
+                      className="playground-save-menu-trigger"
+                      aria-label={t('playground.saveOptions')}
+                      title={t('playground.saveOptions')}
+                    >
                       <ChevronDown size={12} aria-hidden="true" />
                     </summary>
-                    <div className="playground-save-menu-panel" role="menu" aria-label={t('playground.saveOptions')}>
+                    <div
+                      className="playground-save-menu-panel"
+                      role="menu"
+                      aria-label={t('playground.saveOptions')}
+                    >
                       <button
                         className="playground-save-menu-item"
                         type="button"
@@ -2130,7 +2389,11 @@ function Home() {
                   {infoTags.length > 0 ? (
                     <div className="play-about-tags" aria-label="Tags">
                       {infoTags.map((tag) => (
-                        <Link key={tag} className="wm-badge wm-badge-neutral play-about-tag" to={getInfoTagExploreHref(tag)}>
+                        <Link
+                          key={tag}
+                          className="wm-badge wm-badge-neutral play-about-tag"
+                          to={getInfoTagExploreHref(tag)}
+                        >
                           {tag}
                         </Link>
                       ))}
@@ -2149,11 +2412,20 @@ function Home() {
                   <div className="play-about-meta-list">
                     <div className="play-about-meta-item">
                       <span className="play-about-meta-icon" aria-hidden="true">
-                        {currentPatternMetadata?.source === 'system' ? <Cpu size={12} /> : <User size={12} />}
+                        {currentPatternMetadata?.source === 'system' ? (
+                          <Cpu size={12} />
+                        ) : (
+                          <User size={12} />
+                        )}
                       </span>
-                      <span className="play-about-meta-label">{t('playground.infoAuthorLabel')}</span>
+                      <span className="play-about-meta-label">
+                        {t('playground.infoAuthorLabel')}
+                      </span>
                       {authorProfileHref && patternCreatorLabel ? (
-                        <Link className="play-about-meta-value-link" to={authorProfileHref as string}>
+                        <Link
+                          className="play-about-meta-value-link"
+                          to={authorProfileHref as string}
+                        >
                           {patternCreatorLabel}
                         </Link>
                       ) : (
@@ -2161,10 +2433,17 @@ function Home() {
                       )}
                     </div>
                     <div className="play-about-meta-item">
-                      <span className="play-about-meta-icon" aria-hidden="true"><Tag size={12} /></span>
-                      <span className="play-about-meta-label">{t('playground.infoCategoryLabel')}</span>
+                      <span className="play-about-meta-icon" aria-hidden="true">
+                        <Tag size={12} />
+                      </span>
+                      <span className="play-about-meta-label">
+                        {t('playground.infoCategoryLabel')}
+                      </span>
                       {categoryExploreHref && patternCategoryLabel ? (
-                        <Link className="play-about-meta-value-link" to={categoryExploreHref as string}>
+                        <Link
+                          className="play-about-meta-value-link"
+                          to={categoryExploreHref as string}
+                        >
                           {patternCategoryLabel}
                         </Link>
                       ) : (
@@ -2172,7 +2451,9 @@ function Home() {
                       )}
                     </div>
                     <div className="play-about-meta-item">
-                      <span className="play-about-meta-icon" aria-hidden="true"><Settings size={12} /></span>
+                      <span className="play-about-meta-icon" aria-hidden="true">
+                        <Settings size={12} />
+                      </span>
                       <span className="play-about-meta-label">{t('diagnostics.rulesetLabel')}</span>
                       <Link className="play-about-meta-value-link" to={rulesetExploreHref}>
                         {activeRulesetName}
@@ -2181,8 +2462,12 @@ function Home() {
                     {!isUnsavedDraftBoard || isSystemPattern ? (
                       <>
                         <div className="play-about-meta-item">
-                          <span className="play-about-meta-icon" aria-hidden="true"><GitFork size={12} /></span>
-                          <span className="play-about-meta-label">{t('playground.infoForksMetaLabel')}</span>
+                          <span className="play-about-meta-icon" aria-hidden="true">
+                            <GitFork size={12} />
+                          </span>
+                          <span className="play-about-meta-label">
+                            {t('playground.infoForksMetaLabel')}
+                          </span>
                           <button
                             className="play-about-forks-count"
                             type="button"
@@ -2194,13 +2479,18 @@ function Home() {
                           </button>
                         </div>
                         {forkedByRecords.length > 0 ? (
-                          <ul className="play-about-forks-list" aria-label={t('playground.infoForksMetaLabel')}>
+                          <ul
+                            className="play-about-forks-list"
+                            aria-label={t('playground.infoForksMetaLabel')}
+                          >
                             {forkedByRecords.map((entry) => (
                               <li key={entry.boardId}>
                                 <Link
                                   className="play-about-fork-link"
                                   to={getBoardHref(entry.boardHash, entry.boardId)}
-                                  onClick={() => trackRecentBoard(entry.boardHash, entry.pattern, entry.boardId)}
+                                  onClick={() =>
+                                    trackRecentBoard(entry.boardHash, entry.pattern, entry.boardId)
+                                  }
                                 >
                                   <span>{entry.pattern}</span>
                                   <span>{entry.forker}</span>
@@ -2213,8 +2503,12 @@ function Home() {
                     ) : null}
                     {forkOrigin && forkParentHref ? (
                       <div className="play-about-meta-item">
-                        <span className="play-about-meta-icon" aria-hidden="true"><GitFork size={12} /></span>
-                        <span className="play-about-meta-label">{t('playground.infoForkedFromLabel')}</span>
+                        <span className="play-about-meta-icon" aria-hidden="true">
+                          <GitFork size={12} />
+                        </span>
+                        <span className="play-about-meta-label">
+                          {t('playground.infoForkedFromLabel')}
+                        </span>
                         <Link className="play-about-meta-value-link" to={forkParentHref}>
                           {forkOrigin.parentTitle}
                         </Link>
@@ -2247,7 +2541,11 @@ function Home() {
                           lockRules();
                         }}
                       >
-                        {isRulesLocked ? <Lock size={13} aria-hidden="true" /> : <LockOpen size={13} aria-hidden="true" />}
+                        {isRulesLocked ? (
+                          <Lock size={13} aria-hidden="true" />
+                        ) : (
+                          <LockOpen size={13} aria-hidden="true" />
+                        )}
                       </button>
                     </summary>
                     <div className="diagnostics-section-content">
@@ -2283,17 +2581,26 @@ function Home() {
                             checked={isStabilityOverlayEnabled}
                             onChange={(event) => handleStabilityOverlayToggle(event.target.checked)}
                           />
-                          <span className="rules-checkbox-label">{t('diagnostics.stabilityOverlayEnabled')}</span>
+                          <span className="rules-checkbox-label">
+                            {t('diagnostics.stabilityOverlayEnabled')}
+                          </span>
                         </label>
                         <span className="rules-popover-wrap">
                           <span
                             className="rules-popover-trigger"
                             aria-label={t('diagnostics.stabilityOverlayDescription')}
                             role="img"
-                            onMouseEnter={(event) => showSettingsPopover(event, t('diagnostics.stabilityOverlayDescription'))}
+                            onMouseEnter={(event) =>
+                              showSettingsPopover(
+                                event,
+                                t('diagnostics.stabilityOverlayDescription'),
+                              )
+                            }
                             onMouseLeave={hideSettingsPopover}
                           >
-                            <span className="rules-popover-trigger-icon" aria-hidden="true">i</span>
+                            <span className="rules-popover-trigger-icon" aria-hidden="true">
+                              i
+                            </span>
                           </span>
                         </span>
                       </span>
@@ -2305,19 +2612,30 @@ function Home() {
                             type="checkbox"
                             className="rules-checkbox-input"
                             checked={isBirthDeathPreviewEnabled}
-                            onChange={(event) => setIsBirthDeathPreviewEnabled(event.target.checked)}
+                            onChange={(event) =>
+                              setIsBirthDeathPreviewEnabled(event.target.checked)
+                            }
                           />
-                          <span className="rules-checkbox-label">{t('diagnostics.birthDeathPreviewEnabled')}</span>
+                          <span className="rules-checkbox-label">
+                            {t('diagnostics.birthDeathPreviewEnabled')}
+                          </span>
                         </label>
                         <span className="rules-popover-wrap">
                           <span
                             className="rules-popover-trigger"
                             aria-label={t('diagnostics.birthDeathPreviewDescription')}
                             role="img"
-                            onMouseEnter={(event) => showSettingsPopover(event, t('diagnostics.birthDeathPreviewDescription'))}
+                            onMouseEnter={(event) =>
+                              showSettingsPopover(
+                                event,
+                                t('diagnostics.birthDeathPreviewDescription'),
+                              )
+                            }
                             onMouseLeave={hideSettingsPopover}
                           >
-                            <span className="rules-popover-trigger-icon" aria-hidden="true">i</span>
+                            <span className="rules-popover-trigger-icon" aria-hidden="true">
+                              i
+                            </span>
                           </span>
                         </span>
                       </span>
@@ -2333,262 +2651,368 @@ function Home() {
           className={`left-column wm-sidebar-layout-main${isBoardMaximized ? ' board-maximized' : ''}`}
           onMouseMove={handleBoardMouseMove}
         >
-        <Grid 
-          game={game} 
-          centerCoordinateRequest={centerCoordinateRequest}
-          onHoverCoordinateChange={handleHoverCoordinateChange}
-          hoveredCoordinate={hoveredCoordinate}
-          onContextCoordinateRequest={handleContextCoordinateRequest}
-          onPaintStart={handleBoardEditStart}
-          selectionGrid={isEditMode && activeEditTool === 'selection' ? selectedCellsGrid : null}
-          selectionStartCoordinate={isEditMode && activeEditTool === 'selection' ? selectionStartCoordinate : null}
-          selectionEndCoordinate={isEditMode && activeEditTool === 'selection' ? selectionEndCoordinate : null}
-          onSelectionStart={handleSelectionStart}
-          onSelectionChange={handleSelectionChange}
-          onSelectionEnd={handleSelectionEnd}
-          selectionCount={selectionCount}
-          palette={selectedPalette}
-          isEditMode={isEditMode}
-          rules={rules}
-          onCellPaint={handleCellPaint}
-          activeDrawColor={activeDrawColor}
-          activeEditTool={activeEditTool}
-          stampPattern={rotatedStampPattern}
-          onStampPatternAtCoordinate={handleStampPatternAtCoordinate}
-          showBirthDeathPreview={isBirthDeathPreviewEnabled}
-          isBoardMaximized={isBoardMaximized}
-          toggleBoardMaximized={toggleBoardMaximized}
-          playOverlayContent={(
-            <GridControls
-              variant="play"
-              nextGeneration={nextGeneration}
-              updateGenerationSpeed={updateGenerationSpeed}
-              generationSpeed={generationSpeed}
-              hoveredCoordinate={hoveredCoordinate}
-              onResetRequested={requestResetBoard}
-              toggleGame={toggleGame}
-              isGameRunning={isGameRunning}
-              copyCurrentURL={copyCurrentURL}
-              selectedPaletteId={selectedPaletteId}
-              selectedDrawColor={activeDrawColor}
-              onPaletteChange={handlePaletteChange}
-              onDrawColorChange={handleDrawColorChange}
-              onCustomColorCommitted={handleCustomColorCommitted}
-              isEditMode={isEditMode}
-              onEnterEditMode={enterEditMode}
-              onEnterPlayMode={enterPlayMode}
-              onUndoBoardChange={undoBoardChange}
-              canUndoBoardChange={undoBoardSnapshot !== null}
-              isSystemPattern={isSystemPattern}
-              activeEditTool={activeEditTool}
-              onEditToolChange={handleEditToolChange}
-              selectionCount={selectionCount}
-              onFillSelectionColor={handleSelectionColorFill}
-              stampPattern={stampPattern}
-              stampPreviewPattern={tintedStampPreviewPattern}
-              stampPatternName={stampPatternName}
-              stampRotation={stampRotation}
-              rotateStampKeyPressToken={rotateStampKeyPressToken}
-              onRotateStamp={rotateStampPattern}
-              onStampPatternSelect={handleStampPatternSelect}
-            />
-          )}
-        />
-        {boardStateOverlay && (
-          <div className="board-state-overlay board-state-overlay-top" role="dialog" aria-modal="false" aria-live="polite">
-            <div className="board-state-overlay-panel">
-              <h4 className="board-state-overlay-title">
-                {boardStateOverlay === 'stability' ? t('messages.stabilityDetectedTitle') : t('messages.gameOverTitle')}
-              </h4>
-              <p className="board-state-overlay-text">
-                {boardStateOverlay === 'stability'
-                  ? t('messages.stabilityDetectedDescription')
-                  : t('messages.gameOverDescription')}
-              </p>
-              <div className="board-state-overlay-actions">
-                <button className="btn btn-sm btn-secondary-neutral" type="button" onClick={returnToEditModeFromBoardState}>
-                  {t('messages.returnToEditMode')}
-                </button>
-                {boardStateOverlay === 'stability' && (
-                  <button className="btn btn-sm btn-primary-neutral" type="button" onClick={continuePlayingFromBoardState}>
-                    {t('messages.continuePlaying')}
+          <Grid
+            game={game}
+            centerCoordinateRequest={centerCoordinateRequest}
+            onHoverCoordinateChange={handleHoverCoordinateChange}
+            hoveredCoordinate={hoveredCoordinate}
+            onContextCoordinateRequest={handleContextCoordinateRequest}
+            onPaintStart={handleBoardEditStart}
+            selectionGrid={isEditMode && activeEditTool === 'selection' ? selectedCellsGrid : null}
+            selectionStartCoordinate={
+              isEditMode && activeEditTool === 'selection' ? selectionStartCoordinate : null
+            }
+            selectionEndCoordinate={
+              isEditMode && activeEditTool === 'selection' ? selectionEndCoordinate : null
+            }
+            onSelectionStart={handleSelectionStart}
+            onSelectionChange={handleSelectionChange}
+            onSelectionEnd={handleSelectionEnd}
+            selectionCount={selectionCount}
+            palette={selectedPalette}
+            isEditMode={isEditMode}
+            rules={rules}
+            onCellPaint={handleCellPaint}
+            activeDrawColor={activeDrawColor}
+            activeEditTool={activeEditTool}
+            stampPattern={rotatedStampPattern}
+            onStampPatternAtCoordinate={handleStampPatternAtCoordinate}
+            showBirthDeathPreview={isBirthDeathPreviewEnabled}
+            isBoardMaximized={isBoardMaximized}
+            toggleBoardMaximized={toggleBoardMaximized}
+            playOverlayContent={
+              <GridControls
+                variant="play"
+                nextGeneration={nextGeneration}
+                updateGenerationSpeed={updateGenerationSpeed}
+                generationSpeed={generationSpeed}
+                hoveredCoordinate={hoveredCoordinate}
+                onResetRequested={requestResetBoard}
+                toggleGame={toggleGame}
+                isGameRunning={isGameRunning}
+                copyCurrentURL={copyCurrentURL}
+                selectedPaletteId={selectedPaletteId}
+                selectedDrawColor={activeDrawColor}
+                onPaletteChange={handlePaletteChange}
+                onDrawColorChange={handleDrawColorChange}
+                onCustomColorCommitted={handleCustomColorCommitted}
+                isEditMode={isEditMode}
+                onEnterEditMode={enterEditMode}
+                onEnterPlayMode={enterPlayMode}
+                onUndoBoardChange={undoBoardChange}
+                canUndoBoardChange={undoBoardSnapshot !== null}
+                isSystemPattern={isSystemPattern}
+                activeEditTool={activeEditTool}
+                onEditToolChange={handleEditToolChange}
+                selectionCount={selectionCount}
+                onFillSelectionColor={handleSelectionColorFill}
+                stampPattern={stampPattern}
+                stampPreviewPattern={tintedStampPreviewPattern}
+                stampPatternName={stampPatternName}
+                stampRotation={stampRotation}
+                rotateStampKeyPressToken={rotateStampKeyPressToken}
+                onRotateStamp={rotateStampPattern}
+                onStampPatternSelect={handleStampPatternSelect}
+              />
+            }
+          />
+          {boardStateOverlay && (
+            <div
+              className="board-state-overlay board-state-overlay-top"
+              role="dialog"
+              aria-modal="false"
+              aria-live="polite"
+            >
+              <div className="board-state-overlay-panel">
+                <h4 className="board-state-overlay-title">
+                  {boardStateOverlay === 'stability'
+                    ? t('messages.stabilityDetectedTitle')
+                    : t('messages.gameOverTitle')}
+                </h4>
+                <p className="board-state-overlay-text">
+                  {boardStateOverlay === 'stability'
+                    ? t('messages.stabilityDetectedDescription')
+                    : t('messages.gameOverDescription')}
+                </p>
+                <div className="board-state-overlay-actions">
+                  <button
+                    className="btn btn-sm btn-secondary-neutral"
+                    type="button"
+                    onClick={returnToEditModeFromBoardState}
+                  >
+                    {t('messages.returnToEditMode')}
                   </button>
-                )}
+                  {boardStateOverlay === 'stability' && (
+                    <button
+                      className="btn btn-sm btn-primary-neutral"
+                      type="button"
+                      onClick={continuePlayingFromBoardState}
+                    >
+                      {t('messages.continuePlaying')}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-        <div className="right-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider">
-        <div className="sidebar-tabs-nav right-column-card-spaced">
-          <ThemeTabs
-            options={[
-              { value: 'diagnostics', label: 'State' },
-              { value: 'patterns', label: 'Patterns' },
-            ]}
-            activeValue={activeSidebarTab}
-            onChange={(value) => setActiveSidebarTab(value as 'patterns' | 'diagnostics')}
-            ariaLabel="Simulation panels"
-          />
+          )}
         </div>
-
-        {activeSidebarTab === 'patterns' && (
-          <div className="right-column-card-fill">
-            <PatternInput 
-              onLoadPattern={handlePatternInputLoad}
-              disabled={isGameRunning}
-              selectedPaletteId={selectedPaletteId}
+        <div className="right-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider">
+          <div className="sidebar-tabs-nav right-column-card-spaced">
+            <ThemeTabs
+              options={[
+                { value: 'diagnostics', label: 'State' },
+                { value: 'patterns', label: 'Patterns' },
+              ]}
+              activeValue={activeSidebarTab}
+              onChange={(value) => setActiveSidebarTab(value as 'patterns' | 'diagnostics')}
+              ariaLabel="Simulation panels"
             />
           </div>
-        )}
 
-        {activeSidebarTab === 'diagnostics' && (
-          <div className="diagnostics-panel">
-            <details className="diagnostics-section" open>
-              <summary className="diagnostics-section-summary">
-                <h4 className="diagnostics-section-heading">{t('diagnostics.statistics')}</h4>
-              </summary>
-              <div className="diagnostics-section-content">
-                <div className="diagnostics-stats-grid">
+          {activeSidebarTab === 'patterns' && (
+            <div className="right-column-card-fill">
+              <PatternInput
+                onLoadPattern={handlePatternInputLoad}
+                disabled={isGameRunning}
+                selectedPaletteId={selectedPaletteId}
+              />
+            </div>
+          )}
+
+          {activeSidebarTab === 'diagnostics' && (
+            <div className="diagnostics-panel">
+              <details className="diagnostics-section" open>
+                <summary className="diagnostics-section-summary">
+                  <h4 className="diagnostics-section-heading">{t('diagnostics.statistics')}</h4>
+                </summary>
+                <div className="diagnostics-section-content">
+                  <div className="diagnostics-stats-grid">
+                    <article className="diagnostics-stat-card">
+                      <p className="diagnostics-stat-label">{t('diagnostics.generations')}</p>
+                      <p className="diagnostics-stat-value">{generation}</p>
+                    </article>
+                    <article className="diagnostics-stat-card">
+                      <p className="diagnostics-stat-label">{t('diagnostics.liveCells')}</p>
+                      <p className="diagnostics-stat-value">{stats.liveCells}</p>
+                    </article>
+                    <article className="diagnostics-stat-card">
+                      <p className="diagnostics-stat-label">{t('diagnostics.totalBirths')}</p>
+                      <p className="diagnostics-stat-value diagnostics-stat-value--success">
+                        {stats.births}
+                      </p>
+                    </article>
+                    <article className="diagnostics-stat-card">
+                      <p className="diagnostics-stat-label">{t('diagnostics.totalDeaths')}</p>
+                      <p className="diagnostics-stat-value diagnostics-stat-value--danger">
+                        {stats.deaths}
+                      </p>
+                    </article>
+                  </div>
                   <article className="diagnostics-stat-card">
-                    <p className="diagnostics-stat-label">{t('diagnostics.generations')}</p>
-                    <p className="diagnostics-stat-value">{generation}</p>
+                    <p className="diagnostics-stat-label">{t('diagnostics.liveCellsByColor')}</p>
+                    <div
+                      className="diagnostics-color-leaderboard"
+                      role="list"
+                      aria-label={t('diagnostics.liveCellsByColor')}
+                    >
+                      {liveColorLeaderboard.length === 0 ? (
+                        <p className="diagnostics-color-leaderboard-empty">
+                          {t('diagnostics.noLiveCellsByColor')}
+                        </p>
+                      ) : (
+                        liveColorLeaderboard.map(({ color, count }) => {
+                          const relativeWidth =
+                            maxLiveColorCount > 0
+                              ? Math.max(6, (count / maxLiveColorCount) * 100)
+                              : 0;
+                          return (
+                            <div
+                              className="diagnostics-color-leaderboard-item"
+                              role="listitem"
+                              key={color}
+                            >
+                              <div className="diagnostics-color-leaderboard-item-header">
+                                <span
+                                  className="diagnostics-color-chip"
+                                  style={{ backgroundColor: color }}
+                                  aria-hidden="true"
+                                ></span>
+                                <span className="diagnostics-color-code">{color}</span>
+                                <span className="diagnostics-color-count">
+                                  {t('diagnostics.liveCellsCount', { count })}
+                                </span>
+                              </div>
+                              <div className="diagnostics-color-bar-track" aria-hidden="true">
+                                <div
+                                  className="diagnostics-color-bar-fill"
+                                  style={{ width: `${relativeWidth}%`, backgroundColor: color }}
+                                ></div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
                   </article>
-                  <article className="diagnostics-stat-card">
-                    <p className="diagnostics-stat-label">{t('diagnostics.liveCells')}</p>
-                    <p className="diagnostics-stat-value">{stats.liveCells}</p>
-                  </article>
-                  <article className="diagnostics-stat-card">
-                    <p className="diagnostics-stat-label">{t('diagnostics.totalBirths')}</p>
-                    <p className="diagnostics-stat-value diagnostics-stat-value--success">{stats.births}</p>
-                  </article>
-                  <article className="diagnostics-stat-card">
-                    <p className="diagnostics-stat-label">{t('diagnostics.totalDeaths')}</p>
-                    <p className="diagnostics-stat-value diagnostics-stat-value--danger">{stats.deaths}</p>
+                  <article className="diagnostics-stat-card diagnostics-stat-card-generation-interactions">
+                    <p className="diagnostics-stat-label">
+                      {t('diagnostics.generationInteractions')}
+                    </p>
+                    <div
+                      className="diagnostics-color-leaderboard"
+                      role="list"
+                      aria-label={t('diagnostics.overcrowdingDeathsByOtherColor')}
+                    >
+                      <p className="diagnostics-color-leaderboard-heading">
+                        {t('diagnostics.overcrowdingDeathsByOtherColor')}
+                      </p>
+                      {overcrowdingPressureLeaderboard.length === 0 ? (
+                        <p className="diagnostics-color-leaderboard-empty">
+                          {t('diagnostics.noOvercrowdingDeathsByOtherColor')}
+                        </p>
+                      ) : (
+                        overcrowdingPressureLeaderboard.map(({ color, count }) => {
+                          const relativeWidth =
+                            maxOvercrowdingPressureCount > 0
+                              ? Math.max(6, (count / maxOvercrowdingPressureCount) * 100)
+                              : 0;
+                          return (
+                            <div
+                              className="diagnostics-color-leaderboard-item"
+                              role="listitem"
+                              key={`overcrowding-${color}`}
+                            >
+                              <div className="diagnostics-color-leaderboard-item-header">
+                                <span
+                                  className="diagnostics-color-chip"
+                                  style={{ backgroundColor: color }}
+                                  aria-hidden="true"
+                                ></span>
+                                <span className="diagnostics-color-code">{color}</span>
+                                <span className="diagnostics-color-count">
+                                  {t('diagnostics.overcrowdingDeathsCount', { count })}
+                                </span>
+                              </div>
+                              <div className="diagnostics-color-bar-track" aria-hidden="true">
+                                <div
+                                  className="diagnostics-color-bar-fill"
+                                  style={{ width: `${relativeWidth}%`, backgroundColor: color }}
+                                ></div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    <div
+                      className="diagnostics-color-leaderboard"
+                      role="list"
+                      aria-label={t('diagnostics.experimentalBirthsByColor')}
+                    >
+                      <p className="diagnostics-color-leaderboard-heading">
+                        {t('diagnostics.experimentalBirthsByColor')}
+                      </p>
+                      {!hasExperimentalRulesEnabled ? (
+                        <p className="diagnostics-color-leaderboard-empty">
+                          {t('diagnostics.experimentalRulesDisabled')}
+                        </p>
+                      ) : experimentalBirthLeaderboard.length === 0 ? (
+                        <p className="diagnostics-color-leaderboard-empty">
+                          {t('diagnostics.noExperimentalBirthsByColor')}
+                        </p>
+                      ) : (
+                        experimentalBirthLeaderboard.map(({ color, count, tieBreakCount }) => {
+                          const relativeWidth =
+                            maxExperimentalBirthCount > 0
+                              ? Math.max(6, (count / maxExperimentalBirthCount) * 100)
+                              : 0;
+                          return (
+                            <div
+                              className="diagnostics-color-leaderboard-item"
+                              role="listitem"
+                              key={`experimental-birth-${color}`}
+                            >
+                              <div className="diagnostics-color-leaderboard-item-header">
+                                <span
+                                  className="diagnostics-color-chip"
+                                  style={{ backgroundColor: color }}
+                                  aria-hidden="true"
+                                ></span>
+                                <span className="diagnostics-color-code">{color}</span>
+                                <span className="diagnostics-color-count">
+                                  {t('diagnostics.experimentalBirthsCount', { count })}
+                                  {tieBreakCount > 0
+                                    ? ` (${t('diagnostics.tieBreakBirthsCount', { count: tieBreakCount })})`
+                                    : ''}
+                                </span>
+                              </div>
+                              <div className="diagnostics-color-bar-track" aria-hidden="true">
+                                <div
+                                  className="diagnostics-color-bar-fill"
+                                  style={{ width: `${relativeWidth}%`, backgroundColor: color }}
+                                ></div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
                   </article>
                 </div>
-                <article className="diagnostics-stat-card">
-                  <p className="diagnostics-stat-label">{t('diagnostics.liveCellsByColor')}</p>
-                  <div className="diagnostics-color-leaderboard" role="list" aria-label={t('diagnostics.liveCellsByColor')}>
-                    {liveColorLeaderboard.length === 0 ? (
-                      <p className="diagnostics-color-leaderboard-empty">{t('diagnostics.noLiveCellsByColor')}</p>
-                    ) : (
-                      liveColorLeaderboard.map(({ color, count }) => {
-                        const relativeWidth = maxLiveColorCount > 0 ? Math.max(6, (count / maxLiveColorCount) * 100) : 0;
-                        return (
-                          <div className="diagnostics-color-leaderboard-item" role="listitem" key={color}>
-                            <div className="diagnostics-color-leaderboard-item-header">
-                              <span className="diagnostics-color-chip" style={{ backgroundColor: color }} aria-hidden="true"></span>
-                              <span className="diagnostics-color-code">{color}</span>
-                              <span className="diagnostics-color-count">{t('diagnostics.liveCellsCount', { count })}</span>
-                            </div>
-                            <div className="diagnostics-color-bar-track" aria-hidden="true">
-                              <div className="diagnostics-color-bar-fill" style={{ width: `${relativeWidth}%`, backgroundColor: color }}></div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </article>
-                <article className="diagnostics-stat-card diagnostics-stat-card-generation-interactions">
-                  <p className="diagnostics-stat-label">{t('diagnostics.generationInteractions')}</p>
-                  <div className="diagnostics-color-leaderboard" role="list" aria-label={t('diagnostics.overcrowdingDeathsByOtherColor')}>
-                    <p className="diagnostics-color-leaderboard-heading">{t('diagnostics.overcrowdingDeathsByOtherColor')}</p>
-                    {overcrowdingPressureLeaderboard.length === 0 ? (
-                      <p className="diagnostics-color-leaderboard-empty">{t('diagnostics.noOvercrowdingDeathsByOtherColor')}</p>
-                    ) : (
-                      overcrowdingPressureLeaderboard.map(({ color, count }) => {
-                        const relativeWidth = maxOvercrowdingPressureCount > 0 ? Math.max(6, (count / maxOvercrowdingPressureCount) * 100) : 0;
-                        return (
-                          <div className="diagnostics-color-leaderboard-item" role="listitem" key={`overcrowding-${color}`}>
-                            <div className="diagnostics-color-leaderboard-item-header">
-                              <span className="diagnostics-color-chip" style={{ backgroundColor: color }} aria-hidden="true"></span>
-                              <span className="diagnostics-color-code">{color}</span>
-                              <span className="diagnostics-color-count">{t('diagnostics.overcrowdingDeathsCount', { count })}</span>
-                            </div>
-                            <div className="diagnostics-color-bar-track" aria-hidden="true">
-                              <div className="diagnostics-color-bar-fill" style={{ width: `${relativeWidth}%`, backgroundColor: color }}></div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                  <div className="diagnostics-color-leaderboard" role="list" aria-label={t('diagnostics.experimentalBirthsByColor')}>
-                    <p className="diagnostics-color-leaderboard-heading">{t('diagnostics.experimentalBirthsByColor')}</p>
-                    {!hasExperimentalRulesEnabled ? (
-                      <p className="diagnostics-color-leaderboard-empty">{t('diagnostics.experimentalRulesDisabled')}</p>
-                    ) : experimentalBirthLeaderboard.length === 0 ? (
-                      <p className="diagnostics-color-leaderboard-empty">{t('diagnostics.noExperimentalBirthsByColor')}</p>
-                    ) : (
-                      experimentalBirthLeaderboard.map(({ color, count, tieBreakCount }) => {
-                        const relativeWidth = maxExperimentalBirthCount > 0 ? Math.max(6, (count / maxExperimentalBirthCount) * 100) : 0;
-                        return (
-                          <div className="diagnostics-color-leaderboard-item" role="listitem" key={`experimental-birth-${color}`}>
-                            <div className="diagnostics-color-leaderboard-item-header">
-                              <span className="diagnostics-color-chip" style={{ backgroundColor: color }} aria-hidden="true"></span>
-                              <span className="diagnostics-color-code">{color}</span>
-                              <span className="diagnostics-color-count">
-                                {t('diagnostics.experimentalBirthsCount', { count })}
-                                {tieBreakCount > 0 ? ` (${t('diagnostics.tieBreakBirthsCount', { count: tieBreakCount })})` : ''}
+              </details>
+
+              <details className="diagnostics-section" open>
+                <summary className="diagnostics-section-summary">
+                  <h4 className="diagnostics-section-heading">{t('diagnostics.cellData')}</h4>
+                </summary>
+                <div className="diagnostics-section-content">
+                  <div className="code-sample" data-lang="json">
+                    <button
+                      className="code-copy-btn"
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(gridJSON).then(() => {
+                          setCellDataCopied(true);
+                          setTimeout(() => setCellDataCopied(false), 1500);
+                        });
+                      }}
+                    >
+                      {cellDataCopied ? 'Copied!' : 'Copy'}
+                    </button>
+                    <pre className="code-block">
+                      <code className="language-json">
+                        {cellDataEntries.length === 0 ? (
+                          '{\n}'
+                        ) : (
+                          <>
+                            <span>{'{\n'}</span>
+                            {cellDataEntries.map(([coordinate, cellColor], index) => (
+                              <span className="code-block-line" key={coordinate}>
+                                <span>{'  '}</span>
+                                <button
+                                  className="diagnostics-coordinate-button"
+                                  type="button"
+                                  onClick={() => handleCenterCoordinateRequest(coordinate)}
+                                >
+                                  &quot;{coordinate}&quot;
+                                </button>
+                                <span>
+                                  : {JSON.stringify(cellColor)}
+                                  {index < cellDataEntries.length - 1 ? ',' : ''}
+                                </span>
+                                {'\n'}
                               </span>
-                            </div>
-                            <div className="diagnostics-color-bar-track" aria-hidden="true">
-                              <div className="diagnostics-color-bar-fill" style={{ width: `${relativeWidth}%`, backgroundColor: color }}></div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
+                            ))}
+                            <span>{'}'}</span>
+                          </>
+                        )}
+                      </code>
+                    </pre>
                   </div>
-                </article>
-              </div>
-            </details>
-
-            <details className="diagnostics-section" open>
-              <summary className="diagnostics-section-summary">
-                <h4 className="diagnostics-section-heading">{t('diagnostics.cellData')}</h4>
-              </summary>
-              <div className="diagnostics-section-content">
-                <div className="code-sample" data-lang="json">
-                  <button
-                    className="code-copy-btn"
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(gridJSON).then(() => {
-                        setCellDataCopied(true);
-                        setTimeout(() => setCellDataCopied(false), 1500);
-                      });
-                    }}
-                  >
-                    {cellDataCopied ? 'Copied!' : 'Copy'}
-                  </button>
-                  <pre className="code-block"><code className="language-json">{cellDataEntries.length === 0 ? '{\n}' : (
-                    <>
-                      <span>{'{\n'}</span>
-                      {cellDataEntries.map(([coordinate, cellColor], index) => (
-                        <span className="code-block-line" key={coordinate}>
-                          <span>{'  '}</span>
-                          <button
-                            className="diagnostics-coordinate-button"
-                            type="button"
-                            onClick={() => handleCenterCoordinateRequest(coordinate)}
-                          >
-                            &quot;{coordinate}&quot;
-                          </button>
-                          <span>: {JSON.stringify(cellColor)}{index < cellDataEntries.length - 1 ? ',' : ''}</span>
-                          {'\n'}
-                        </span>
-                      ))}
-                      <span>{'}'}</span>
-                    </>
-                  )}</code></pre>
                 </div>
-              </div>
-            </details>
-          </div>
-        )}
+              </details>
+            </div>
+          )}
         </div>
       </div>
 
@@ -2603,7 +3027,9 @@ function Home() {
           type="button"
           aria-label="Dismiss"
           onClick={handleSnackbarClose}
-        >&#x2715;</button>
+        >
+          &#x2715;
+        </button>
       </div>
 
       {isResetModalOpen && (
@@ -2616,13 +3042,19 @@ function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="wm-modal-header">
-              <h3 id="reset-modal-title" className="wm-modal-title">{t('dialogs.confirmReset')}</h3>
+              <h3 id="reset-modal-title" className="wm-modal-title">
+                {t('dialogs.confirmReset')}
+              </h3>
             </div>
             <div className="wm-modal-body">
               <p>{t('dialogs.resetMessage')}</p>
             </div>
             <div className="wm-modal-footer">
-              <button className="btn btn-secondary btn-outline" type="button" onClick={cancelResetBoard}>
+              <button
+                className="btn btn-secondary btn-outline"
+                type="button"
+                onClick={cancelResetBoard}
+              >
                 {t('dialogs.cancel')}
               </button>
               <button className="btn btn-danger" type="button" onClick={confirmResetBoard}>
@@ -2643,16 +3075,26 @@ function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="wm-modal-header">
-              <h3 id="remove-star-modal-title" className="wm-modal-title">{t('playground.removeStarConfirmTitle')}</h3>
+              <h3 id="remove-star-modal-title" className="wm-modal-title">
+                {t('playground.removeStarConfirmTitle')}
+              </h3>
             </div>
             <div className="wm-modal-body">
               <p>{t('playground.removeStarConfirmMessage', { name: headerTitle })}</p>
             </div>
             <div className="wm-modal-footer">
-              <button className="btn btn-secondary btn-outline" type="button" onClick={cancelRemoveCurrentPatternStar}>
+              <button
+                className="btn btn-secondary btn-outline"
+                type="button"
+                onClick={cancelRemoveCurrentPatternStar}
+              >
                 {t('dialogs.cancel')}
               </button>
-              <button className="btn btn-danger" type="button" onClick={confirmRemoveCurrentPatternStar}>
+              <button
+                className="btn btn-danger"
+                type="button"
+                onClick={confirmRemoveCurrentPatternStar}
+              >
                 {t('playground.removeStarConfirmAction')}
               </button>
             </div>
@@ -2670,10 +3112,14 @@ function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="wm-modal-header">
-              <h3 id="edit-name-modal-title" className="wm-modal-title">{nameModalMode === 'fork' ? t('playground.forkTitle') : t('playground.editTitle')}</h3>
+              <h3 id="edit-name-modal-title" className="wm-modal-title">
+                {nameModalMode === 'fork' ? t('playground.forkTitle') : t('playground.editTitle')}
+              </h3>
             </div>
             <div className="wm-modal-body">
-              <label htmlFor="pattern-name-input" className="wm-input-label">{t('playground.patternName')}</label>
+              <label htmlFor="pattern-name-input" className="wm-input-label">
+                {t('playground.patternName')}
+              </label>
               <input
                 id="pattern-name-input"
                 className="wm-input"
@@ -2690,7 +3136,11 @@ function Home() {
               />
             </div>
             <div className="wm-modal-footer">
-              <button className="btn btn-secondary btn-outline" type="button" onClick={closeEditNameModal}>
+              <button
+                className="btn btn-secondary btn-outline"
+                type="button"
+                onClick={closeEditNameModal}
+              >
                 {t('dialogs.cancel')}
               </button>
               <button className="btn btn-primary" type="button" onClick={confirmEditNameModal}>
@@ -2712,11 +3162,17 @@ function Home() {
           >
             <div className="wm-modal-header">
               <h3 id="draft-save-modal-title" className="wm-modal-title">
-                {t(draftSaveModalMode === 'edit' ? 'playground.confirmDraftEditTitle' : 'playground.confirmDraftSaveTitle')}
+                {t(
+                  draftSaveModalMode === 'edit'
+                    ? 'playground.confirmDraftEditTitle'
+                    : 'playground.confirmDraftSaveTitle',
+                )}
               </h3>
             </div>
             <div className="wm-modal-body playground-board-form">
-              <label htmlFor="draft-save-name-input" className="wm-input-label">{t('playground.patternName')}</label>
+              <label htmlFor="draft-save-name-input" className="wm-input-label">
+                {t('playground.patternName')}
+              </label>
               <input
                 id="draft-save-name-input"
                 className="wm-input"
@@ -2726,19 +3182,27 @@ function Home() {
                 placeholder={t('playground.confirmDraftSaveNamePlaceholder')}
                 autoFocus
               />
-              <label htmlFor="draft-save-category-select" className="wm-input-label">{t('playground.confirmDraftSaveCategoryLabel')}</label>
+              <label htmlFor="draft-save-category-select" className="wm-input-label">
+                {t('playground.confirmDraftSaveCategoryLabel')}
+              </label>
               <select
                 id="draft-save-category-select"
                 className="wm-input"
                 value={draftSaveCategory}
                 onChange={(e) => setDraftSaveCategory(e.target.value)}
               >
-                <option value="" disabled>{t('playground.confirmDraftSaveCategoryPlaceholder')}</option>
+                <option value="" disabled>
+                  {t('playground.confirmDraftSaveCategoryPlaceholder')}
+                </option>
                 {draftCategoryOptions.map((category) => (
-                  <option key={category} value={category}>{category}</option>
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
                 ))}
               </select>
-              <label htmlFor="draft-save-description-input" className="wm-input-label">{t('playground.infoDescriptionLabel')}</label>
+              <label htmlFor="draft-save-description-input" className="wm-input-label">
+                {t('playground.infoDescriptionLabel')}
+              </label>
               <textarea
                 id="draft-save-description-input"
                 className="wm-input"
@@ -2747,7 +3211,9 @@ function Home() {
                 placeholder={t('playground.confirmDraftSaveDescriptionPlaceholder')}
                 rows={3}
               />
-              <label htmlFor="draft-save-tags-input" className="wm-input-label">{t('playground.confirmDraftSaveTagsLabel')}</label>
+              <label htmlFor="draft-save-tags-input" className="wm-input-label">
+                {t('playground.confirmDraftSaveTagsLabel')}
+              </label>
               <input
                 id="draft-save-tags-input"
                 className="wm-input"
@@ -2757,7 +3223,9 @@ function Home() {
                 placeholder={t('playground.confirmDraftSaveTagsPlaceholder')}
               />
               <fieldset className="playground-visibility-toggle-group">
-                <legend className="wm-input-label">{t('playground.confirmDraftSaveVisibilityLabel')}</legend>
+                <legend className="wm-input-label">
+                  {t('playground.confirmDraftSaveVisibilityLabel')}
+                </legend>
                 <label className="playground-visibility-toggle-option">
                   <input
                     type="radio"
@@ -2781,7 +3249,11 @@ function Home() {
               </fieldset>
             </div>
             <div className="wm-modal-footer">
-              <button className="btn btn-secondary btn-outline" type="button" onClick={closeDraftSaveConfirmModal}>
+              <button
+                className="btn btn-secondary btn-outline"
+                type="button"
+                onClick={closeDraftSaveConfirmModal}
+              >
                 {t('dialogs.cancel')}
               </button>
               <button
@@ -2807,13 +3279,19 @@ function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="wm-modal-header">
-              <h3 id="unlock-rules-modal-title" className="wm-modal-title">{t('rules.unlockConfirmTitle')}</h3>
+              <h3 id="unlock-rules-modal-title" className="wm-modal-title">
+                {t('rules.unlockConfirmTitle')}
+              </h3>
             </div>
             <div className="wm-modal-body">
               <p>{t('rules.unlockConfirmMessage')}</p>
             </div>
             <div className="wm-modal-footer">
-              <button className="btn btn-secondary btn-outline" type="button" onClick={closeUnlockRulesModal}>
+              <button
+                className="btn btn-secondary btn-outline"
+                type="button"
+                onClick={closeUnlockRulesModal}
+              >
                 {t('dialogs.cancel')}
               </button>
               <button className="btn btn-primary" type="button" onClick={confirmUnlockRules}>
@@ -2834,13 +3312,22 @@ function Home() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="wm-modal-header">
-              <h3 id="insert-pattern-modal-title" className="wm-modal-title">{t('playground.insertSystemPattern')}</h3>
+              <h3 id="insert-pattern-modal-title" className="wm-modal-title">
+                {t('playground.insertSystemPattern')}
+              </h3>
             </div>
             <div className="wm-modal-body">
-              <PatternSelector onSelectPattern={handleInsertSystemPattern} selectedPaletteId={selectedPaletteId} />
+              <PatternSelector
+                onSelectPattern={handleInsertSystemPattern}
+                selectedPaletteId={selectedPaletteId}
+              />
             </div>
             <div className="wm-modal-footer">
-              <button className="btn btn-secondary btn-outline" type="button" onClick={closeInsertPatternModal}>
+              <button
+                className="btn btn-secondary btn-outline"
+                type="button"
+                onClick={closeInsertPatternModal}
+              >
                 {t('dialogs.cancel')}
               </button>
             </div>
@@ -2874,7 +3361,11 @@ function Home() {
               )}
             </div>
             <div className="wm-modal-footer">
-              <button className="btn btn-secondary btn-outline" type="button" onClick={() => setActivePopularityModal(null)}>
+              <button
+                className="btn btn-secondary btn-outline"
+                type="button"
+                onClick={() => setActivePopularityModal(null)}
+              >
                 {t('dialogs.cancel')}
               </button>
             </div>
@@ -2920,9 +3411,15 @@ function Home() {
                         >
                           <div className="play-forks-list-row">
                             <div className="play-forks-list-pattern-cell">
-                              <PatternPreview grid={entry.boardGrid} size={52} palette={selectedPalette} />
+                              <PatternPreview
+                                grid={entry.boardGrid}
+                                size={52}
+                                palette={selectedPalette}
+                              />
                               <div className="play-forks-list-pattern-copy">
-                                <span className="play-forks-list-pattern-name">{entry.pattern}</span>
+                                <span className="play-forks-list-pattern-name">
+                                  {entry.pattern}
+                                </span>
                                 <span className="play-forks-list-pattern-meta">{entry.forker}</span>
                               </div>
                             </div>
@@ -2943,23 +3440,32 @@ function Home() {
                   {t('playground.fork')}
                 </button>
               ) : null}
-              <button className="btn btn-secondary btn-outline" type="button" onClick={() => setActivePopularityModal(null)}>
+              <button
+                className="btn btn-secondary btn-outline"
+                type="button"
+                onClick={() => setActivePopularityModal(null)}
+              >
                 {t('dialogs.cancel')}
               </button>
             </div>
           </div>
         </div>
       )}
-      {settingsHoverPopover ? createPortal(
-        <span
-          className="rules-popover-floating"
-          role="tooltip"
-          style={{ left: `${settingsHoverPopover.left}px`, top: `${settingsHoverPopover.top}px` }}
-        >
-          {settingsHoverPopover.text}
-        </span>,
-        document.body,
-      ) : null}
+      {settingsHoverPopover
+        ? createPortal(
+            <span
+              className="rules-popover-floating"
+              role="tooltip"
+              style={{
+                left: `${settingsHoverPopover.left}px`,
+                top: `${settingsHoverPopover.top}px`,
+              }}
+            >
+              {settingsHoverPopover.text}
+            </span>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

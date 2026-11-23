@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DEFAULT_LIVE_CELL_COLOR, LifeGrid } from '@game-of-life/core';
 import { translateGridToViewport } from '@game-of-life/util';
 import { getCellFillColor } from '../util/cellColor';
@@ -7,7 +7,7 @@ import { ColorPalette, useThemeMode } from '@game-of-life/ui';
 const CELL_GAP = 1;
 
 function getCoordinate(rowIndex: number, cellSize: number) {
-  return rowIndex + (cellSize * rowIndex);
+  return rowIndex + cellSize * rowIndex;
 }
 
 interface Props {
@@ -65,7 +65,9 @@ function parseCoordinateKey(coordinate: string): ParsedCoordinate | null {
   return { x, y };
 }
 
-function getGridBounds(grid: LifeGrid): { minX: number; maxX: number; minY: number; maxY: number } | null {
+function getGridBounds(
+  grid: LifeGrid,
+): { minX: number; maxX: number; minY: number; maxY: number } | null {
   const coordinates = Object.keys(grid)
     .map(parseCoordinateKey)
     .filter((entry): entry is ParsedCoordinate => entry !== null);
@@ -120,7 +122,31 @@ function drawCrossHatchCell(
   ctx.restore();
 }
 
-function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPaintStart, selectionGrid = null, selectionStartCoordinate = null, selectionEndCoordinate = null, onSelectionStart, onSelectionChange, onSelectionEnd, grid, birthDeathPreviewGrid = null, cellSize, offsetX = 0, offsetY = 0, palette, isEditMode = false, onCellPaint, activeDrawColor = DEFAULT_LIVE_CELL_COLOR, activeEditTool = 'pencil', stampPattern = null, onStampPatternAtCoordinate, onPanByDrag, onViewportMetricsChange }: Props) {
+function CanvasGrid({
+  onHoverCoordinateChange,
+  onContextCoordinateRequest,
+  onPaintStart,
+  selectionGrid = null,
+  selectionStartCoordinate = null,
+  selectionEndCoordinate = null,
+  onSelectionStart,
+  onSelectionChange,
+  onSelectionEnd,
+  grid,
+  birthDeathPreviewGrid = null,
+  cellSize,
+  offsetX = 0,
+  offsetY = 0,
+  palette,
+  isEditMode = false,
+  onCellPaint,
+  activeDrawColor = DEFAULT_LIVE_CELL_COLOR,
+  activeEditTool = 'pencil',
+  stampPattern = null,
+  onStampPatternAtCoordinate,
+  onPanByDrag,
+  onViewportMetricsChange,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isPointerDownRef = useRef(false);
@@ -178,24 +204,29 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
   const calculatedGridRows = Math.max(2, Math.floor(canvasHeight / cellStride));
   const centerReferenceGridSize = Math.min(calculatedGridColumns, calculatedGridRows);
 
-  function getCanvasPositionFromCoordinate(coordinate: string) {
-    const [xString, yString] = coordinate.split(',');
-    const x = Number(xString);
-    const y = Number(yString);
+  const getCanvasPositionFromCoordinate = useCallback(
+    (coordinate: string) => {
+      const [xString, yString] = coordinate.split(',');
+      const x = Number(xString);
+      const y = Number(yString);
 
-    if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      return null;
-    }
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        return null;
+      }
 
-    const halfCols = Math.floor(calculatedGridColumns / 2);
-    const halfRows = Math.floor(calculatedGridRows / 2);
-    const canvasRowIndex = x + halfCols - offsetX;
-    const canvasColumnIndex = halfRows - 1 - y - offsetY;
+      const halfCols = Math.floor(calculatedGridColumns / 2);
+      const halfRows = Math.floor(calculatedGridRows / 2);
+      const canvasRowIndex = x + halfCols - offsetX;
+      const canvasColumnIndex = halfRows - 1 - y - offsetY;
 
-    return { canvasRowIndex, canvasColumnIndex };
-  }
+      return { canvasRowIndex, canvasColumnIndex };
+    },
+    [calculatedGridColumns, calculatedGridRows, offsetX, offsetY],
+  );
 
-  function getHoveredCellFromPointer(event: React.MouseEvent<HTMLCanvasElement>): HoveredCell | null {
+  function getHoveredCellFromPointer(
+    event: React.MouseEvent<HTMLCanvasElement>,
+  ): HoveredCell | null {
     const canvas = canvasRef.current;
     if (!canvas) return null;
 
@@ -245,44 +276,47 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
     }
   }
 
-  function getStampPreviewCanvasCells(nextHoveredCell: HoveredCell): Array<{ rowIndex: number; columnIndex: number }> {
-    if (!stampPattern) return [];
+  const getStampPreviewCanvasCells = useCallback(
+    (nextHoveredCell: HoveredCell): Array<{ rowIndex: number; columnIndex: number }> => {
+      if (!stampPattern) return [];
 
-    const target = parseCoordinateKey(nextHoveredCell.coordinate);
-    const bounds = getGridBounds(stampPattern);
-    if (!target || !bounds) return [];
+      const target = parseCoordinateKey(nextHoveredCell.coordinate);
+      const bounds = getGridBounds(stampPattern);
+      if (!target || !bounds) return [];
 
-    const halfCols = Math.floor(calculatedGridColumns / 2);
-    const halfRows = Math.floor(calculatedGridRows / 2);
-    const anchorX = Math.floor((bounds.minX + bounds.maxX) / 2);
-    const anchorY = Math.floor((bounds.minY + bounds.maxY) / 2);
-    const deltaX = target.x - anchorX;
-    const deltaY = target.y - anchorY;
-    const stampCells: Array<{ rowIndex: number; columnIndex: number }> = [];
+      const halfCols = Math.floor(calculatedGridColumns / 2);
+      const halfRows = Math.floor(calculatedGridRows / 2);
+      const anchorX = Math.floor((bounds.minX + bounds.maxX) / 2);
+      const anchorY = Math.floor((bounds.minY + bounds.maxY) / 2);
+      const deltaX = target.x - anchorX;
+      const deltaY = target.y - anchorY;
+      const stampCells: Array<{ rowIndex: number; columnIndex: number }> = [];
 
-    for (const coordinate of Object.keys(stampPattern)) {
-      const parsed = parseCoordinateKey(coordinate);
-      if (!parsed) continue;
+      for (const coordinate of Object.keys(stampPattern)) {
+        const parsed = parseCoordinateKey(coordinate);
+        if (!parsed) continue;
 
-      const worldX = parsed.x + deltaX;
-      const worldY = parsed.y + deltaY;
-      const rowIndex = worldX + halfCols - offsetX;
-      const columnIndex = halfRows - 1 - worldY - offsetY;
+        const worldX = parsed.x + deltaX;
+        const worldY = parsed.y + deltaY;
+        const rowIndex = worldX + halfCols - offsetX;
+        const columnIndex = halfRows - 1 - worldY - offsetY;
 
-      if (
-        rowIndex < 0 ||
-        columnIndex < 0 ||
-        rowIndex >= calculatedGridColumns ||
-        columnIndex >= calculatedGridRows
-      ) {
-        continue;
+        if (
+          rowIndex < 0 ||
+          columnIndex < 0 ||
+          rowIndex >= calculatedGridColumns ||
+          columnIndex >= calculatedGridRows
+        ) {
+          continue;
+        }
+
+        stampCells.push({ rowIndex, columnIndex });
       }
 
-      stampCells.push({ rowIndex, columnIndex });
-    }
-
-    return stampCells;
-  }
+      return stampCells;
+    },
+    [stampPattern, calculatedGridColumns, calculatedGridRows, offsetX, offsetY],
+  );
 
   useEffect(() => {
     const handleWindowMouseUp = () => {
@@ -320,13 +354,25 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
       calculatedGridColumns,
       calculatedGridRows,
       offsetX,
-      offsetY
+      offsetY,
     );
     const translatedBirthDeathPreviewGrid = birthDeathPreviewGrid
-      ? translateGridToViewport(birthDeathPreviewGrid, calculatedGridColumns, calculatedGridRows, offsetX, offsetY)
+      ? translateGridToViewport(
+          birthDeathPreviewGrid,
+          calculatedGridColumns,
+          calculatedGridRows,
+          offsetX,
+          offsetY,
+        )
       : null;
     const translatedSelectionGrid = selectionGrid
-      ? translateGridToViewport(selectionGrid, calculatedGridColumns, calculatedGridRows, offsetX, offsetY)
+      ? translateGridToViewport(
+          selectionGrid,
+          calculatedGridColumns,
+          calculatedGridRows,
+          offsetX,
+          offsetY,
+        )
       : null;
 
     const halfCols = Math.floor(calculatedGridColumns / 2);
@@ -338,11 +384,15 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
     const hoverStrokeColor = isDark ? 'rgba(255, 220, 110, 0.98)' : 'rgba(111, 58, 0, 0.96)';
     const selectionFillColor = isDark ? 'rgba(96, 165, 250, 0.22)' : 'rgba(37, 99, 235, 0.16)';
     const selectionStrokeColor = isDark ? 'rgba(147, 197, 253, 0.96)' : 'rgba(29, 78, 216, 0.88)';
-    const selectionRectStrokeColor = isDark ? 'rgba(147, 197, 253, 0.95)' : 'rgba(29, 78, 216, 0.95)';
+    const selectionRectStrokeColor = isDark
+      ? 'rgba(147, 197, 253, 0.95)'
+      : 'rgba(29, 78, 216, 0.95)';
     const selectionRectFillColor = isDark ? 'rgba(96, 165, 250, 0.08)' : 'rgba(37, 99, 235, 0.08)';
     const stampPreviewHatchColor = isDark ? 'rgba(248, 250, 252, 0.42)' : 'rgba(15, 23, 42, 0.28)';
     const previewBirthFillColor = isDark ? 'rgba(34, 197, 94, 0.38)' : 'rgba(34, 197, 94, 0.32)';
-    const previewDeathStrokeColor = isDark ? 'rgba(248, 113, 113, 0.98)' : 'rgba(220, 38, 38, 0.94)';
+    const previewDeathStrokeColor = isDark
+      ? 'rgba(248, 113, 113, 0.98)'
+      : 'rgba(220, 38, 38, 0.94)';
 
     // Draw all visible cells using the currently available canvas space.
     for (let columnIndex = 0; columnIndex < calculatedGridRows; columnIndex++) {
@@ -350,11 +400,7 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
         const x = getCoordinate(rowIndex, cellSize);
         const y = getCoordinate(columnIndex, cellSize);
         const cellColor = translatedGrid[`${rowIndex},${columnIndex}`];
-        const color = getCellFillColor(
-          cellColor,
-          palette,
-          isDark
-        );
+        const color = getCellFillColor(cellColor, palette, isDark);
 
         // Fill the cell
         ctx.fillStyle = color;
@@ -414,7 +460,12 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
       ctx.fillRect(hoverX, hoverY, cellSize, cellSize);
       ctx.strokeStyle = hoverStrokeColor;
       ctx.lineWidth = 1.5;
-      ctx.strokeRect(hoverX + 0.5, hoverY + 0.5, Math.max(0, cellSize - 1), Math.max(0, cellSize - 1));
+      ctx.strokeRect(
+        hoverX + 0.5,
+        hoverY + 0.5,
+        Math.max(0, cellSize - 1),
+        Math.max(0, cellSize - 1),
+      );
     }
 
     if (selectionStartCoordinate && selectionEndCoordinate) {
@@ -424,8 +475,14 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
       if (startPosition && endPosition) {
         const minRowIndex = Math.min(startPosition.canvasRowIndex, endPosition.canvasRowIndex);
         const maxRowIndex = Math.max(startPosition.canvasRowIndex, endPosition.canvasRowIndex);
-        const minColumnIndex = Math.min(startPosition.canvasColumnIndex, endPosition.canvasColumnIndex);
-        const maxColumnIndex = Math.max(startPosition.canvasColumnIndex, endPosition.canvasColumnIndex);
+        const minColumnIndex = Math.min(
+          startPosition.canvasColumnIndex,
+          endPosition.canvasColumnIndex,
+        );
+        const maxColumnIndex = Math.max(
+          startPosition.canvasColumnIndex,
+          endPosition.canvasColumnIndex,
+        );
         const rectX = getCoordinate(minRowIndex, cellSize);
         const rectY = getCoordinate(minColumnIndex, cellSize);
         const rectWidth = getCoordinate(maxRowIndex, cellSize) + cellSize - rectX;
@@ -436,7 +493,12 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
         ctx.strokeStyle = selectionRectStrokeColor;
         ctx.setLineDash([4, 3]);
         ctx.lineWidth = 1.5;
-        ctx.strokeRect(rectX + 0.5, rectY + 0.5, Math.max(0, rectWidth - 1), Math.max(0, rectHeight - 1));
+        ctx.strokeRect(
+          rectX + 0.5,
+          rectY + 0.5,
+          Math.max(0, rectWidth - 1),
+          Math.max(0, rectHeight - 1),
+        );
         ctx.setLineDash([]);
       }
     }
@@ -455,7 +517,14 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
           ctx.fillRect(previewX, previewY, cellSize, cellSize);
           ctx.restore();
 
-          drawCrossHatchCell(ctx, previewX, previewY, cellSize, stampPreviewHatchColor, Math.max(3, Math.floor(cellSize / 3)));
+          drawCrossHatchCell(
+            ctx,
+            previewX,
+            previewY,
+            cellSize,
+            stampPreviewHatchColor,
+            Math.max(3, Math.floor(cellSize / 3)),
+          );
         }
       }
     }
@@ -499,6 +568,11 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
     stampPattern,
     activeDrawColor,
     birthDeathPreviewGrid,
+    selectionGrid,
+    selectionStartCoordinate,
+    selectionEndCoordinate,
+    getCanvasPositionFromCoordinate,
+    getStampPreviewCanvasCells,
   ]);
 
   const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -552,7 +626,12 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
 
     onHoverCoordinateChange?.(nextHoveredCell?.coordinate ?? null);
 
-    if (isPointerDownRef.current && activeEditTool === 'grab' && isGrabPanningRef.current && lastGrabPointerRef.current) {
+    if (
+      isPointerDownRef.current &&
+      activeEditTool === 'grab' &&
+      isGrabPanningRef.current &&
+      lastGrabPointerRef.current
+    ) {
       const movementX = event.clientX - lastGrabPointerRef.current.x;
       const movementY = event.clientY - lastGrabPointerRef.current.y;
       const pendingX = movementX + grabRemainderRef.current.x;
@@ -565,8 +644,8 @@ function CanvasGrid({ onHoverCoordinateChange, onContextCoordinateRequest, onPai
       }
 
       grabRemainderRef.current = {
-        x: pendingX - (deltaCellsX * cellStride),
-        y: pendingY - (deltaCellsY * cellStride),
+        x: pendingX - deltaCellsX * cellStride,
+        y: pendingY - deltaCellsY * cellStride,
       };
       lastGrabPointerRef.current = { x: event.clientX, y: event.clientY };
       return;

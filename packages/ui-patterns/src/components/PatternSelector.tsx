@@ -8,7 +8,11 @@ interface Props {
   selectedPaletteId?: string;
 }
 
-function PatternSelector({ onSelectPattern, disabled = false, selectedPaletteId = DEFAULT_PALETTE_ID }: Props) {
+function PatternSelector({
+  onSelectPattern,
+  disabled = false,
+  selectedPaletteId = DEFAULT_PALETTE_ID,
+}: Props) {
   const palette = getPaletteById(selectedPaletteId);
 
   function formatPatternTitle(name: string) {
@@ -45,9 +49,7 @@ function PatternSelector({ onSelectPattern, disabled = false, selectedPaletteId 
           >
             <PatternPreview grid={pattern.grid} size={60} palette={palette} />
             <div className="pattern-selector-meta">
-              <div className="pattern-selector-title">
-                {formatPatternTitle(pattern.name)}
-              </div>
+              <div className="pattern-selector-title">{formatPatternTitle(pattern.name)}</div>
               <span className="badge pattern-selector-badge">{pattern.category}</span>
               <span className="badge pattern-selector-badge">{getRulesetName(pattern)}</span>
             </div>

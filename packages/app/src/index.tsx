@@ -8,9 +8,7 @@ import reportWebVitals from './reportWebVitals';
 import { ThemeProviderWrapper } from './app/ThemeContext';
 import './i18n/config';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
 root.render(
   <React.StrictMode>
@@ -19,7 +17,7 @@ root.render(
         <App />
       </ThemeProviderWrapper>
     </BrowserRouter>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
 
 // If you want to start measuring performance in your app, pass a function

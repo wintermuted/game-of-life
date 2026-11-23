@@ -7,7 +7,7 @@ describe('RulesPanel', () => {
   test('renders all rules', () => {
     const mockOnRulesChange = vi.fn();
     render(<RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} />);
-    
+
     expect(screen.getByText('Game Rules')).toBeInTheDocument();
     expect(screen.getByText('Standard Rules (B3/S23)')).toBeInTheDocument();
     expect(screen.getByText('Underpopulation')).toBeInTheDocument();
@@ -35,7 +35,9 @@ describe('RulesPanel', () => {
       />,
     );
 
-    fireEvent.change(screen.getByRole('combobox', { name: 'Active ruleset' }), { target: { value: 'highlife' } });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Active ruleset' }), {
+      target: { value: 'highlife' },
+    });
     expect(mockOnRulesetChange).toHaveBeenCalledWith('highlife');
   });
 
@@ -69,17 +71,25 @@ describe('RulesPanel', () => {
     );
 
     expect(screen.getByText('B36')).toBeInTheDocument();
-    expect(screen.getByLabelText('Dead cells with exactly three or six live neighbors become live cells (HighLife B36 reproduction).')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Dead cells with exactly three live neighbors become live cells, as if by reproduction.')).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'Dead cells with exactly three or six live neighbors become live cells (HighLife B36 reproduction).',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(
+        'Dead cells with exactly three live neighbors become live cells, as if by reproduction.',
+      ),
+    ).not.toBeInTheDocument();
   });
 
   test('toggles rule when clicked', () => {
     const mockOnRulesChange = vi.fn();
     render(<RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} />);
-    
+
     const survival2Switch = screen.getByRole('checkbox', { name: /Underpopulation/i });
     fireEvent.click(survival2Switch);
-    
+
     expect(mockOnRulesChange).toHaveBeenCalledTimes(1);
     const updatedRules = mockOnRulesChange.mock.calls[0][0];
     expect(updatedRules.survival2.enabled).toBe(false);
@@ -88,9 +98,9 @@ describe('RulesPanel', () => {
   test('disables switches when disabled prop is true', () => {
     const mockOnRulesChange = vi.fn();
     render(<RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} disabled={true} />);
-    
+
     const switches = screen.getAllByRole('checkbox');
-    switches.forEach(switchElement => {
+    switches.forEach((switchElement) => {
       expect(switchElement).toBeDisabled();
     });
   });
@@ -98,11 +108,7 @@ describe('RulesPanel', () => {
   test('disables switches when rules are locked', () => {
     const mockOnRulesChange = vi.fn();
     render(
-      <RulesPanel
-        rules={DEFAULT_RULES}
-        onRulesChange={mockOnRulesChange}
-        rulesLocked={true}
-      />,
+      <RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} rulesLocked={true} />,
     );
 
     const checkboxes = screen.getAllByRole('checkbox');
@@ -115,13 +121,45 @@ describe('RulesPanel', () => {
     const mockOnRulesChange = vi.fn();
     render(<RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} />);
 
-    expect(screen.getByLabelText('Live cells with fewer than two live neighbors die, as if by underpopulation.')).toBeInTheDocument();
-    expect(screen.getByLabelText('Live cells with two or three live neighbors live on to the next generation.')).toBeInTheDocument();
-    expect(screen.getByLabelText('Dead cells with exactly three live neighbors become live cells, as if by reproduction.')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Dead cells with exactly six live neighbors become live cells (HighLife B6 rule).')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Mixed-species births use competition modifiers instead of default color assignment')).toBeInTheDocument();
-    expect(screen.getByLabelText('When mixed-species births occur, the color with the highest neighbor count wins reproduction')).toBeInTheDocument();
-    expect(screen.getByLabelText('When species competition ties, births randomly choose among the tied colors instead of failing')).toBeInTheDocument();
-    expect(screen.getByLabelText('Live cells with more than three live neighbors die, as if by overpopulation.')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'Live cells with fewer than two live neighbors die, as if by underpopulation.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'Live cells with two or three live neighbors live on to the next generation.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'Dead cells with exactly three live neighbors become live cells, as if by reproduction.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(
+        'Dead cells with exactly six live neighbors become live cells (HighLife B6 rule).',
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'Mixed-species births use competition modifiers instead of default color assignment',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'When mixed-species births occur, the color with the highest neighbor count wins reproduction',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'When species competition ties, births randomly choose among the tied colors instead of failing',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(
+        'Live cells with more than three live neighbors die, as if by overpopulation.',
+      ),
+    ).toBeInTheDocument();
   });
 });

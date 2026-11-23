@@ -11,7 +11,11 @@ interface Props {
   selectedPaletteId?: string;
 }
 
-function PatternInput({ onLoadPattern, disabled = false, selectedPaletteId = DEFAULT_PALETTE_ID }: Props) {
+function PatternInput({
+  onLoadPattern,
+  disabled = false,
+  selectedPaletteId = DEFAULT_PALETTE_ID,
+}: Props) {
   const [activeTab, setActiveTab] = useState<'starter' | 'custom'>('starter');
   const { t } = useTranslation();
 
@@ -30,7 +34,7 @@ function PatternInput({ onLoadPattern, disabled = false, selectedPaletteId = DEF
       </div>
 
       {activeTab === 'starter' && (
-        <PatternSelector 
+        <PatternSelector
           onSelectPattern={onLoadPattern}
           disabled={disabled}
           selectedPaletteId={selectedPaletteId}
@@ -39,10 +43,7 @@ function PatternInput({ onLoadPattern, disabled = false, selectedPaletteId = DEF
 
       {activeTab === 'custom' && (
         <div className="card card-body">
-          <CustomPatternInput 
-            onLoadPattern={onLoadPattern}
-            disabled={disabled}
-          />
+          <CustomPatternInput onLoadPattern={onLoadPattern} disabled={disabled} />
         </div>
       )}
     </div>

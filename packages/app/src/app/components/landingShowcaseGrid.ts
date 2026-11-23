@@ -1,4 +1,10 @@
-import { createLifeGrid, gosperGliderGun, simkinGliderGun, LifeGrid, patterns } from '@game-of-life/core';
+import {
+  createLifeGrid,
+  gosperGliderGun,
+  simkinGliderGun,
+  LifeGrid,
+  patterns,
+} from '@game-of-life/core';
 
 export interface LandingShowcasePattern {
   name: string;

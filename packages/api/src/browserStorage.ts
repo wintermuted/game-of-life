@@ -80,7 +80,11 @@ const defaultProfileUser: StoredProfileUser = {
 };
 
 function canUseStorage(): boolean {
-  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined' && typeof window.sessionStorage !== 'undefined';
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.localStorage !== 'undefined' &&
+    typeof window.sessionStorage !== 'undefined'
+  );
 }
 
 function getStorageByMode(mode: BrowserStorageMode): Storage | null {
@@ -170,7 +174,8 @@ function sanitizeSavedBoardRecord(record: SavedBoardRecord): SavedBoardRecord {
     boardId: normalizeBoardId(record.boardId, record.hash),
     title: record.title.trim(),
     category: normalizedCategory && normalizedCategory.length > 0 ? normalizedCategory : undefined,
-    description: normalizedDescription && normalizedDescription.length > 0 ? normalizedDescription : undefined,
+    description:
+      normalizedDescription && normalizedDescription.length > 0 ? normalizedDescription : undefined,
     tags: normalizedTags && normalizedTags.length > 0 ? normalizedTags : undefined,
     visibility: record.visibility === 'public' ? 'public' : 'private',
     rules: record.rules,
@@ -209,7 +214,11 @@ export function getSavedBoards(): SavedBoardRecord[] {
 }
 
 export function setSavedBoards(next: SavedBoardRecord[]): void {
-  writeJSON(getActiveStorage(), SAVED_BOARDS_KEY, next.map((record) => sanitizeSavedBoardRecord(record)));
+  writeJSON(
+    getActiveStorage(),
+    SAVED_BOARDS_KEY,
+    next.map((record) => sanitizeSavedBoardRecord(record)),
+  );
 }
 
 export function upsertSavedBoard(
@@ -228,7 +237,9 @@ export function upsertSavedBoard(
 
   const current = getSavedBoards();
   const normalizedBoardId = normalizeBoardId(boardId, hash);
-  const index = current.findIndex((item) => normalizeBoardId(item.boardId, item.hash) === normalizedBoardId);
+  const index = current.findIndex(
+    (item) => normalizeBoardId(item.boardId, item.hash) === normalizedBoardId,
+  );
   const normalizedCategory = category?.trim();
   const normalizedDescription = description?.trim();
   const existingCategory = index >= 0 ? current[index].category : undefined;
@@ -244,8 +255,12 @@ export function upsertSavedBoard(
     hash,
     boardId: normalizedBoardId,
     title: normalizedTitle,
-    category: normalizedCategory && normalizedCategory.length > 0 ? normalizedCategory : existingCategory,
-    description: normalizedDescription && normalizedDescription.length > 0 ? normalizedDescription : existingDescription,
+    category:
+      normalizedCategory && normalizedCategory.length > 0 ? normalizedCategory : existingCategory,
+    description:
+      normalizedDescription && normalizedDescription.length > 0
+        ? normalizedDescription
+        : existingDescription,
     tags: normalizedTags !== undefined ? normalizedTags : existingTags,
     visibility: visibility ?? existingVisibility ?? 'private',
     rules: rules ?? existingRules,
@@ -269,7 +284,11 @@ export function getRecentBoards(): RecentBoardRecord[] {
 }
 
 export function setRecentBoards(next: RecentBoardRecord[]): void {
-  writeJSON(getActiveStorage(), RECENT_BOARDS_KEY, next.map((record) => sanitizeRecentBoardRecord(record)));
+  writeJSON(
+    getActiveStorage(),
+    RECENT_BOARDS_KEY,
+    next.map((record) => sanitizeRecentBoardRecord(record)),
+  );
 }
 
 export function trackRecentBoard(hash: string, title: string, boardId = hash): void {
@@ -277,7 +296,9 @@ export function trackRecentBoard(hash: string, title: string, boardId = hash): v
   if (!hash || !normalizedTitle) return;
 
   const normalizedBoardId = normalizeBoardId(boardId, hash);
-  const existing = getRecentBoards().filter((item) => normalizeBoardId(item.boardId, item.hash) !== normalizedBoardId);
+  const existing = getRecentBoards().filter(
+    (item) => normalizeBoardId(item.boardId, item.hash) !== normalizedBoardId,
+  );
   existing.unshift({
     hash,
     boardId: normalizedBoardId,
@@ -296,18 +317,28 @@ export function getFavoriteBoards(): FavoriteBoardRecord[] {
 }
 
 export function setFavoriteBoards(next: FavoriteBoardRecord[]): void {
-  writeJSON(getActiveStorage(), FAVORITE_BOARDS_KEY, next.map((record) => ({
-    ...record,
-    actorName: normalizeActorName(record.actorName),
-  })));
+  writeJSON(
+    getActiveStorage(),
+    FAVORITE_BOARDS_KEY,
+    next.map((record) => ({
+      ...record,
+      actorName: normalizeActorName(record.actorName),
+    })),
+  );
 }
 
 export function isBoardFavorited(hash: string, actorName = getStoredProfileUser().name): boolean {
   const normalizedActor = normalizeActorName(actorName);
-  return getFavoriteBoards().some((entry) => entry.hash === hash && normalizeActorName(entry.actorName) === normalizedActor);
+  return getFavoriteBoards().some(
+    (entry) => entry.hash === hash && normalizeActorName(entry.actorName) === normalizedActor,
+  );
 }
 
-export function toggleFavoriteBoard(hash: string, title: string, actorName = getStoredProfileUser().name): boolean {
+export function toggleFavoriteBoard(
+  hash: string,
+  title: string,
+  actorName = getStoredProfileUser().name,
+): boolean {
   const normalizedTitle = title.trim();
   const normalizedActor = normalizeActorName(actorName);
   if (!hash || !normalizedTitle) return false;
@@ -317,9 +348,12 @@ export function toggleFavoriteBoard(hash: string, title: string, actorName = get
     (entry) => entry.hash === hash && normalizeActorName(entry.actorName) === normalizedActor,
   );
   if (found) {
-    setFavoriteBoards(existing.filter(
-      (entry) => !(entry.hash === hash && normalizeActorName(entry.actorName) === normalizedActor),
-    ));
+    setFavoriteBoards(
+      existing.filter(
+        (entry) =>
+          !(entry.hash === hash && normalizeActorName(entry.actorName) === normalizedActor),
+      ),
+    );
     return false;
   }
 
@@ -341,7 +375,11 @@ export function getForkOrigins(): ForkOriginRecord[] {
 }
 
 export function setForkOrigins(next: ForkOriginRecord[]): void {
-  writeJSON(getActiveStorage(), FORK_ORIGINS_KEY, next.map((record) => sanitizeForkRecord(record)));
+  writeJSON(
+    getActiveStorage(),
+    FORK_ORIGINS_KEY,
+    next.map((record) => sanitizeForkRecord(record)),
+  );
 }
 
 export function getForkOrigin(hash: string): ForkOriginRecord | null {
