@@ -148,7 +148,7 @@ describe('Explore route and results characterization', () => {
 
   test('table sorting uses translated headers, ascending field clicks and descending direction clicks', () => {
     mount('?category=User%20Creations&view=table');
-    fireEvent.click(screen.getByRole('button', { name: 'explore.tablePattern', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'explore.tablePattern' }));
     expect(query().get('sort')).toBe('name');
     expect(query().get('direction')).toBe('asc');
     expect(
@@ -162,7 +162,7 @@ describe('Explore route and results characterization', () => {
     );
     expect(query().get('sort')).toBe('user');
     expect(query().has('direction')).toBe(false);
-    fireEvent.click(screen.getByRole('button', { name: 'explore.tableSource', exact: true }));
+    fireEvent.click(screen.getByRole('button', { name: 'explore.tableSource' }));
     expect(query().get('direction')).toBe('asc');
   });
 

@@ -328,7 +328,8 @@ describe('Home board transitions', () => {
     fireEvent.change(screen.getByLabelText('playground.patternName'), {
       target: { value: 'Renamed' },
     });
-    fireEvent.click(screen.getAllByText('playground.save').at(-1)!);
+    const saveButtons = screen.getAllByText('playground.save');
+    fireEvent.click(saveButtons[saveButtons.length - 1]);
     expect(getSavedBoards().find((board) => board.title === 'Renamed')?.boardId).toBe(
       saved?.boardId,
     );

@@ -123,7 +123,7 @@ export function useBoardTransitions(input: {
     if (isEditMode) {
       setIsEditMode(false);
     }
-  }, [isEditMode, isSystemPattern]);
+  }, [isEditMode, isSystemPattern, setIsEditMode]);
 
   useEffect(() => {
     window.dispatchEvent(
