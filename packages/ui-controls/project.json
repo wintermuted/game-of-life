@@ -1,0 +1,23 @@
+{
+  "name": "@game-of-life/ui-controls",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/ui-controls/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/dist"],
+      "cache": false,
+      "dependsOn": ["^build"],
+      "options": { "command": "npm run build", "cwd": "packages/ui-controls" }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+        "cwd": "packages/ui-controls"
+      }
+    }
+  },
+  "tags": ["type:lib", "scope:ui-controls"]
+}

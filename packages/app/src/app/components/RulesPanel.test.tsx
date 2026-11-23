@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi } from 'vitest';
-import RulesPanel from './RulesPanel';
+import { RulesPanel } from '@game-of-life/ui-controls';
 import { DAY_AND_NIGHT_RULESET, DEFAULT_RULES, HIGHLIFE_RULESET } from '@game-of-life/core';
 
 describe('RulesPanel', () => {

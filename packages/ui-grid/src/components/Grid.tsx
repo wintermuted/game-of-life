@@ -2,8 +2,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 're
 import { Game, getCellColor, isLiveCell, LifeGrid, GameRules, calculateNextGeneration, DEFAULT_RULES } from "@game-of-life/core";
 import '../styles/Grid.css';
 import CanvasGrid from './CanvasGrid';
-import { ColorPalette } from '../constants/colors';
-import { useThemeMode } from '../ThemeContext';
+import { ColorPalette, useThemeMode } from '@game-of-life/ui';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 

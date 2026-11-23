@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import GridControls from './GridControls';
+import { GridControls } from '@game-of-life/ui-controls';
 
 describe('GridControls', () => {
   const mockNextGeneration = vi.fn();

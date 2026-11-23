@@ -1,7 +1,8 @@
 import { forEach, range } from 'lodash';
 import { ReactElement } from "react";
 import { LifeGrid } from '@game-of-life/core';
-import { getCellFillColor, translateGrid } from '../util/coordinate';
+import { translateGrid } from '@game-of-life/util';
+import { getCellFillColor } from '../util/cellColor';
 
 function getCoordinate(rowIndex: number, cellSize: number) {
   return rowIndex + (cellSize * rowIndex);

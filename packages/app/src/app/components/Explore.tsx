@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowDown, ArrowDownUp, ArrowUp, ArrowUpAZ, ChevronDown, Cpu, FolderTree, GitFork, LayoutGrid, Play, Rows3, Search, Star, User } from 'lucide-react';
 import { createLifeGrid, DEFAULT_RULES, GameRuleKey, GameRules, LifeGrid, patterns, RULESETS } from '@game-of-life/core';
-import PatternPreview from './PatternPreview';
-import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
-import { encodeGridToBase64 } from '../util/urlState';
+import { DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
+import { PatternPreview } from '@game-of-life/ui-patterns';
+import { encodeGridToBase64 } from '@game-of-life/util';
 import {
   ensureSeededSocialData,
   getForkOrigins,
@@ -18,7 +18,7 @@ import {
   getSavedBoards,
   getStoredProfileUser,
   hashToGrid,
-} from '../util/browserStorage';
+} from '@game-of-life/api';
 import { useTranslation } from 'react-i18next';
 
 type ExplorePattern = (typeof patterns)[number] & {

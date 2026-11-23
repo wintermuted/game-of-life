@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Game, LifeGrid } from '@game-of-life/core';
-import CanvasGrid from './CanvasGrid';
+import { CanvasGrid } from '@game-of-life/ui-grid';
 
 const CELL_SIZE = 10;
 const STEP_MS = 120;

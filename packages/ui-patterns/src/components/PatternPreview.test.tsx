@@ -1,8 +1,8 @@
 import { vi } from 'vitest';
 import { render } from '@testing-library/react';
-import PatternPreview from './PatternPreview';
+import { PatternPreview } from '@game-of-life/ui-patterns';
 import { block } from '@game-of-life/core';
-import { getPaletteById } from '../constants/colors';
+import { getPaletteById, ThemeModeProvider } from '@game-of-life/ui';
 
 const testPalette = getPaletteById('classic');
 
@@ -46,5 +46,21 @@ describe('PatternPreview', () => {
     // Should still render canvas even with empty grid
     const canvas = container.querySelector('canvas');
     expect(canvas).toBeInTheDocument();
+  });
+
+  test('updates its theme from the shared provider in the base UI package', () => {
+    const { container, rerender } = render(
+      <ThemeModeProvider mode="light" toggleTheme={vi.fn()}>
+        <PatternPreview grid={{}} palette={testPalette} />
+      </ThemeModeProvider>,
+    );
+    expect(container.querySelector('canvas')).toHaveStyle({ backgroundColor: '#ebedf0' });
+
+    rerender(
+      <ThemeModeProvider mode="dark" toggleTheme={vi.fn()}>
+        <PatternPreview grid={{}} palette={testPalette} />
+      </ThemeModeProvider>,
+    );
+    expect(container.querySelector('canvas')).toHaveStyle({ backgroundColor: '#161b22' });
   });
 });

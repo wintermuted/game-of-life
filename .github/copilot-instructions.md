@@ -13,13 +13,26 @@ This is a TypeScript implementation of Conway's Game of Life with a React-based 
 
 ## Project Structure
 ```
-src/
-├── core/           # Pure game logic (no side effects)
-├── class/          # Game class wrapper
-├── app/            # React UI components
-├── data/           # Predefined patterns (oscillators, still lifes, etc.)
-└── interfaces/     # TypeScript type definitions
+packages/
+├── core/src/       # Game engine, patterns, and engine types
+├── api/src/        # Client-side browser-backed services and record types
+├── util/src/       # Shared helpers (no React or theme dependencies)
+├── ui/src/         # Shared primitives, palettes, and controlled theme context
+├── ui-grid/src/    # Grid rendering, cell colors, and grid CSS
+├── ui-patterns/src/# Pattern previews, selectors, and inputs
+├── ui-controls/src/# Game controls and rules panel
+└── app/src/        # Startup, routes/pages, translations, assets, and orchestration
 ```
+
+Import libraries through `@game-of-life/core`, `@game-of-life/api`,
+`@game-of-life/util`, and the owning UI package (`ui`, `ui-grid`, `ui-patterns`,
+or `ui-controls`); base UI is not an umbrella. App imports all UI packages.
+Dependencies flow `ui-grid -> ui/core/util`, `ui-patterns -> ui/core`,
+`ui-controls -> ui-patterns/ui/core`, `api -> util/core`, and `util -> core`.
+Base UI has no game dependencies. Libraries must not import app; UI packages
+must not import API. Externalize sibling libraries to share one theme context.
+App owns preference persistence and translation initialization; UI receives
+theme state through its controlled provider.
 
 ## Code Style Guidelines
 
@@ -34,7 +47,7 @@ src/
 - Always define explicit return types for functions
 - Use interfaces for object shapes
 - Avoid `any` type - use proper typing
-- Export types/interfaces from `src/interfaces/`
+- Export engine types from `packages/core/src/interfaces/` and service record types from the API package entry point
 
 ### Testing
 - Every core function must have unit tests
@@ -49,7 +62,7 @@ src/
 - Keep components focused and single-purpose
 - Extract reusable logic into custom hooks or utility functions
 - Use SCSS for styling
-- Components go in `src/app/components/`
+- Reusable components go in their owning `packages/ui*/src/components/`; app-specific pages and orchestration stay in `packages/app/src/app/components/`
 
 ### Design System (`@wintermuted/ui-theme`)
 - **Always use theme classes when available** — prefer `btn-sm`, `btn-primary`, etc. over custom inline styles or SCSS overrides

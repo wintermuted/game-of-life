@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Square } from 'lucide-react';
 import { patterns } from '@game-of-life/core';
-import { encodeGridToBase64 } from '../util/urlState';
+import { encodeGridToBase64 } from '@game-of-life/util';
 
 function PlayStart() {
   const navigate = useNavigate();

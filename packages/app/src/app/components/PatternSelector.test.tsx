@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
-import PatternSelector from './PatternSelector';
+import { PatternSelector } from '@game-of-life/ui-patterns';
 import { patterns } from '@game-of-life/core';
 
 function formatPatternTitle(name: string) {

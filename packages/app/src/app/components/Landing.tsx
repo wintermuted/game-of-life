@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { RULESETS } from '@game-of-life/core';
 import LandingSimulation from './LandingSimulation';
-import { encodeGridToBase64 } from '../util/urlState';
+import { encodeGridToBase64 } from '@game-of-life/util';
 import { LANDING_SHOWCASE_PATTERNS } from './landingShowcaseGrid';
 
 const SHOWCASE_ROTATION_MS = 30_000;

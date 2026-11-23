@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { getCellColor, isLiveCell, LifeGrid } from '@game-of-life/core';
-import { useThemeMode } from '../ThemeContext';
-import { ColorPalette } from '../constants/colors';
+import { useThemeMode, ColorPalette } from '@game-of-life/ui';
 
 interface Props {
   grid: LifeGrid;

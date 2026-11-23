@@ -19,6 +19,15 @@ jobs:
           set -euo pipefail
 
           test -d packages/app/src
+          test -d packages/ui/src
+          test -d packages/api/src
+          test -d packages/util/src
+          for package in ui ui-grid ui-patterns ui-controls; do
+            test -f "packages/$package/src/index.ts"
+            test ! -f "packages/$package/index.html"
+            test ! -f "packages/$package/src/index.tsx"
+            test ! -d "packages/$package/public"
+          done
 
           if ! grep -q "Root Vite config is deprecated" vite.config.ts; then
             echo "Expected deprecated root vite.config.ts guard not found"

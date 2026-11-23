@@ -3,18 +3,13 @@ import { createPortal } from 'react-dom';
 import { ChevronDown, GitFork, Lock, LockOpen, Pencil, Save, SaveAll, Settings, Star, Tag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Cpu, User } from 'lucide-react';
-import Grid from "./Grid";
-import GridControls from "./GridControls";
-import PatternInput from "./PatternInput";
-import PatternSelector from './PatternSelector';
-import PatternPreview from './PatternPreview';
-import RulesPanel from "./RulesPanel";
-import { getGenerationSpeed } from '../util';
+import { ThemeTabs, DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
+import { Grid } from '@game-of-life/ui-grid';
+import { PatternInput, PatternSelector, PatternPreview } from '@game-of-life/ui-patterns';
+import { GridControls, RulesPanel } from '@game-of-life/ui-controls';
 import { createLifeGrid, getCellColor, getNeighborCoordinates, Game, rPentomino, LifeGrid, GameRule, GameRuleKey, GameStats, GameRules, DEFAULT_RULES, RULESETS, patterns } from '@game-of-life/core';
-import { encodeGridToBase64, getGridFromURL, updateURLWithGrid } from '../util/urlState';
-import { DEFAULT_PALETTE_ID, getPaletteById } from '../constants/colors';
+import { getGenerationSpeed, encodeGridToBase64, getGridFromURL, updateURLWithGrid } from '@game-of-life/util';
 import { useTranslation } from 'react-i18next';
-import ThemeTabs from './ui/ThemeTabs';
 import {
   ensureSeededSocialData,
   getFavoriteBoards,
@@ -29,7 +24,7 @@ import {
   upsertSavedBoard,
   upsertForkOrigin,
   trackRecentBoard,
-} from '../util/browserStorage';
+} from '@game-of-life/api';
 
 let game: Game = {} as Game;
 let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;

@@ -21,13 +21,14 @@ This project is an implementation of [Conway's Game of Life](https://en.wikipedi
 
 ## Architecture
 
-This project is organized as an **NX monorepo** with TypeScript composite builds:
+This project is organized as an **NX monorepo** with npm workspaces:
 
 ### Canonical App Path
 
-- The canonical UI app is `packages/app/src/`.
+- The canonical application is `packages/app/src/`.
+- Reusable React components live in `packages/ui*`; these are libraries, not apps.
 - The historical top-level `src/` tree has been removed.
-- Use root scripts (`npm run dev`, `npm run build`, `npm test`) or Nx targets so commands resolve to `@game-of-life/app`.
+- Use root scripts (`npm run dev`, `npm run build`, `npm test`) or Nx targets rather than the deprecated root Vite entry.
 
 ### Packages
 
@@ -38,20 +39,63 @@ This project is organized as an **NX monorepo** with TypeScript composite builds
   - Type definitions and interfaces
   - No dependencies on UI frameworks
   
-- **`@game-of-life/app`** (`packages/app/`) - React UI application
+- **`@game-of-life/app`** (`packages/app/`) - React application
   - Vite-based React application
-  - Wintermuted UI theme components
-  - Canvas-based grid rendering
-  - Pattern selector and game controls
-  - Depends on `@game-of-life/core`
+  - Owns startup, routes/pages, assets, translations, persisted theme preferences, and simulation orchestration
+  - Loads the Wintermuted theme stylesheet
+  - Imports UI libraries directly and composes them with API/util/core
+
+- **`@game-of-life/ui`** (`packages/ui/`) - Shared primitives and theme support
+  - Tabs, segmented controls, language/palette selectors, and palette types/constants
+  - Controlled `ThemeModeProvider` and its shared context
+  - Receives theme state and translation initialization from the host app; no startup, routes, assets, API calls, or preference persistence
+  - No game-engine or feature-package dependencies; React/translation frameworks are peers
+  - Does not re-export feature components or a stylesheet
+
+- **`@game-of-life/ui-grid`** (`packages/ui-grid/`) - Grid rendering
+  - `Grid`, `CanvasGrid`, `GridSquares`, and cell-color rendering helpers
+  - Owns grid CSS, exported as `@game-of-life/ui-grid/style.css`
+  - Depends on UI primitives/theme, core, and util; no controls dependency
+
+- **`@game-of-life/ui-patterns`** (`packages/ui-patterns/`) - Pattern components
+  - Pattern preview, selector, standard/custom input components
+  - Depends on UI primitives/theme and core, not grid or controls
+
+- **`@game-of-life/ui-controls`** (`packages/ui-controls/`) - Game controls
+  - `GridControls` and `RulesPanel`
+  - Depends on ui-patterns previews, UI primitives/theme, and core
+  - Tested through app's translated-component integration tests
+
+- **`@game-of-life/api`** (`packages/api/`) - Client-side data services
+  - Browser-backed boards, template names, recents, favorites, forks, and profile
+  - Local/session storage selection and data migration
+  - Preserves existing storage keys and synchronous service APIs; no HTTP server
+  - Depends on `@game-of-life/util` and `@game-of-life/core`
+
+- **`@game-of-life/util`** (`packages/util/`) - Shared helpers
+  - Grid encoding/decoding and URL state
+  - Coordinate/viewport translation, generation speed, and relative-time formatting
+  - Depends only on `@game-of-life/core` and Lodash; no React or theme dependencies
+
+Import components, shared functions, and types through their owning package's
+public entry point, not through a UI umbrella. App imports all four UI libraries;
+feature libraries depend on base UI, and controls additionally depend on patterns.
+Libraries must not import app; UI libraries must not import API.
+Feature bundles externalize sibling libraries so all components share one theme
+context. App tests exercise translated components through their public exports,
+while standalone library tests do not import app's translation configuration.
 
 ### TypeScript Composite Builds
 
 The project uses TypeScript's [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) for incremental builds:
 
-- Root `tsconfig.json` references both packages
-- `packages/core/tsconfig.json` has `composite: true` and outputs to `dist/`
-- `packages/app/tsconfig.json` references the core package
+- Root `tsconfig.json` references core, util, API, and all four UI libraries
+- Library configurations use `composite: true` and emit JavaScript and declarations to `dist/`
+- Libraries declare TypeScript project references to their library dependencies
+- UI libraries emit declarations with TypeScript and ES modules with Vite; only ui-grid emits a stylesheet
+- App uses `noEmit` and source aliases for workspace imports, then bundles with Vite
+- Vite/Vitest resolve workspace libraries from source in development and tests;
+  direct tests do not require prebuilt libraries
 
 This enables:
 - Faster incremental builds
@@ -84,7 +128,8 @@ npm start            # Alias for dev
 
 # Building
 npm run build        # Build all packages
-npm run build:app    # Build only the app package
+npm run build:ui     # Build all four UI libraries and their dependencies
+npm run build:app    # Build the app and its library dependencies
 
 # Testing
 npm test             # Run tests for all packages
@@ -92,7 +137,7 @@ npm run test:watch   # Run tests in watch mode
 npm run test:ui      # Open Vitest UI
 
 # Linting
-npm run lint         # Lint the app package
+npm run lint         # Lint app and all four UI libraries
 
 # Preview
 npm run preview      # Preview production build
@@ -120,6 +165,11 @@ You can also use NX directly for more control:
 npx nx run @game-of-life/core:build
 npx nx run @game-of-life/core:test
 npx nx run @game-of-life/app:dev
+npx nx run @game-of-life/ui:test
+npx nx run @game-of-life/ui-grid:test
+npx nx run @game-of-life/ui-patterns:test
+npx nx run @game-of-life/api:test
+npx nx run @game-of-life/util:test
 
 # Run tasks for all packages
 npx nx run-many --target=test --all
@@ -144,9 +194,37 @@ game-of-life/
 │   │   ├── dist/            # Compiled output
 │   │   ├── package.json
 │   │   └── tsconfig.json
-│   └── app/                  # React UI application
+│   ├── api/                  # Browser-backed client-side data services
+│   │   ├── src/
+│   │   │   ├── browserStorage.ts
+│   │   │   └── index.ts      # Public service API and record types
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── util/                 # Shared helpers (no React)
+│   │   ├── src/
+│   │   │   ├── coordinate.ts
+│   │   │   ├── urlState.ts
+│   │   │   ├── generationSpeed.ts
+│   │   │   ├── relativeTime.ts
+│   │   │   └── index.ts      # Public helper exports
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── ui/                   # Shared primitives and theme support
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   ├── constants/   # Component palettes
+│   │   │   ├── ThemeContext.tsx
+│   │   │   └── index.ts     # Public component exports
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── vite.config.ts   # Library build and tests, not an app server
+│   ├── ui-grid/              # Grid, CanvasGrid, GridSquares, cell colors/CSS
+│   ├── ui-patterns/          # Pattern previews, selectors, and inputs
+│   ├── ui-controls/          # Game controls and rules panel
+│   └── app/                  # Application shell and orchestration
 │       ├── src/
-│       │   ├── app/         # React components
+│       │   ├── app/         # Routes, pages, and app-owned theme persistence
+│       │   ├── i18n/        # Translation configuration and resources
 │       │   ├── index.tsx    # Entry point
 │       │   └── ...
 │       ├── public/
