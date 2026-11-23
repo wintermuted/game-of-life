@@ -1,10 +1,10 @@
 import { render } from '@testing-library/react';
 import { vi } from 'vitest';
 import { CanvasGrid } from '@game-of-life/ui-grid';
-import { LifeGrid } from '@game-of-life/core';
+import { DEFAULT_LIVE_CELL_COLOR, LifeGrid } from '@game-of-life/core';
 
 describe('CanvasGrid selection rendering', () => {
-  const grid: LifeGrid = { '0,0': true };
+  const grid: LifeGrid = { '0,0': DEFAULT_LIVE_CELL_COLOR };
 
   beforeEach(() => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(32);

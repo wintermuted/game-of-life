@@ -57,7 +57,7 @@ import {
 } from '@game-of-life/api';
 
 let game: Game = {} as Game;
-let intervalID: NodeJS.Timeout = {} as NodeJS.Timeout;
+let intervalID: ReturnType<typeof window.setInterval> | undefined;
 
 const baseGame = rPentomino;
 const GENERATION_SPEED_MIN = 1;
@@ -1134,7 +1134,7 @@ function Home() {
   ]);
 
   function runGameInterval(speed = generationSpeed) {
-    intervalID = setInterval(() => {
+    intervalID = window.setInterval(() => {
       const previousGrid = { ...game.getStatus() };
       const nextGrid = game.next();
       const generationInteractions = analyzeGenerationInteractions(previousGrid, nextGrid, rules);
@@ -1151,7 +1151,7 @@ function Home() {
   }
 
   function stopGame(updateUrl = true) {
-    clearInterval(intervalID);
+    window.clearInterval(intervalID);
     setIsGameRunning(false);
 
     if (updateUrl) {
@@ -1287,7 +1287,7 @@ function Home() {
     setGenerationSpeed(nextSpeed);
 
     if (isGameRunning) {
-      clearInterval(intervalID);
+      window.clearInterval(intervalID);
       runGameInterval(nextSpeed);
     }
   }
