@@ -28,6 +28,37 @@ jobs:
       - run: npm ci
       - name: Lint with Oxlint
         run: npm run lint
+      - name: Verify total-line guardrail
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const os = require('node:os');
+          const path = require('node:path');
+          const { spawnSync } = require('node:child_process');
+          const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'life-file-limit-'));
+          const fixture = path.join(directory, 'fixture.ts');
+          const cli = path.join(path.dirname(require.resolve('oxlint/package.json')), 'bin', 'oxlint');
+          try {
+            for (const filler of ['', '// counted comment']) {
+              for (const lines of [500, 501]) {
+                fs.writeFileSync(fixture, ['export {};', ...Array(lines - 1).fill(filler)].join('\n') + '\n');
+                const result = spawnSync(process.execPath, [
+                  cli, '--config', path.resolve('.oxlintrc.json'), '--max-warnings', '0', fixture,
+                ], { encoding: 'utf8' });
+                if (result.error) throw result.error;
+                const output = result.stdout + result.stderr;
+                const expected = lines === 500 ? 0 : 1;
+                if (result.status !== expected || (lines === 501 && !output.includes('max-lines'))) {
+                  throw new Error(`Unexpected result for ${lines} total lines: ${output}`);
+                }
+              }
+            }
+            console.log('500 lines accepted; 501 rejected, including blank/comment lines.');
+          } finally {
+            if (fs.existsSync(fixture)) fs.unlinkSync(fixture);
+            fs.rmdirSync(directory);
+          }
+          NODE
       - name: Check formatting with Oxfmt
         run: npm run format:check
       - name: Build and typecheck all packages

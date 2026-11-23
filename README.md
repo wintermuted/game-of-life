@@ -149,7 +149,7 @@ npm run test:watch   # Run tests in watch mode
 npm run test:ui      # Open Vitest UI
 
 # Linting (Oxlint)
-npm run lint         # Lint app and all four UI libraries
+npm run lint         # Lint all eight packages
 
 # Formatting (Oxfmt)
 npm run format       # Format supported repository files
@@ -173,6 +173,34 @@ are covered by parser/compiler diagnostics rather than standalone Oxlint rules;
 extra semicolons and mixed indentation are handled by Oxfmt.
 Oxfmt preserves single-quoted code, uses two-space indentation and LF endings,
 and excludes generated outputs and the npm-generated lockfile.
+
+### File size and responsibility boundaries
+
+Keep authored source files at **500 total lines or fewer**, counting blank lines
+and comments. Prefer cohesive components, domain hooks, and pure helpers over
+large pages or controller hooks. Do not compress formatting or move a monolith
+into another file to meet the limit. Tests follow the same guideline.
+
+Oxlint's `max-lines` rule enforces this for JavaScript/TypeScript across all eight
+packages in CI. Existing zero-warning gates remain in place. CSS/SCSS, JSON, and
+YAML are not checked by Oxlint; their size guideline is review-enforced.
+
+The shared `.oxlintrc.json` retains these exact-file exceptions with **no-growth
+ceilings**. Raising a ceiling requires an explicit reviewed justification here
+and in the configuration; no directory-wide exemptions or inline suppressions.
+
+| File                                             | Ceiling | Reason / review condition                                                |
+| ------------------------------------------------ | ------: | ------------------------------------------------------------------------ |
+| `packages/ui-grid/src/components/Grid.tsx`       |     855 | Deferred grid orchestration split; remove the exception when decomposed. |
+| `packages/ui-grid/src/components/CanvasGrid.tsx` |     709 | Deferred canvas rendering split; remove the exception when decomposed.   |
+| `packages/app/src/app/components/Profile.tsx`    |     579 | Deferred profile page split; remove the exception when decomposed.       |
+| `packages/app/src/i18n/locales/en.ts`            |     543 | Locale dictionary kept together; review on translation additions.        |
+| `packages/app/src/i18n/locales/es.ts`            |     552 | Locale dictionary kept together; review on translation additions.        |
+
+The existing `packages/app/src/app/styles/App.css` (4,124 lines) is a deferred,
+review-enforced stylesheet exception. It is not covered by the Oxlint rule.
+There is no blanket data/test exemption, and `max-lines-per-function` is not
+enabled: function-length policy is separate from file-length policy.
 
 ### GitHub Copilot App
 

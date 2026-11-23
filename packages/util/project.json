@@ -4,6 +4,10 @@
   "sourceRoot": "packages/util/src",
   "projectType": "library",
   "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": { "command": "npm run lint", "cwd": "packages/util" }
+    },
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{projectRoot}/dist"],
