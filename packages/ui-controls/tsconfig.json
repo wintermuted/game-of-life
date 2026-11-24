@@ -22,5 +22,10 @@
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../core" }, { "path": "../ui" }, { "path": "../ui-patterns" }]
+  "references": [
+    { "path": "../ui-staging" },
+    { "path": "../core" },
+    { "path": "../ui" },
+    { "path": "../ui-patterns" }
+  ]
 }

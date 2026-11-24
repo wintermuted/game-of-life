@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import { Toast } from '@game-of-life/ui-staging';
 import type * as React from 'react';
 import type { BoardNotifications } from './useBoardNotifications';
 import type { BoardPresentation } from './useBoardPresentation';
@@ -14,21 +15,12 @@ export function PlaygroundToast(props: {
   const { settingsHoverPopover } = props.presentation;
   return (
     <>
-      <div
-        className={`wm-toast wm-toast-success${snackbarOpen ? ' wm-toast-visible' : ''}`}
-        role="status"
-        aria-live="polite"
-      >
-        {snackbarMessage}
-        <button
-          className="wm-toast-dismiss"
-          type="button"
-          aria-label="Dismiss"
-          onClick={handleSnackbarClose}
-        >
-          &#x2715;
-        </button>
-      </div>
+      <Toast
+        open={snackbarOpen}
+        message={snackbarMessage}
+        onDismiss={handleSnackbarClose}
+        dismissLabel="Dismiss"
+      />
       {settingsHoverPopover
         ? createPortal(
             <span

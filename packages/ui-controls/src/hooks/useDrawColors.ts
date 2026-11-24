@@ -26,17 +26,10 @@ type DrawColorProps = Pick<
 
 export interface DrawColors {
   customHexValue: string;
-  customColorSlots: string[];
   setCustomHexValue: (value: string) => void;
-  selectSystemColor: (event: React.MouseEvent<HTMLButtonElement>, color: string) => void;
-  selectCustomColor: (
-    event: React.MouseEvent<HTMLButtonElement>,
-    color: string,
-    index: number,
-  ) => void;
-  changeNativeColor: (value: string) => void;
-  applyCustomHex: (value: string) => string | null;
-  closeMenu: (target: EventTarget | null) => void;
+  customColorSlots: string[];
+  selectColor: (color: string, group: string, index: number) => void;
+  changeColor: (color: string) => void;
 }
 
 export function useDrawColors({
@@ -52,7 +45,6 @@ export function useDrawColors({
   useEffect(() => {
     setCustomHexValue(selectedDrawColor);
   }, [selectedDrawColor]);
-
   useEffect(() => {
     setCustomColorSlots((previous) => {
       const lower = selectedDrawColor.toLowerCase();
@@ -65,58 +57,18 @@ export function useDrawColors({
     });
   }, [activeCustomSlotIndex, selectedDrawColor]);
 
-  function closeClosestColorMenu(target: EventTarget | null): void {
-    if (!(target instanceof HTMLElement)) return;
-    const menu = target.closest('.grid-controls-color-picker') as HTMLDetailsElement | null;
-    if (menu) {
-      menu.open = false;
-    }
-  }
-
-  function handleSystemColorSelect(
-    event: React.MouseEvent<HTMLButtonElement>,
-    color: string,
-  ): void {
-    const matchingPaletteId = PALETTE_ID_BY_SYSTEM_COLOR[color.toLowerCase()];
-    if (matchingPaletteId) {
-      onPaletteChange(matchingPaletteId);
+  function selectColor(color: string, group: string, index: number): void {
+    if (group === 'system') {
+      const paletteId = PALETTE_ID_BY_SYSTEM_COLOR[color.toLowerCase()];
+      if (paletteId) onPaletteChange(paletteId);
+    } else {
+      setActiveCustomSlotIndex(index);
     }
     onDrawColorChange(color);
-    setCustomHexValue(color);
-    closeClosestColorMenu(event.currentTarget);
   }
 
-  function handleCustomColorSelect(
-    event: React.MouseEvent<HTMLButtonElement>,
-    color: string,
-    index: number,
-  ): void {
-    setActiveCustomSlotIndex(index);
-    onDrawColorChange(color);
-    setCustomHexValue(color);
-    closeClosestColorMenu(event.currentTarget);
-  }
-
-  function applyCustomHex(rawValue: string): string | null {
-    const trimmed = rawValue.trim();
-    const normalized = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
-    const validHex = /^#([0-9a-fA-F]{6})$/.test(normalized);
-    if (!validHex) return null;
-
-    const formatted = normalized.toLowerCase();
-    setCustomHexValue(formatted);
-    setCustomColorSlots((previous) => {
-      const next = [...previous];
-      next[activeCustomSlotIndex] = formatted;
-      return next;
-    });
-    onDrawColorChange(formatted);
-    return formatted;
-  }
-
-  function changeNativeColor(value: string): void {
+  function changeColor(value: string): void {
     onDrawColorChange(value);
-    setCustomHexValue(value);
     setCustomColorSlots((previous) => {
       const next = [...previous];
       next[activeCustomSlotIndex] = value;
@@ -126,12 +78,9 @@ export function useDrawColors({
 
   return {
     customHexValue,
-    customColorSlots,
     setCustomHexValue,
-    selectSystemColor: handleSystemColorSelect,
-    selectCustomColor: handleCustomColorSelect,
-    changeNativeColor,
-    applyCustomHex,
-    closeMenu: closeClosestColorMenu,
+    customColorSlots,
+    selectColor,
+    changeColor,
   };
 }

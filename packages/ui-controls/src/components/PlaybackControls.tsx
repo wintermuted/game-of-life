@@ -1,3 +1,4 @@
+import { NumberStepper } from '@game-of-life/ui-staging';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -150,39 +151,21 @@ export function PlaybackControls({
 
           <div className="grid-controls-section">
             <div className="grid-controls-field-wrap grid-controls-field-wrap-play">
-              <div
-                className="grid-controls-speed-stepper"
-                role="group"
-                aria-label={generationSpeedLabel}
-              >
-                <span className="control-tooltip-trigger" data-tooltip={decreaseSpeedLabel}>
-                  <button
-                    className="btn btn-sm btn-secondary-neutral"
-                    type="button"
-                    onClick={() => updateGenerationSpeed(generationSpeed - 1)}
-                    disabled={controlsDisabled || generationSpeed <= GENERATION_SPEED_MIN}
-                    aria-label={decreaseSpeedLabel}
-                  >
-                    <Minus size={12} />
-                  </button>
-                </span>
-                <span className="control-tooltip-trigger" data-tooltip={currentSpeedLabel}>
-                  <span className="grid-controls-speed-value" aria-live="polite">
-                    {generationSpeed}
-                  </span>
-                </span>
-                <span className="control-tooltip-trigger" data-tooltip={increaseSpeedLabel}>
-                  <button
-                    className="btn btn-sm btn-secondary-neutral"
-                    type="button"
-                    onClick={() => updateGenerationSpeed(generationSpeed + 1)}
-                    disabled={controlsDisabled || generationSpeed >= GENERATION_SPEED_MAX}
-                    aria-label={increaseSpeedLabel}
-                  >
-                    <Plus size={12} />
-                  </button>
-                </span>
-              </div>
+              <NumberStepper
+                value={generationSpeed}
+                min={GENERATION_SPEED_MIN}
+                max={GENERATION_SPEED_MAX}
+                step={1}
+                onChange={updateGenerationSpeed}
+                disabled={controlsDisabled}
+                label={generationSpeedLabel}
+                decreaseLabel={decreaseSpeedLabel}
+                increaseLabel={increaseSpeedLabel}
+                valueLabel={currentSpeedLabel}
+                decreaseIcon={<Minus size={12} />}
+                increaseIcon={<Plus size={12} />}
+                tooltipPlacement="right"
+              />
             </div>
           </div>
         </>

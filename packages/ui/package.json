@@ -12,6 +12,9 @@
       "import": "./dist/index.js"
     }
   },
+  "dependencies": {
+    "@game-of-life/ui-staging": "*"
+  },
   "peerDependencies": {
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
