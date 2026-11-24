@@ -31,7 +31,7 @@ test('production import graph and manifest cannot depend on application context'
   )) {
     const content = readFileSync(file, 'utf8');
     const tree = ts.createSourceFile(file, content, ts.ScriptTarget.Latest, true);
-    function visit(node: ts.Node): void {
+    const visit = (node: ts.Node): void => {
       if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier) {
         expect(ts.isStringLiteral(node.moduleSpecifier)).toBe(true);
         if (ts.isStringLiteral(node.moduleSpecifier))
@@ -47,7 +47,7 @@ test('production import graph and manifest cannot depend on application context'
         if (argument && ts.isStringLiteral(argument)) checkSpecifier(argument.text, file);
       }
       ts.forEachChild(node, visit);
-    }
+    };
     visit(tree);
     expect(content).not.toMatch(
       /localStorage|sessionStorage|LifeGrid|useTranslation|react-router|game-of-life|diagnostics-|grid-controls-|explore-/,
