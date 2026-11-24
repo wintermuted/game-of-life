@@ -1,3 +1,4 @@
+import { ToggleGroup } from '@game-of-life/ui-staging';
 import { useMemo } from 'react';
 import {
   ArrowDown,
@@ -112,24 +113,24 @@ export function ExploreToolbar(props: ToolbarProps): React.JSX.Element {
   return (
     <section className="explore-results-toolbar">
       <div className="explore-results-toolbar-left">
-        <div className="explore-view-toggle" role="group" aria-label={t('explore.viewModeLabel')}>
-          <button
-            className={`btn btn-sm btn-secondary-neutral explore-view-toggle-btn${viewMode === 'cards' ? ' is-active' : ''}`}
-            type="button"
-            onClick={() => setViewMode('cards')}
-          >
-            <LayoutGrid size={12} aria-hidden="true" />
-            <span>{t('explore.viewCards')}</span>
-          </button>
-          <button
-            className={`btn btn-sm btn-secondary-neutral explore-view-toggle-btn${viewMode === 'table' ? ' is-active' : ''}`}
-            type="button"
-            onClick={() => setViewMode('table')}
-          >
-            <Rows3 size={12} aria-hidden="true" />
-            <span>{t('explore.viewTable')}</span>
-          </button>
-        </div>
+        <ToggleGroup
+          appearance="outline"
+          label={t('explore.viewModeLabel')}
+          value={viewMode}
+          onChange={setViewMode}
+          options={[
+            {
+              value: 'cards',
+              label: t('explore.viewCards'),
+              icon: <LayoutGrid size={12} aria-hidden="true" />,
+            },
+            {
+              value: 'table',
+              label: t('explore.viewTable'),
+              icon: <Rows3 size={12} aria-hidden="true" />,
+            },
+          ]}
+        />
 
         <div className="explore-group-select-wrap">
           <SelectedGroupIcon className="explore-group-select-icon" size={12} aria-hidden="true" />

@@ -1,0 +1,225 @@
+.wm-staged-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.wm-staged-stepper-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 1.75rem;
+  padding: 0 0.45rem;
+  border: 1px solid var(--wm-color-border-strong);
+  border-radius: var(--wm-radius-sm);
+  background: var(--wm-color-surface-muted);
+  color: var(--wm-color-text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.wm-staged-color-picker {
+  position: relative;
+  display: inline-flex;
+}
+
+.wm-staged-color-picker-trigger {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  min-width: 1.95rem;
+  min-height: 1.75rem;
+  padding: 0 0.35rem;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.wm-staged-color-picker-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.wm-staged-color-picker-dot {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--wm-color-bg-inverse) 22%, transparent);
+}
+
+.wm-staged-color-picker-panel {
+  position: absolute;
+  bottom: calc(100% + 0.3rem);
+  left: 0;
+  min-width: 12rem;
+  padding: 0.4rem;
+  border: 1px solid var(--wm-color-border);
+  border-radius: var(--wm-radius-sm);
+  background: var(--wm-color-surface-solid);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--wm-color-bg-inverse) 14%, transparent);
+  z-index: 280;
+}
+
+.wm-staged-color-picker-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.68rem;
+  color: var(--wm-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wm-staged-color-group-label {
+  margin: 0.25rem 0 0.25rem;
+  font-size: 0.65rem;
+  color: var(--wm-color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wm-staged-color-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.wm-staged-color-swatch {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--wm-color-bg-inverse) 16%, transparent);
+  border-radius: var(--wm-radius-sm);
+  width: 100%;
+  height: 1.4rem;
+  cursor: pointer;
+}
+
+.wm-staged-color-swatch-active {
+  box-shadow: 0 0 0 1px var(--wm-color-focus, #60a5fa);
+}
+
+.wm-staged-custom-color-row {
+  margin-top: 0.45rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.wm-staged-custom-color-label {
+  font-size: 0.68rem;
+  color: var(--wm-color-text-muted);
+}
+
+.wm-staged-custom-color-inputs {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.wm-staged-color-native-input {
+  width: 2rem;
+  height: 1.6rem;
+  border: 1px solid var(--wm-color-border-strong);
+  border-radius: var(--wm-radius-sm);
+  background: var(--wm-color-surface-muted);
+  padding: 0.1rem;
+}
+
+.wm-staged-color-hex-input {
+  width: 100%;
+  min-height: 1.6rem;
+  border: 1px solid var(--wm-color-border-strong);
+  border-radius: var(--wm-radius-sm);
+  background: var(--wm-color-surface-muted);
+  color: var(--wm-color-text-primary);
+  font-size: 0.72rem;
+  padding: 0.2rem 0.35rem;
+}
+
+.wm-staged-sort-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.wm-staged-sort-btn.is-active {
+  color: var(--wm-color-text-secondary);
+}
+
+.wm-staged-sort-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.wm-staged-sort-dir-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--wm-color-text-muted);
+  line-height: 0;
+  cursor: pointer;
+}
+
+.wm-staged-sort-dir-btn.is-active,
+.wm-staged-sort-dir-btn:hover {
+  color: var(--wm-color-text-secondary);
+}
+
+.wm-staged-tooltip {
+  position: relative;
+  display: inline-flex;
+}
+
+.wm-staged-tooltip::before,
+.wm-staged-tooltip::after {
+  position: absolute;
+  left: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  z-index: 320;
+}
+
+.wm-staged-tooltip::before {
+  content: '';
+  bottom: calc(100% + 0.2rem);
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid color-mix(in srgb, var(--wm-color-bg-inverse) 88%, transparent);
+}
+
+.wm-staged-tooltip::after {
+  content: attr(data-tooltip);
+  bottom: calc(100% + 0.45rem);
+  transform: translateX(-50%);
+  min-width: max-content;
+  max-width: 12rem;
+  padding: 0.3rem 0.45rem;
+  border-radius: var(--wm-radius-sm);
+  background: color-mix(in srgb, var(--wm-color-bg-inverse) 88%, transparent);
+  color: var(--wm-color-text-inverse, #fff);
+  font-size: 0.7rem;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--wm-color-bg-inverse) 16%, transparent);
+}
+
+.wm-staged-tooltip:hover::before,
+.wm-staged-tooltip:hover::after,
+.wm-staged-tooltip:focus-within::before,
+.wm-staged-tooltip:focus-within::after {
+  opacity: 1;
+}

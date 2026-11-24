@@ -1,0 +1,95 @@
+.wm-staged-ranked-list {
+  margin-top: 0.65rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.wm-staged-ranked-heading {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--wm-color-text-muted);
+}
+
+.wm-staged-ranked-empty {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--wm-color-text-muted);
+}
+
+.wm-staged-ranked-item {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.wm-staged-ranked-item-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.wm-staged-ranked-chip {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--wm-color-bg-inverse) 16%, transparent);
+  flex-shrink: 0;
+}
+
+.wm-staged-ranked-label {
+  font-family: var(--wm-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.72rem;
+  color: var(--wm-color-text-primary);
+}
+
+.wm-staged-ranked-count {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--wm-color-text-muted);
+}
+
+.wm-staged-ranked-track {
+  width: 100%;
+  height: 0.38rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wm-color-surface-muted) 86%, transparent);
+  overflow: hidden;
+}
+
+.wm-staged-ranked-fill {
+  height: 100%;
+  border-radius: inherit;
+  min-width: 0;
+}
+
+.wm-staged-stat-card {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--wm-color-border);
+  border-radius: var(--wm-radius-sm);
+  background: var(--wm-color-surface-raised);
+}
+
+.wm-staged-stat-label {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--wm-color-text-muted);
+}
+
+.wm-staged-stat-value {
+  margin: 0.35rem 0 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--wm-color-text-primary);
+}
+
+.wm-staged-stat-value--success {
+  color: var(--wm-color-success);
+}
+
+.wm-staged-stat-value--danger {
+  color: var(--wm-color-danger);
+}

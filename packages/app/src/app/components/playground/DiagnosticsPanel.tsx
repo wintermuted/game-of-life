@@ -1,3 +1,4 @@
+import { DiagnosticsMetrics } from './DiagnosticsMetrics';
 import { ThemeTabs } from '@game-of-life/ui';
 import { PatternInput } from '@game-of-life/ui-patterns';
 import { useTranslation } from 'react-i18next';
@@ -41,17 +42,7 @@ export function DiagnosticsPanel(props: {
   const { handlePatternInputLoad } = props.stamp;
   const { activeSidebarTab, setActiveSidebarTab, cellDataCopied, copyCellData, selectedPaletteId } =
     props.presentation;
-  const {
-    gridJSON,
-    cellDataEntries,
-    liveColorLeaderboard,
-    maxLiveColorCount,
-    overcrowdingPressureLeaderboard,
-    maxOvercrowdingPressureCount,
-    experimentalBirthLeaderboard,
-    maxExperimentalBirthCount,
-    hasExperimentalRulesEnabled,
-  } = props.diagnostics;
+  const { gridJSON, cellDataEntries } = props.diagnostics;
   const { t } = useTranslation();
   return (
     <div className="right-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider">
@@ -84,174 +75,11 @@ export function DiagnosticsPanel(props: {
               <h4 className="diagnostics-section-heading">{t('diagnostics.statistics')}</h4>
             </summary>
             <div className="diagnostics-section-content">
-              <div className="diagnostics-stats-grid">
-                <article className="diagnostics-stat-card">
-                  <p className="diagnostics-stat-label">{t('diagnostics.generations')}</p>
-                  <p className="diagnostics-stat-value">{generation}</p>
-                </article>
-                <article className="diagnostics-stat-card">
-                  <p className="diagnostics-stat-label">{t('diagnostics.liveCells')}</p>
-                  <p className="diagnostics-stat-value">{stats.liveCells}</p>
-                </article>
-                <article className="diagnostics-stat-card">
-                  <p className="diagnostics-stat-label">{t('diagnostics.totalBirths')}</p>
-                  <p className="diagnostics-stat-value diagnostics-stat-value--success">
-                    {stats.births}
-                  </p>
-                </article>
-                <article className="diagnostics-stat-card">
-                  <p className="diagnostics-stat-label">{t('diagnostics.totalDeaths')}</p>
-                  <p className="diagnostics-stat-value diagnostics-stat-value--danger">
-                    {stats.deaths}
-                  </p>
-                </article>
-              </div>
-              <article className="diagnostics-stat-card">
-                <p className="diagnostics-stat-label">{t('diagnostics.liveCellsByColor')}</p>
-                <div
-                  className="diagnostics-color-leaderboard"
-                  role="list"
-                  aria-label={t('diagnostics.liveCellsByColor')}
-                >
-                  {liveColorLeaderboard.length === 0 ? (
-                    <p className="diagnostics-color-leaderboard-empty">
-                      {t('diagnostics.noLiveCellsByColor')}
-                    </p>
-                  ) : (
-                    liveColorLeaderboard.map(({ color, count }) => {
-                      const relativeWidth =
-                        maxLiveColorCount > 0 ? Math.max(6, (count / maxLiveColorCount) * 100) : 0;
-                      return (
-                        <div
-                          className="diagnostics-color-leaderboard-item"
-                          role="listitem"
-                          key={color}
-                        >
-                          <div className="diagnostics-color-leaderboard-item-header">
-                            <span
-                              className="diagnostics-color-chip"
-                              style={{ backgroundColor: color }}
-                              aria-hidden="true"
-                            ></span>
-                            <span className="diagnostics-color-code">{color}</span>
-                            <span className="diagnostics-color-count">
-                              {t('diagnostics.liveCellsCount', { count })}
-                            </span>
-                          </div>
-                          <div className="diagnostics-color-bar-track" aria-hidden="true">
-                            <div
-                              className="diagnostics-color-bar-fill"
-                              style={{ width: `${relativeWidth}%`, backgroundColor: color }}
-                            ></div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </article>
-              <article className="diagnostics-stat-card diagnostics-stat-card-generation-interactions">
-                <p className="diagnostics-stat-label">{t('diagnostics.generationInteractions')}</p>
-                <div
-                  className="diagnostics-color-leaderboard"
-                  role="list"
-                  aria-label={t('diagnostics.overcrowdingDeathsByOtherColor')}
-                >
-                  <p className="diagnostics-color-leaderboard-heading">
-                    {t('diagnostics.overcrowdingDeathsByOtherColor')}
-                  </p>
-                  {overcrowdingPressureLeaderboard.length === 0 ? (
-                    <p className="diagnostics-color-leaderboard-empty">
-                      {t('diagnostics.noOvercrowdingDeathsByOtherColor')}
-                    </p>
-                  ) : (
-                    overcrowdingPressureLeaderboard.map(({ color, count }) => {
-                      const relativeWidth =
-                        maxOvercrowdingPressureCount > 0
-                          ? Math.max(6, (count / maxOvercrowdingPressureCount) * 100)
-                          : 0;
-                      return (
-                        <div
-                          className="diagnostics-color-leaderboard-item"
-                          role="listitem"
-                          key={`overcrowding-${color}`}
-                        >
-                          <div className="diagnostics-color-leaderboard-item-header">
-                            <span
-                              className="diagnostics-color-chip"
-                              style={{ backgroundColor: color }}
-                              aria-hidden="true"
-                            ></span>
-                            <span className="diagnostics-color-code">{color}</span>
-                            <span className="diagnostics-color-count">
-                              {t('diagnostics.overcrowdingDeathsCount', { count })}
-                            </span>
-                          </div>
-                          <div className="diagnostics-color-bar-track" aria-hidden="true">
-                            <div
-                              className="diagnostics-color-bar-fill"
-                              style={{ width: `${relativeWidth}%`, backgroundColor: color }}
-                            ></div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-                <div
-                  className="diagnostics-color-leaderboard"
-                  role="list"
-                  aria-label={t('diagnostics.experimentalBirthsByColor')}
-                >
-                  <p className="diagnostics-color-leaderboard-heading">
-                    {t('diagnostics.experimentalBirthsByColor')}
-                  </p>
-                  {!hasExperimentalRulesEnabled ? (
-                    <p className="diagnostics-color-leaderboard-empty">
-                      {t('diagnostics.experimentalRulesDisabled')}
-                    </p>
-                  ) : experimentalBirthLeaderboard.length === 0 ? (
-                    <p className="diagnostics-color-leaderboard-empty">
-                      {t('diagnostics.noExperimentalBirthsByColor')}
-                    </p>
-                  ) : (
-                    experimentalBirthLeaderboard.map(({ color, count, tieBreakCount }) => {
-                      const relativeWidth =
-                        maxExperimentalBirthCount > 0
-                          ? Math.max(6, (count / maxExperimentalBirthCount) * 100)
-                          : 0;
-                      return (
-                        <div
-                          className="diagnostics-color-leaderboard-item"
-                          role="listitem"
-                          key={`experimental-birth-${color}`}
-                        >
-                          <div className="diagnostics-color-leaderboard-item-header">
-                            <span
-                              className="diagnostics-color-chip"
-                              style={{ backgroundColor: color }}
-                              aria-hidden="true"
-                            ></span>
-                            <span className="diagnostics-color-code">{color}</span>
-                            <span className="diagnostics-color-count">
-                              {t('diagnostics.experimentalBirthsCount', { count })}
-                              {tieBreakCount > 0
-                                ? ` (${t('diagnostics.tieBreakBirthsCount', { count: tieBreakCount })})`
-                                : ''}
-                            </span>
-                          </div>
-                          <div className="diagnostics-color-bar-track" aria-hidden="true">
-                            <div
-                              className="diagnostics-color-bar-fill"
-                              style={{ width: `${relativeWidth}%`, backgroundColor: color }}
-                            ></div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </article>
+              <DiagnosticsMetrics
+                generation={generation}
+                stats={stats}
+                diagnostics={props.diagnostics}
+              />
             </div>
           </details>
 

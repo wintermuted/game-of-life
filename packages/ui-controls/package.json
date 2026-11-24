@@ -13,6 +13,7 @@
     }
   },
   "dependencies": {
+    "@game-of-life/ui-staging": "*",
     "@game-of-life/core": "*",
     "@game-of-life/ui": "*",
     "@game-of-life/ui-patterns": "*",

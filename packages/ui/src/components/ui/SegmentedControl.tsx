@@ -1,3 +1,6 @@
+import { ToggleGroup } from '@game-of-life/ui-staging';
+import type { ReactElement } from 'react';
+
 interface SegmentedOption {
   value: string;
   label: string;
@@ -11,22 +14,14 @@ interface SegmentedControlProps {
   ariaLabel: string;
 }
 
-function SegmentedControl({ options, selectedValue, onChange, ariaLabel }: SegmentedControlProps) {
+function SegmentedControl({
+  options,
+  selectedValue,
+  onChange,
+  ariaLabel,
+}: SegmentedControlProps): ReactElement {
   return (
-    <div className="btn-group" role="group" aria-label={ariaLabel}>
-      {options.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          className={`btn btn-sm ${selectedValue === option.value ? 'btn-primary-neutral' : 'btn-secondary-neutral'}`}
-          aria-pressed={selectedValue === option.value}
-          disabled={option.disabled}
-          onClick={() => onChange(option.value)}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
+    <ToggleGroup options={options} value={selectedValue} onChange={onChange} label={ariaLabel} />
   );
 }
 

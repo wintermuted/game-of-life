@@ -1,3 +1,4 @@
+import { ToggleGroup } from '@game-of-life/ui-staging';
 import { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -515,28 +516,24 @@ function Profile() {
           ) : null}
           <div className="profile-view-toggle-row">
             <span className="profile-view-toggle-label">{t('explore.viewModeLabel')}</span>
-            <div
-              className="explore-view-toggle"
-              role="group"
-              aria-label={t('explore.viewModeLabel')}
-            >
-              <button
-                className={`btn btn-sm btn-secondary-neutral explore-view-toggle-btn${sectionViewMode === 'cards' ? ' is-active' : ''}`}
-                type="button"
-                onClick={() => setSectionViewMode('cards')}
-              >
-                <LayoutGrid size={14} aria-hidden="true" />
-                <span>{t('explore.viewCards')}</span>
-              </button>
-              <button
-                className={`btn btn-sm btn-secondary-neutral explore-view-toggle-btn${sectionViewMode === 'table' ? ' is-active' : ''}`}
-                type="button"
-                onClick={() => setSectionViewMode('table')}
-              >
-                <Rows3 size={14} aria-hidden="true" />
-                <span>{t('explore.viewTable')}</span>
-              </button>
-            </div>
+            <ToggleGroup
+              appearance="outline"
+              label={t('explore.viewModeLabel')}
+              value={sectionViewMode}
+              onChange={setSectionViewMode}
+              options={[
+                {
+                  value: 'cards',
+                  label: t('explore.viewCards'),
+                  icon: <LayoutGrid size={14} aria-hidden="true" />,
+                },
+                {
+                  value: 'table',
+                  label: t('explore.viewTable'),
+                  icon: <Rows3 size={14} aria-hidden="true" />,
+                },
+              ]}
+            />
           </div>
 
           {renderBoardSection(

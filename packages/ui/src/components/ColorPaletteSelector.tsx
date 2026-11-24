@@ -1,5 +1,7 @@
-import { COLOR_PALETTES, ColorPalette } from '../constants/colors';
+import { COLOR_PALETTES } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
+import { ToggleGroup } from '@game-of-life/ui-staging';
+import type { ReactElement } from 'react';
 
 interface Props {
   selectedPaletteId: string;
@@ -7,35 +9,30 @@ interface Props {
   disabled?: boolean;
 }
 
-function ColorPaletteSelector({ selectedPaletteId, onPaletteChange, disabled = false }: Props) {
+function ColorPaletteSelector({
+  selectedPaletteId,
+  onPaletteChange,
+  disabled = false,
+}: Props): ReactElement {
   const { t } = useTranslation();
-
   return (
     <div className="ColorPaletteSelector">
       <h5>{t('colors.title')}</h5>
-      <div
-        className="wm-toggle-group wm-toggle-group-vertical wm-toggle-group-full"
-        role="group"
-        aria-label={t('colors.title')}
-      >
-        {COLOR_PALETTES.map((palette: ColorPalette) => (
-          <button
-            key={palette.id}
-            className={`wm-toggle-group-btn${selectedPaletteId === palette.id ? ' wm-toggle-group-btn-active' : ''}`}
-            type="button"
-            aria-pressed={selectedPaletteId === palette.id}
-            title={palette.description || palette.name}
-            disabled={disabled}
-            onClick={() => onPaletteChange(palette.id)}
-          >
-            <span
-              className="wm-toggle-group-swatch"
-              style={{ background: palette.liveCell, borderColor: 'rgba(255,255,255,0.2)' }}
-            />
-            <span>{palette.name}</span>
-          </button>
-        ))}
-      </div>
+      <ToggleGroup
+        options={COLOR_PALETTES.map((palette) => ({
+          value: palette.id,
+          label: palette.name,
+          swatchColor: palette.liveCell,
+          title: palette.description || palette.name,
+        }))}
+        value={selectedPaletteId}
+        onChange={onPaletteChange}
+        label={t('colors.title')}
+        disabled={disabled}
+        orientation="vertical"
+        appearance="swatches"
+        fullWidth
+      />
     </div>
   );
 }

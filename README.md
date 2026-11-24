@@ -34,6 +34,12 @@ This project is organized as an **NX monorepo** with npm workspaces:
 
 ### Packages
 
+- **`@game-of-life/ui-staging`** (`packages/ui-staging/`) - Private context-free UI staging
+  - Nine generic components consumed by the app and thin adapters in ui/ui-controls
+  - React/React DOM and Wintermuted theme styling only; no game, API, translation, routing, or storage dependency
+  - Explicit `style.css` export; component-owned styles travel with the package
+  - Preparation for a separately requested wintermuted-ui transfer; see its package README
+
 - **`@game-of-life/core`** (`packages/core/`) - Core game logic library
   - Pure TypeScript implementation of Conway's Game of Life rules
   - Game state management (Grid class)
@@ -79,6 +85,10 @@ This project is organized as an **NX monorepo** with npm workspaces:
   - Coordinate/viewport translation, generation speed, and relative-time formatting
   - Depends only on `@game-of-life/core` and Lodash; no React or theme dependencies
 
+The private staging leaf has no dependency on these libraries. App, base ui, and
+ui-controls consume it; their domain-specific adapters stay in their owning
+packages. Staged component styles load explicitly after the Wintermuted theme.
+
 Import components, shared functions, and types through their owning package's
 public entry point, not through a UI umbrella. App imports all four UI libraries;
 feature libraries depend on base UI, and controls additionally depend on patterns.
@@ -91,10 +101,10 @@ while standalone library tests do not import app's translation configuration.
 
 The project uses TypeScript's [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) for incremental builds:
 
-- Root `tsconfig.json` references core, util, API, and all four UI libraries
+- Root `tsconfig.json` references core, util, API, the four existing UI libraries, and ui-staging
 - Library configurations use `composite: true` and emit JavaScript and declarations to `dist/`
 - Libraries declare TypeScript project references to their library dependencies
-- UI libraries emit declarations with TypeScript and ES modules with Vite; only ui-grid emits a stylesheet
+- UI libraries emit declarations with TypeScript and ES modules with Vite; ui-grid emits a stylesheet and ui-staging exports its portable source styles
 - App uses `noEmit` and source aliases for workspace imports, then bundles with Vite
 - Vite/Vitest resolve workspace libraries from source in development and tests;
   direct tests do not require prebuilt libraries
@@ -140,7 +150,7 @@ npm start            # Alias for dev
 
 # Building
 npm run build        # Build all packages
-npm run build:ui     # Build all four UI libraries and their dependencies
+npm run build:ui     # Build all five UI libraries and their dependencies
 npm run build:app    # Build the app and its library dependencies
 
 # Testing
@@ -149,7 +159,7 @@ npm run test:watch   # Run tests in watch mode
 npm run test:ui      # Open Vitest UI
 
 # Linting (Oxlint)
-npm run lint         # Lint all eight packages
+npm run lint         # Lint all nine packages
 
 # Formatting (Oxfmt)
 npm run format       # Format supported repository files
@@ -181,7 +191,7 @@ and comments. Prefer cohesive components, domain hooks, and pure helpers over
 large pages or controller hooks. Do not compress formatting or move a monolith
 into another file to meet the limit. Tests follow the same guideline.
 
-Oxlint's `max-lines` rule enforces this for JavaScript/TypeScript across all eight
+Oxlint's `max-lines` rule enforces this for JavaScript/TypeScript across all nine
 packages in CI. Existing zero-warning gates remain in place. CSS/SCSS, JSON, and
 YAML are not checked by Oxlint; their size guideline is review-enforced.
 

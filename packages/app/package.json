@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@game-of-life/ui-staging": "*",
     "@game-of-life/api": "*",
     "@game-of-life/core": "*",
     "@game-of-life/ui": "*",

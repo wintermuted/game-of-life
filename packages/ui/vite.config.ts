@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      '@game-of-life/ui-staging': path.resolve(import.meta.dirname, '../ui-staging/src/index.ts'),
       '@game-of-life/ui': path.resolve(import.meta.dirname, './src/index.ts'),
     },
   },
@@ -19,7 +20,13 @@ export default defineConfig({
       fileName: 'index',
     },
     rolldownOptions: {
-      external: [/^react($|\/)/, /^react-dom($|\/)/, 'react-i18next', 'i18next'],
+      external: [
+        /^react($|\/)/,
+        /^react-dom($|\/)/,
+        /^@game-of-life\//,
+        'react-i18next',
+        'i18next',
+      ],
     },
   },
   test: {

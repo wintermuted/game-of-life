@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./packages/ui-staging" },
     { "path": "./packages/core" },
     { "path": "./packages/util" },
     { "path": "./packages/ui" },

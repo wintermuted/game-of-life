@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowDownUp, ArrowUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { SortableTableHeader } from '@game-of-life/ui-staging';
 import type { SortField, SortDirection } from './exploreTypes';
 
 interface SortHeaderProps {
@@ -20,32 +21,17 @@ export function ExploreSortHeader({
   onDirection,
 }: SortHeaderProps): React.JSX.Element {
   const { t } = useTranslation();
-  const active = field === sortField;
+  const Icon = field === sortField ? (sortDirection === 'asc' ? ArrowUp : ArrowDown) : ArrowDownUp;
   return (
-    <div className="explore-table-sort-head">
-      <button
-        type="button"
-        className={`explore-table-sort-btn${active ? ' is-active' : ''}`}
-        onClick={() => onSort(field)}
-      >
-        <span>{label}</span>
-      </button>
-      <button
-        type="button"
-        className={`explore-table-sort-dir-btn${active ? ' is-active' : ''}`}
-        aria-label={`${t('explore.sortDirectionLabel')} - ${label}`}
-        onClick={() => onDirection(field)}
-      >
-        {active ? (
-          sortDirection === 'asc' ? (
-            <ArrowUp size={12} aria-hidden="true" />
-          ) : (
-            <ArrowDown size={12} aria-hidden="true" />
-          )
-        ) : (
-          <ArrowDownUp size={12} aria-hidden="true" />
-        )}
-      </button>
-    </div>
+    <SortableTableHeader
+      column={field}
+      label={label}
+      active={field === sortField}
+      direction={sortDirection}
+      onSort={onSort}
+      onDirection={onDirection}
+      directionLabel={`${t('explore.sortDirectionLabel')} - ${label}`}
+      directionIcon={<Icon size={12} aria-hidden="true" />}
+    />
   );
 }

@@ -20,6 +20,7 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true
   },
+  "references": [{ "path": "../ui-staging" }],
   "include": ["src/**/*"],
   "exclude": [
     "node_modules",

@@ -1,0 +1,104 @@
+.wm-staged-facet-section {
+  border: 1px solid var(--wm-color-border);
+  border-radius: var(--wm-radius-sm);
+  padding: 0.45rem 0.55rem;
+  background: color-mix(in srgb, var(--wm-color-surface-muted) 45%, transparent);
+}
+
+.wm-staged-facet-section-summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--wm-color-text-secondary);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wm-staged-facet-section-summary::-webkit-details-marker {
+  display: none;
+}
+
+.wm-staged-facet-section-summary::after {
+  content: '+';
+  font-size: 0.9rem;
+  line-height: 1;
+  color: var(--wm-color-text-muted);
+}
+
+.wm-staged-facet-section[open] .wm-staged-facet-section-summary::after {
+  content: '-';
+}
+
+.wm-staged-facet-section[open] .wm-staged-facet-section-summary {
+  margin-bottom: 0.45rem;
+}
+
+.wm-staged-checkbox-list {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.wm-staged-facet-empty {
+  margin: 0;
+  color: var(--wm-color-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.wm-staged-facet-more {
+  appearance: none;
+  width: fit-content;
+  border: 0;
+  background: transparent;
+  padding: 0.15rem 0;
+  color: var(--wm-color-accent);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.wm-staged-facet-more:hover,
+.wm-staged-facet-more:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
+}
+
+.wm-staged-checkbox-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: var(--wm-color-text-secondary);
+}
+
+.wm-staged-checkbox-item:has(input:disabled) {
+  color: var(--wm-color-text-muted);
+}
+
+.wm-staged-checkbox-item-with-count {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.wm-staged-checkbox-item-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.wm-staged-facet-count {
+  font-size: 0.68rem;
+  line-height: 1.1;
+  min-width: 1.5rem;
+  justify-content: center;
+}
+
+.wm-staged-checkbox-item input[type='checkbox'] {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  flex: 0 0 auto;
+}
