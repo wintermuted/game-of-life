@@ -50,6 +50,21 @@ describe('GridControls structural regressions', () => {
     vi.useRealTimers();
   });
 
+  it('retains play-mode color trigger styling without applying toolbar classes to the sidebar', () => {
+    const props = createProps();
+    const { container, rerender } = render(<GridControls {...props} isEditMode />);
+    const trigger = container.querySelector('.wm-staged-color-picker summary');
+    expect(trigger).toHaveClass(
+      'btn-secondary-neutral',
+      'grid-controls-edit-tool-button',
+      'grid-controls-edit-tool-button-right',
+    );
+    rerender(<GridControls {...props} variant="edit" />);
+    expect(container.querySelector('.wm-staged-color-picker summary')).not.toHaveClass(
+      'grid-controls-edit-tool-button',
+    );
+  });
+
   it('preserves slot selection and hex drafts across play, hidden and sidebar placements', () => {
     const props = createProps();
     const { container, rerender } = render(

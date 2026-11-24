@@ -52,6 +52,11 @@ export function DrawColorPicker({
       onCommit={onCustomColorCommitted}
       disabled={isGameRunning}
       placement={variant === 'play' ? 'right' : 'above'}
+      triggerClassName={
+        variant === 'play'
+          ? 'btn btn-sm btn-secondary-neutral grid-controls-edit-tool-button grid-controls-edit-tool-button-right'
+          : undefined
+      }
     />
   );
 }

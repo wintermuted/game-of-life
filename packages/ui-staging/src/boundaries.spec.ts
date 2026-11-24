@@ -67,7 +67,9 @@ test('production import graph and manifest cannot depend on application context'
 test('staged styles contain no app selectors and all stylesheet imports remain portable', () => {
   for (const file of files(path.join(sourceRoot, 'styles'))) {
     const css = readFileSync(file, 'utf8');
-    expect(css).not.toMatch(/diagnostics-|grid-controls-|explore-|language-switcher|@game-of-life/);
+    expect(css).not.toMatch(
+      /diagnostics-|grid-controls-|grid-overlay-controls|play-about-|explore-|language-switcher|@game-of-life/,
+    );
     for (const match of css.matchAll(/@import\s+['"]([^'"]+)['"]/g)) {
       checkSpecifier(match[1], file);
     }

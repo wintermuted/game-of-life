@@ -46,6 +46,11 @@ addition styles. Component-owned rules were moved out of App.css and renamed
 and toast presentation. App.css retains page layout, including the vertical
 playback arrangement and mobile view-toggle sizing.
 
+`ColorPicker.triggerClassName` lets adapters retain existing host toolbar styling
+without embedding those classes in the component. `NumberStepper.tooltipPlacement`
+controls tooltip direction; portable styles do not infer placement from host
+container classes.
+
 Transferable additions are the outline toggle treatment, compact left-aligned
 stat card, ranked comparisons, counted facet presentation, color-picker inputs
 and placement, drop-up selector, stepper, and its tooltip presentation. Focus

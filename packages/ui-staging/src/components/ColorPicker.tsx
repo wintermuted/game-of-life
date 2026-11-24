@@ -28,6 +28,7 @@ export interface ColorPickerProps {
   disabled?: boolean;
   placement?: 'above' | 'right';
   className?: string;
+  triggerClassName?: string;
 }
 
 export function ColorPicker({
@@ -43,6 +44,7 @@ export function ColorPicker({
   disabled = false,
   placement = 'above',
   className = '',
+  triggerClassName = '',
   inputId,
   draftValue,
   onDraftChange,
@@ -101,7 +103,11 @@ export function ColorPicker({
         }
       }}
     >
-      <summary ref={trigger} className="wm-staged-color-picker-trigger" aria-label={label}>
+      <summary
+        ref={trigger}
+        className={`wm-staged-color-picker-trigger ${triggerClassName}`}
+        aria-label={label}
+      >
         <span
           className="wm-staged-color-picker-dot"
           style={{ backgroundColor: value }}
