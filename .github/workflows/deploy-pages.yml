@@ -70,6 +70,9 @@ jobs:
         env:
           VITE_BASE_URL: ${{ github.event_name == 'pull_request' && format('/{0}/previews/pr-{1}/', github.event.repository.name, github.event.pull_request.number) || format('/{0}/', github.event.repository.name) }}
 
+      - name: Generate browser bundle size badges
+        run: node .github/scripts/bundle-size.cjs
+
       - name: Configure git identity
         run: |
           git config user.name "github-actions[bot]"
