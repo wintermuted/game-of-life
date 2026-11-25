@@ -37,7 +37,7 @@ function ControlledColors({ props }: { props: ControlsProps }): ReactElement {
 }
 
 function openColors(container: HTMLElement): HTMLDetailsElement {
-  const menu = container.querySelector<HTMLDetailsElement>('.wm-staged-color-picker');
+  const menu = container.querySelector<HTMLDetailsElement>('.wm-color-picker');
   if (!menu) throw new Error('Color picker missing');
   menu.open = true;
   return menu;
@@ -53,14 +53,14 @@ describe('GridControls structural regressions', () => {
   it('retains play-mode color trigger styling without applying toolbar classes to the sidebar', () => {
     const props = createProps();
     const { container, rerender } = render(<GridControls {...props} isEditMode />);
-    const trigger = container.querySelector('.wm-staged-color-picker summary');
+    const trigger = container.querySelector('.wm-color-picker summary');
     expect(trigger).toHaveClass(
       'btn-secondary-neutral',
       'grid-controls-edit-tool-button',
       'grid-controls-edit-tool-button-right',
     );
     rerender(<GridControls {...props} variant="edit" />);
-    expect(container.querySelector('.wm-staged-color-picker summary')).not.toHaveClass(
+    expect(container.querySelector('.wm-color-picker summary')).not.toHaveClass(
       'grid-controls-edit-tool-button',
     );
   });
@@ -77,7 +77,7 @@ describe('GridControls structural regressions', () => {
     fireEvent.change(native, { target: { value: '#123456' } });
     fireEvent.change(screen.getByLabelText('Custom color hex'), { target: { value: 'draft' } });
     rerender(<ControlledColors props={{ ...props, isEditMode: false }} />);
-    expect(container.querySelector('.wm-staged-color-picker')).toBeNull();
+    expect(container.querySelector('.wm-color-picker')).toBeNull();
     rerender(<ControlledColors props={{ ...props, variant: 'edit', isEditMode: false }} />);
     openColors(container);
     expect(screen.getByLabelText('Custom color')).toHaveAttribute(

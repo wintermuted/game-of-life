@@ -8,11 +8,6 @@ export default defineConfig({
   base: process.env.VITE_BASE_URL || '/game-of-life/',
   resolve: {
     alias: {
-      '@game-of-life/ui-staging/style.css': path.resolve(
-        import.meta.dirname,
-        '../ui-staging/src/styles/index.css',
-      ),
-      '@game-of-life/ui-staging': path.resolve(import.meta.dirname, '../ui-staging/src/index.ts'),
       '@game-of-life/core': path.resolve(import.meta.dirname, '../core/src/index.ts'),
       '@game-of-life/ui': path.resolve(import.meta.dirname, '../ui/src/index.ts'),
       '@game-of-life/ui-grid': path.resolve(import.meta.dirname, '../ui-grid/src/index.ts'),

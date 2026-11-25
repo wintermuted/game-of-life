@@ -30,7 +30,6 @@
 
     /* Workspace package aliases */
     "paths": {
-      "@game-of-life/ui-staging": ["../ui-staging/src/index.ts"],
       "@game-of-life/core": ["../core/src/index.ts"],
       "@game-of-life/ui": ["../ui/src/index.ts"],
       "@game-of-life/ui-grid": ["../ui-grid/src/index.ts"],

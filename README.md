@@ -34,12 +34,6 @@ This project is organized as an **NX monorepo** with npm workspaces:
 
 ### Packages
 
-- **`@game-of-life/ui-staging`** (`packages/ui-staging/`) - Private context-free UI staging
-  - Nine generic components consumed by the app and thin adapters in ui/ui-controls
-  - React/React DOM and Wintermuted theme styling only; no game, API, translation, routing, or storage dependency
-  - Explicit `style.css` export; component-owned styles travel with the package
-  - Preparation for a separately requested wintermuted-ui transfer; see its package README
-
 - **`@game-of-life/core`** (`packages/core/`) - Core game logic library
   - Pure TypeScript implementation of Conway's Game of Life rules
   - Game state management (Grid class)
@@ -85,9 +79,14 @@ This project is organized as an **NX monorepo** with npm workspaces:
   - Coordinate/viewport translation, generation speed, and relative-time formatting
   - Depends only on `@game-of-life/core` and Lodash; no React or theme dependencies
 
-The private staging leaf has no dependency on these libraries. App, base ui, and
-ui-controls consume it; their domain-specific adapters stay in their owning
-packages. Staged component styles load explicitly after the Wintermuted theme.
+App, base ui, and ui-controls consume the nine generic components from the published
+`@wintermuted/ui-react` package (1.1.0 or later), styled by `@wintermuted/ui-theme`
+(1.0.2 or later). Toggle groups, facets, sortable headers, stat cards, ranked bars,
+toasts, color pickers, number steppers, and language selectors are owned upstream;
+their translations, palette/default mapping, color drafts, routing, persistence,
+and notification timing stay in local adapters. App loads the theme stylesheet
+once; there is no separate staging package or stylesheet. Diagnostics explicitly
+use compact stat cards. Existing local Tabs, Dialog, Menu, and Tooltip are unchanged.
 
 Import components, shared functions, and types through their owning package's
 public entry point, not through a UI umbrella. App imports all four UI libraries;
@@ -101,10 +100,10 @@ while standalone library tests do not import app's translation configuration.
 
 The project uses TypeScript's [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) for incremental builds:
 
-- Root `tsconfig.json` references core, util, API, the four existing UI libraries, and ui-staging
+- Root `tsconfig.json` references core, util, API, and the four UI libraries
 - Library configurations use `composite: true` and emit JavaScript and declarations to `dist/`
 - Libraries declare TypeScript project references to their library dependencies
-- UI libraries emit declarations with TypeScript and ES modules with Vite; ui-grid emits a stylesheet and ui-staging exports its portable source styles
+- UI libraries emit declarations with TypeScript and ES modules with Vite; ui-grid emits a stylesheet
 - App uses `noEmit` and source aliases for workspace imports, then bundles with Vite
 - Vite/Vitest resolve workspace libraries from source in development and tests;
   direct tests do not require prebuilt libraries
@@ -120,7 +119,7 @@ This enables:
 - **Build System**: [NX](https://nx.dev) - Smart monorepo build system with caching
 - **Language**: TypeScript 6
 - **UI Framework**: React 19 with React Router 7
-- **UI Components**: [@wintermuted/ui-theme](https://github.com/wintermuted/ui-theme)
+- **UI Components**: [@wintermuted/ui-react and @wintermuted/ui-theme](https://github.com/wintermuted/wintermuted-ui)
 - **Testing**: Vitest 5 with React Testing Library
 - **Bundler**: Vite 8
 - **Linting and Formatting**: Oxlint and Oxfmt
@@ -159,7 +158,7 @@ npm run test:watch   # Run tests in watch mode
 npm run test:ui      # Open Vitest UI
 
 # Linting (Oxlint)
-npm run lint         # Lint all nine packages
+npm run lint         # Lint all eight packages
 
 # Formatting (Oxfmt)
 npm run format       # Format supported repository files

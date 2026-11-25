@@ -20,7 +20,6 @@ packages/
 ├── core/src/       # Game engine, patterns, and engine types
 ├── api/src/        # Client-side browser-backed services and record types
 ├── util/src/       # Shared helpers (no React or theme dependencies)
-├── ui-staging/src/ # Private context-free components and portable styles
 ├── ui/src/         # Shared primitives, palettes, and controlled theme context
 ├── ui-grid/src/    # Grid rendering, cell colors, and grid CSS
 ├── ui-patterns/src/# Pattern previews, selectors, and inputs
@@ -30,7 +29,7 @@ packages/
 
 Import libraries through `@game-of-life/core`, `@game-of-life/api`,
 `@game-of-life/util`, and the owning UI package (`ui`, `ui-grid`, `ui-patterns`,
-or `ui-controls`, plus `ui-staging`); base UI is not an umbrella. App imports all UI packages.
+or `ui-controls`); base UI is not an umbrella. App imports all UI packages.
 Dependencies flow `ui-grid -> ui/core/util`, `ui-patterns -> ui/core`,
 `ui-controls -> ui-patterns/ui/core`, `api -> util/core`, and `util -> core`.
 Base UI has no game dependencies. Libraries must not import app; UI packages
@@ -38,11 +37,12 @@ must not import API. Externalize sibling libraries to share one theme context.
 App owns preference persistence and translation initialization; UI receives
 theme state through its controlled provider.
 
-`ui-staging` is a temporary leaf package for nine generic components intended
-for a later, separately requested wintermuted-ui transfer. App, ui, and ui-controls
-consume its public exports; it must not import other Game of Life packages,
-translations, routing, storage, or app styles. Keep domain defaults and effects
-in local adapters. Import its portable stylesheet explicitly after the theme.
+App, ui, and ui-controls consume generic components from `@wintermuted/ui-react`.
+Their styles come from the app's single `@wintermuted/ui-theme/index.css` import.
+Keep translations, domain defaults, palettes, color drafts, persistence, routing,
+and timing in local adapters. Externalize `@wintermuted/*` in consuming library
+bundles. Use `StatCard variant="compact"` for diagnostics. Do not duplicate the
+nine migrated components locally or migrate unrelated Tabs/Dialog/Menu/Tooltip.
 
 ## Code Style Guidelines
 
@@ -50,7 +50,7 @@ in local adapters. Import its portable stylesheet explicitly after the theme.
 
 - Keep new and refactored source/test files at 500 total lines or fewer, including blank lines and comments.
 - Split by responsibility into cohesive views, domain hooks, or pure helpers; do not relocate large controllers or compress formatting.
-- Oxlint enforces `max-lines` across all nine packages. Exact-file no-growth exceptions and their review/removal conditions are documented in README.
+- Oxlint enforces `max-lines` across all eight packages. Exact-file no-growth exceptions and their review/removal conditions are documented in README.
 - Other source types follow the guideline in review; Oxlint does not check CSS/SCSS, JSON, or YAML.
 - Do not add directory-wide exemptions or inline file-size suppressions.
 

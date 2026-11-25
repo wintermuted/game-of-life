@@ -45,7 +45,7 @@ describe('Explore facet option presentation', () => {
     expect(selected.disabled).toBe(false);
     expect(screen.queryByRole('checkbox', { name: /Disabled zero/ })).toBeNull();
     const alpha = screen.getByRole('checkbox', { name: /Alpha/ }).closest('label');
-    expect(alpha?.querySelector('.wm-staged-facet-count')?.textContent).toBe('2');
+    expect(alpha?.querySelector('.wm-checkbox-filter-count')?.textContent).toBe('2');
     fireEvent.click(screen.getByRole('button', { name: 'explore.showMoreFilterOptions' }));
     expect(
       (screen.getByRole('checkbox', { name: /Disabled zero/ }) as HTMLInputElement).disabled,

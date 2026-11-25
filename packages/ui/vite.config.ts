@@ -6,7 +6,6 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@game-of-life/ui-staging': path.resolve(import.meta.dirname, '../ui-staging/src/index.ts'),
       '@game-of-life/ui': path.resolve(import.meta.dirname, './src/index.ts'),
     },
   },
@@ -24,6 +23,7 @@ export default defineConfig({
         /^react($|\/)/,
         /^react-dom($|\/)/,
         /^@game-of-life\//,
+        /^@wintermuted\//,
         'react-i18next',
         'i18next',
       ],

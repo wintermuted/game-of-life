@@ -1,4 +1,4 @@
-import { RankedBarList, StatCard } from '@game-of-life/ui-staging';
+import { RankedBarList, StatCard } from '@wintermuted/ui-react';
 import { useTranslation } from 'react-i18next';
 import type { PlaygroundBoardState } from './usePlaygroundBoard';
 import type { BoardDiagnostics } from './useBoardDiagnostics';
@@ -32,12 +32,22 @@ export function DiagnosticsMetrics({ generation, stats, diagnostics }: Props): R
   return (
     <>
       <div className="diagnostics-stats-grid">
-        <StatCard label={t('diagnostics.generations')} value={generation} />
-        <StatCard label={t('diagnostics.liveCells')} value={stats.liveCells} />
-        <StatCard label={t('diagnostics.totalBirths')} value={stats.births} tone="success" />
-        <StatCard label={t('diagnostics.totalDeaths')} value={stats.deaths} tone="danger" />
+        <StatCard variant="compact" label={t('diagnostics.generations')} value={generation} />
+        <StatCard variant="compact" label={t('diagnostics.liveCells')} value={stats.liveCells} />
+        <StatCard
+          variant="compact"
+          label={t('diagnostics.totalBirths')}
+          value={stats.births}
+          tone="success"
+        />
+        <StatCard
+          variant="compact"
+          label={t('diagnostics.totalDeaths')}
+          value={stats.deaths}
+          tone="danger"
+        />
       </div>
-      <StatCard label={t('diagnostics.liveCellsByColor')}>
+      <StatCard variant="compact" label={t('diagnostics.liveCellsByColor')}>
         <RankedBarList
           label={t('diagnostics.liveCellsByColor')}
           maximum={maxLiveColorCount}
@@ -53,6 +63,7 @@ export function DiagnosticsMetrics({ generation, stats, diagnostics }: Props): R
         />
       </StatCard>
       <StatCard
+        variant="compact"
         label={t('diagnostics.generationInteractions')}
         className="diagnostics-stat-card-generation-interactions"
       >

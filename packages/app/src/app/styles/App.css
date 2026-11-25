@@ -1197,14 +1197,14 @@ body.gol-board-maximized .wm-toast {
   justify-content: center;
 }
 
-.grid-overlay-controls .grid-controls-form-play .wm-staged-stepper {
+.grid-overlay-controls .grid-controls-form-play .wm-stepper {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0.5rem;
   align-items: center;
 }
 
-.grid-overlay-controls .grid-controls-form-play .wm-staged-stepper-value {
+.grid-overlay-controls .grid-controls-form-play .wm-stepper-value {
   grid-column: 1;
   justify-self: center;
 }
@@ -2211,7 +2211,7 @@ body.gol-board-maximized .wm-toast {
   gap: 0.75rem;
 }
 
-.diagnostics-stats-grid + .wm-staged-stat-card {
+.diagnostics-stats-grid + .wm-stat-card {
   margin-top: 0.9rem;
 }
 
@@ -3597,11 +3597,11 @@ body.gol-board-maximized .wm-toast {
     width: 100%;
   }
 
-  .wm-staged-toggle-outline {
+  .explore-results-toolbar .wm-toggle-group-outline {
     width: 100%;
   }
 
-  .wm-staged-toggle-option {
+  .explore-results-toolbar .wm-toggle-group-outline .wm-toggle-group-btn {
     flex: 1 1 0;
     justify-content: center;
   }

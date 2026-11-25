@@ -13,7 +13,7 @@
     }
   },
   "dependencies": {
-    "@game-of-life/ui-staging": "*"
+    "@wintermuted/ui-react": "^1.1.0"
   },
   "peerDependencies": {
     "react": "^19.3.1",

@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { Toast } from '@game-of-life/ui-staging';
+import { Toast } from '@wintermuted/ui-react';
 import type * as React from 'react';
 import type { BoardNotifications } from './useBoardNotifications';
 import type { BoardPresentation } from './useBoardPresentation';

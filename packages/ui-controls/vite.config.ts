@@ -18,6 +18,7 @@ export default defineConfig({
         /^react($|\/)/,
         /^react-dom($|\/)/,
         /^@game-of-life\//,
+        /^@wintermuted\//,
         'react-i18next',
         'i18next',
         'lucide-react',

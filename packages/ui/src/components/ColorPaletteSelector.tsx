@@ -1,6 +1,6 @@
 import { COLOR_PALETTES } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
-import { ToggleGroup } from '@game-of-life/ui-staging';
+import { ToggleGroup } from '@wintermuted/ui-react';
 import type { ReactElement } from 'react';
 
 interface Props {

@@ -13,11 +13,11 @@
     }
   },
   "dependencies": {
-    "@game-of-life/ui-staging": "*",
     "@game-of-life/core": "*",
     "@game-of-life/ui": "*",
     "@game-of-life/ui-patterns": "*",
-    "lucide-react": "^1.73.0"
+    "lucide-react": "^1.73.0",
+    "@wintermuted/ui-react": "^1.1.0"
   },
   "peerDependencies": {
     "react": "^19.3.1",
