@@ -26,6 +26,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - run: npm ci
+      - name: Test browser bundle size reporting
+        run: node --test .github/scripts/bundle-size.spec.cjs
       - name: Lint with Oxlint
         run: npm run lint
       - name: Verify total-line guardrail
