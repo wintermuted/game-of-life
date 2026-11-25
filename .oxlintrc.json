@@ -83,26 +83,6 @@
   },
   "overrides": [
     {
-      "files": ["packages/ui-grid/src/components/Grid.tsx"],
-      "rules": { "max-lines": ["error", { "max": 855 }] }
-    },
-    {
-      "files": ["packages/ui-grid/src/components/CanvasGrid.tsx"],
-      "rules": { "max-lines": ["error", { "max": 709 }] }
-    },
-    {
-      "files": ["packages/app/src/app/components/Profile.tsx"],
-      "rules": { "max-lines": ["error", { "max": 579 }] }
-    },
-    {
-      "files": ["packages/app/src/i18n/locales/en.ts"],
-      "rules": { "max-lines": ["error", { "max": 543 }] }
-    },
-    {
-      "files": ["packages/app/src/i18n/locales/es.ts"],
-      "rules": { "max-lines": ["error", { "max": 552 }] }
-    },
-    {
       "files": ["**/*.ts", "**/*.tsx", "**/*.mts"],
       "rules": { "no-undef": "off" }
     },

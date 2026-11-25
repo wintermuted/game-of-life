@@ -2,10 +2,9 @@ import { ToggleGroup } from '@wintermuted/ui-react';
 import { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Clock3, Cpu, GitFork, LayoutGrid, Rows3, Star, User } from 'lucide-react';
+import { Clock3, GitFork, LayoutGrid, Rows3, Star } from 'lucide-react';
 import { LifeGrid, glider, blinker, pulsar, patterns } from '@game-of-life/core';
-import { DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
-import { PatternPreview } from '@game-of-life/ui-patterns';
+import ProfileBoardSection, { BoardGalleryItem } from './ProfileBoardSection';
 import { encodeGridToBase64, formatRelativeTime } from '@game-of-life/util';
 import {
   getBrowserStorageMode,
@@ -20,17 +19,6 @@ import {
   trackRecentBoard,
   toggleFavoriteBoard,
 } from '@game-of-life/api';
-
-interface BoardGalleryItem {
-  id: string;
-  title: string;
-  hash: string;
-  boardId?: string;
-  grid: LifeGrid;
-  updatedLabel: string;
-  source: 'system' | 'user';
-  forkOriginTitle?: string;
-}
 
 interface FallbackBoard {
   id: string;
@@ -75,10 +63,9 @@ const creatorProfileMap: Record<string, StoredProfileUser> = {
   },
 };
 
-function Profile() {
+function Profile(): React.JSX.Element {
   const { t } = useTranslation();
   const location = useLocation();
-  const previewPalette = getPaletteById(DEFAULT_PALETTE_ID);
   const [sectionViewMode, setSectionViewMode] = useState<'cards' | 'table'>('cards');
   const [favoriteRefreshToken, setFavoriteRefreshToken] = useState(0);
   const [profileFeedbackMessage, setProfileFeedbackMessage] = useState('');
@@ -229,7 +216,6 @@ function Profile() {
         }));
 
   const favoriteBoards: BoardGalleryItem[] = favoriteBoardsFromStorage;
-  const emptyBoardHash = encodeGridToBase64({});
 
   void favoriteRefreshToken;
 
@@ -243,217 +229,9 @@ function Profile() {
     );
   }
 
-  function getBoardDetailLabel(board: BoardGalleryItem): string {
-    if (board.forkOriginTitle) {
-      return t('profile.tableOriginFork', { name: board.forkOriginTitle });
-    }
-
-    if (board.source === 'user') {
-      return t('profile.tableOriginMine');
-    }
-
-    return t('profile.tableOriginLibrary');
-  }
-
-  function renderBoardSection(
-    title: string,
-    boards: BoardGalleryItem[],
-    emptyMessage?: string,
-    sectionId?: string,
-    icon?: React.ReactNode,
-  ) {
-    const showUnstarAction = sectionId === 'favorites' && isOwnProfile;
-    const showCreateEmptyBoardAction = sectionId === 'myBoards' && isOwnProfile;
-
-    return (
-      <section id={sectionId} className="profile-gallery-section">
-        <div className="profile-section-heading-row">
-          <h2>
-            <span className="profile-section-heading-label">
-              {icon}
-              <span>{title}</span>
-            </span>
-          </h2>
-          <span className="wm-badge wm-badge-neutral">{boards.length}</span>
-        </div>
-        {boards.length > 0 ? (
-          sectionViewMode === 'cards' ? (
-            <div className="profile-boards-grid">
-              {boards.map((board) => (
-                <article key={board.id} className="card card-body profile-board-card">
-                  <Link
-                    className="profile-card-board-link profile-board-preview"
-                    to={getBoardHref(board.hash, board.boardId)}
-                    onClick={() => handleOpenBoard(board.hash, board.boardId, board.title)}
-                  >
-                    <PatternPreview grid={board.grid} size={88} palette={previewPalette} />
-                  </Link>
-                  <div className="profile-board-meta">
-                    <div className="profile-board-meta-title-row">
-                      <h3>
-                        <Link
-                          className="profile-card-board-link profile-card-board-title-link"
-                          to={getBoardHref(board.hash, board.boardId)}
-                          onClick={() => handleOpenBoard(board.hash, board.boardId, board.title)}
-                        >
-                          {board.title}
-                        </Link>
-                      </h3>
-                      <span className="wm-badge wm-badge-neutral">
-                        <span className="pattern-source-badge-content">
-                          {board.source === 'system' ? (
-                            <Cpu size={11} aria-hidden="true" />
-                          ) : (
-                            <User size={11} aria-hidden="true" />
-                          )}
-                          <span>
-                            {board.source === 'system'
-                              ? t('patternSource.system')
-                              : t('patternSource.user')}
-                          </span>
-                        </span>
-                      </span>
-                    </div>
-                    <p>{board.updatedLabel}</p>
-                    {board.forkOriginTitle ? (
-                      <p className="profile-board-owner-line">
-                        {t('profile.forkedFrom', { name: board.forkOriginTitle })}
-                      </p>
-                    ) : null}
-                    {board.source === 'user' && !board.forkOriginTitle ? (
-                      <p className="profile-board-owner-line">
-                        {t('patternSource.byUser', { name: viewedUser.name })}
-                      </p>
-                    ) : null}
-                  </div>
-                  <p className="profile-board-stats">
-                    {t('profile.liveCells', { count: getLiveCellCount(board.grid) })}
-                  </p>
-                  {showUnstarAction ? (
-                    <div className="profile-board-actions-row">
-                      <button
-                        className="btn btn-sm btn-secondary-neutral"
-                        type="button"
-                        onClick={() => handleToggleStar(board)}
-                      >
-                        <Star size={13} aria-hidden="true" fill="currentColor" />
-                        <span>{t('profile.removeStar')}</span>
-                      </button>
-                    </div>
-                  ) : null}
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="profile-boards-table-wrap">
-              <table className="profile-boards-table">
-                <thead>
-                  <tr>
-                    <th>{t('profile.tableBoard')}</th>
-                    <th>{t('explore.tableSource')}</th>
-                    <th>{t('profile.tableDetails')}</th>
-                    <th>{t('profile.tableUpdated')}</th>
-                    <th>{t('profile.tableLiveCells')}</th>
-                    <th>{t('explore.tableActions')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {boards.map((board) => (
-                    <tr key={board.id}>
-                      <td>
-                        <Link
-                          className="profile-table-board-link"
-                          to={getBoardHref(board.hash, board.boardId)}
-                          onClick={() => handleOpenBoard(board.hash, board.boardId, board.title)}
-                        >
-                          <div className="profile-table-board-cell">
-                            <PatternPreview grid={board.grid} size={48} palette={previewPalette} />
-                            <span>{board.title}</span>
-                          </div>
-                        </Link>
-                      </td>
-                      <td>
-                        <span className="wm-badge wm-badge-neutral">
-                          <span className="pattern-source-badge-content">
-                            {board.source === 'system' ? (
-                              <Cpu size={11} aria-hidden="true" />
-                            ) : (
-                              <User size={11} aria-hidden="true" />
-                            )}
-                            <span>
-                              {board.source === 'system'
-                                ? t('patternSource.system')
-                                : t('patternSource.user')}
-                            </span>
-                          </span>
-                        </span>
-                      </td>
-                      <td>{getBoardDetailLabel(board)}</td>
-                      <td>{board.updatedLabel}</td>
-                      <td>{getLiveCellCount(board.grid)}</td>
-                      <td>
-                        <div className="profile-board-actions-row">
-                          <Link
-                            className="btn btn-sm btn-secondary-neutral"
-                            to={getBoardHref(board.hash, board.boardId)}
-                            onClick={() => handleOpenBoard(board.hash, board.boardId, board.title)}
-                          >
-                            {t('profile.openBoard')}
-                          </Link>
-                          {showUnstarAction ? (
-                            <button
-                              className="btn btn-sm btn-secondary-neutral"
-                              type="button"
-                              onClick={() => handleToggleStar(board)}
-                            >
-                              <Star size={13} aria-hidden="true" fill="currentColor" />
-                              <span>{t('profile.removeStar')}</span>
-                            </button>
-                          ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )
-        ) : emptyMessage ? (
-          <div className="profile-empty-state">
-            <p className="profile-persistence-note">{emptyMessage}</p>
-            {showCreateEmptyBoardAction ? (
-              <Link
-                className="btn btn-sm btn-secondary-neutral"
-                to={getBoardHref(emptyBoardHash)}
-                onClick={() =>
-                  handleOpenBoard(emptyBoardHash, undefined, t('profile.emptyBoardTitle'))
-                }
-              >
-                {t('profile.createEmptyBoard')}
-              </Link>
-            ) : null}
-          </div>
-        ) : null}
-      </section>
-    );
-  }
-
-  function getBoardHref(hash: string, boardId?: string): string {
-    const params = new URLSearchParams();
-    params.set('pattern', hash);
-    if (boardId && boardId !== hash) {
-      params.set('board', boardId);
-    }
-    return `/play?${params.toString()}`;
-  }
-
   function handleOpenBoard(hash: string, boardId: string | undefined, title: string): void {
     const fallbackTitle = savedTemplateNames[boardId ?? hash] || title;
     trackRecentBoard(hash, fallbackTitle, boardId ?? hash);
-  }
-
-  function getLiveCellCount(grid: LifeGrid): number {
-    return Object.keys(grid).length;
   }
 
   return (
@@ -536,37 +314,57 @@ function Profile() {
             />
           </div>
 
-          {renderBoardSection(
-            t('profile.myBoards.title'),
-            myGameBoards,
-            t('profile.myBoards.empty'),
-            'myBoards',
-            <LayoutGrid size={16} aria-hidden="true" />,
-          )}
+          <ProfileBoardSection
+            title={t('profile.myBoards.title')}
+            boards={myGameBoards}
+            emptyMessage={t('profile.myBoards.empty')}
+            sectionId={'myBoards'}
+            icon={<LayoutGrid size={16} aria-hidden="true" />}
+            sectionViewMode={sectionViewMode}
+            isOwnProfile={isOwnProfile}
+            viewedUserName={viewedUser.name}
+            handleToggleStar={handleToggleStar}
+            handleOpenBoard={handleOpenBoard}
+          />
 
-          {renderBoardSection(
-            t('profile.forkedBoards.title'),
-            userForkedBoards,
-            t('profile.forkedBoards.empty'),
-            undefined,
-            <GitFork size={16} aria-hidden="true" />,
-          )}
+          <ProfileBoardSection
+            title={t('profile.forkedBoards.title')}
+            boards={userForkedBoards}
+            emptyMessage={t('profile.forkedBoards.empty')}
+            sectionId={undefined}
+            icon={<GitFork size={16} aria-hidden="true" />}
+            sectionViewMode={sectionViewMode}
+            isOwnProfile={isOwnProfile}
+            viewedUserName={viewedUser.name}
+            handleToggleStar={handleToggleStar}
+            handleOpenBoard={handleOpenBoard}
+          />
 
-          {renderBoardSection(
-            t('profile.stars.title'),
-            favoriteBoards,
-            t('profile.stars.empty'),
-            'favorites',
-            <Star size={16} aria-hidden="true" />,
-          )}
+          <ProfileBoardSection
+            title={t('profile.stars.title')}
+            boards={favoriteBoards}
+            emptyMessage={t('profile.stars.empty')}
+            sectionId={'favorites'}
+            icon={<Star size={16} aria-hidden="true" />}
+            sectionViewMode={sectionViewMode}
+            isOwnProfile={isOwnProfile}
+            viewedUserName={viewedUser.name}
+            handleToggleStar={handleToggleStar}
+            handleOpenBoard={handleOpenBoard}
+          />
 
-          {renderBoardSection(
-            t('profile.recentBoards.title'),
-            recentBoards,
-            undefined,
-            undefined,
-            <Clock3 size={16} aria-hidden="true" />,
-          )}
+          <ProfileBoardSection
+            title={t('profile.recentBoards.title')}
+            boards={recentBoards}
+            emptyMessage={undefined}
+            sectionId={undefined}
+            icon={<Clock3 size={16} aria-hidden="true" />}
+            sectionViewMode={sectionViewMode}
+            isOwnProfile={isOwnProfile}
+            viewedUserName={viewedUser.name}
+            handleToggleStar={handleToggleStar}
+            handleOpenBoard={handleOpenBoard}
+          />
         </div>
       </div>
     </div>
