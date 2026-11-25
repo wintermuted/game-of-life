@@ -26,8 +26,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - run: npm ci
-      - name: Test browser bundle size reporting
-        run: node --test .github/scripts/bundle-size.spec.cjs
+      - name: Test badge reporting
+        run: node --test .github/scripts/bundle-size.spec.cjs .github/scripts/coverage-badge.spec.cjs
       - name: Lint with Oxlint
         run: npm run lint
       - name: Verify total-line guardrail
@@ -65,5 +65,7 @@ jobs:
         run: npm run format:check
       - name: Build and typecheck all packages
         run: npm run build
-      - name: Test all workspaces without repeating build prerequisites
-        run: npm test --workspaces --if-present
+      - name: Test all workspaces with combined coverage
+        run: npm run test:coverage
+      - name: Generate unit test coverage badge
+        run: node .github/scripts/coverage-badge.cjs

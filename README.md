@@ -2,6 +2,7 @@ Game of Life
 -----
 
 [![Unit Tests](https://github.com/wintermuted/game-of-life/actions/workflows/run-tests.yml/badge.svg)](https://github.com/wintermuted/game-of-life/actions/workflows/run-tests.yml)
+[![Unit test line coverage](https://wintermuted.github.io/game-of-life/badges/unit-test-coverage.svg)](https://github.com/wintermuted/game-of-life/actions/workflows/run-tests.yml)
 [![JS + CSS (gzip)](https://wintermuted.github.io/game-of-life/badges/bundle-gzip.svg)](https://wintermuted.github.io/game-of-life/)
 [![JS + CSS (uncompressed)](https://wintermuted.github.io/game-of-life/badges/bundle-uncompressed.svg)](https://wintermuted.github.io/game-of-life/)
 
@@ -12,6 +13,13 @@ built JavaScript and CSS assets, including optional chunks, but exclude source m
 HTML, images, and other static files. Gzip is calculated per file using Node's default
 compression settings; actual server compression may differ. Sizes use decimal KB/MB.
 PR previews publish their own badges without changing these production totals.
+
+The coverage badge reports aggregate line coverage across all eight packages from
+the production revision's unit tests, including untested source files. Test files,
+test setup, and type declarations are excluded. CI runs the existing workspace
+test configurations together with V8 coverage and publishes the badge alongside
+the app only after tests pass. Run `npm run test:coverage` to reproduce the report.
+PR preview coverage badges remain isolated from the production badge.
 
 ## Goals
 
