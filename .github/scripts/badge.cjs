@@ -1,0 +1,15 @@
+function badge(label, size) {
+  const title = `${label}: ${size}`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="270" height="20" role="img" aria-label="${title}">
+  <title>${title}</title>
+  <rect width="270" height="20" rx="3" fill="#555"/>
+  <path fill="#007ec6" d="M170 0h97a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3h-97z"/>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+    <text x="85" y="14">${label}</text>
+    <text x="220" y="14">${size}</text>
+  </g>
+</svg>
+`;
+}
+
+module.exports = badge;

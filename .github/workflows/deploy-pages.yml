@@ -73,6 +73,12 @@ jobs:
       - name: Generate browser bundle size badges
         run: node .github/scripts/bundle-size.cjs
 
+      - name: Measure unit test coverage
+        run: npm run test:coverage
+
+      - name: Generate unit test coverage badge
+        run: node .github/scripts/coverage-badge.cjs
+
       - name: Configure git identity
         run: |
           git config user.name "github-actions[bot]"
