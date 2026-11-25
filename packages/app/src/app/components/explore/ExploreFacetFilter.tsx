@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { FacetFilter } from '@game-of-life/ui-staging';
+import { FacetFilter } from '@wintermuted/ui-react';
 import type { ExploreFacet } from './exploreFacets';
 
 interface FacetFilterProps {

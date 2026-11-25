@@ -63,7 +63,5 @@ jobs:
         run: npm run format:check
       - name: Build and typecheck all packages
         run: npm run build
-      - name: Check staged public package entry points
-        run: npm run test:package --workspace @game-of-life/ui-staging
       - name: Test all workspaces without repeating build prerequisites
         run: npm test --workspaces --if-present

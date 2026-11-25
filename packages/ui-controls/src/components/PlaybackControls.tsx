@@ -1,4 +1,4 @@
-import { NumberStepper } from '@game-of-life/ui-staging';
+import { NumberStepper } from '@wintermuted/ui-react';
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import {

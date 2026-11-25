@@ -1,4 +1,4 @@
-import { ToggleGroup } from '@game-of-life/ui-staging';
+import { ToggleGroup } from '@wintermuted/ui-react';
 import { useMemo } from 'react';
 import {
   ArrowDown,

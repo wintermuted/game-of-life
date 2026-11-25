@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowDownUp, ArrowUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { SortableTableHeader } from '@game-of-life/ui-staging';
+import { SortableTableHeader } from '@wintermuted/ui-react';
 import type { SortField, SortDirection } from './exploreTypes';
 
 interface SortHeaderProps {

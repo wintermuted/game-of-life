@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker } from '@game-of-life/ui-staging';
+import { ColorPicker } from '@wintermuted/ui-react';
 import { SYSTEM_DRAW_COLORS, type DrawColors } from '../hooks/useDrawColors';
 import type { GridControlsProps } from './GridControls.types';
 

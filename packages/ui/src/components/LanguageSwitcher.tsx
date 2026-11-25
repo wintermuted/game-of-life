@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { LanguageSelector } from '@game-of-life/ui-staging';
+import { LanguageSelector } from '@wintermuted/ui-react';
 import type { ReactElement } from 'react';
 
 const languages = [

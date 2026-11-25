@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import '@wintermuted/ui-theme/index.css';
-import '@game-of-life/ui-staging/style.css';
 import './index.css';
 import App from './app/App';
 import reportWebVitals from './reportWebVitals';

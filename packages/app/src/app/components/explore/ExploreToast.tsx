@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Toast } from '@game-of-life/ui-staging';
+import { Toast } from '@wintermuted/ui-react';
 import { useTranslation } from 'react-i18next';
 import type { ExploreActions } from './useExploreActions';
 export function ExploreToast({
