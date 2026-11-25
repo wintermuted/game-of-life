@@ -50,7 +50,7 @@ nine migrated components locally or migrate unrelated Tabs/Dialog/Menu/Tooltip.
 
 - Keep new and refactored source/test files at 500 total lines or fewer, including blank lines and comments.
 - Split by responsibility into cohesive views, domain hooks, or pure helpers; do not relocate large controllers or compress formatting.
-- Oxlint enforces `max-lines` across all eight packages. Exact-file no-growth exceptions and their review/removal conditions are documented in README.
+- Oxlint enforces `max-lines` across all eight packages without file-size exceptions.
 - Other source types follow the guideline in review; Oxlint does not check CSS/SCSS, JSON, or YAML.
 - Do not add directory-wide exemptions or inline file-size suppressions.
 

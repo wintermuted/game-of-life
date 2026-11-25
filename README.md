@@ -194,17 +194,11 @@ Oxlint's `max-lines` rule enforces this for JavaScript/TypeScript across all nin
 packages in CI. Existing zero-warning gates remain in place. CSS/SCSS, JSON, and
 YAML are not checked by Oxlint; their size guideline is review-enforced.
 
-The shared `.oxlintrc.json` retains these exact-file exceptions with **no-growth
-ceilings**. Raising a ceiling requires an explicit reviewed justification here
-and in the configuration; no directory-wide exemptions or inline suppressions.
-
-| File                                             | Ceiling | Reason / review condition                                                |
-| ------------------------------------------------ | ------: | ------------------------------------------------------------------------ |
-| `packages/ui-grid/src/components/Grid.tsx`       |     855 | Deferred grid orchestration split; remove the exception when decomposed. |
-| `packages/ui-grid/src/components/CanvasGrid.tsx` |     709 | Deferred canvas rendering split; remove the exception when decomposed.   |
-| `packages/app/src/app/components/Profile.tsx`    |     579 | Deferred profile page split; remove the exception when decomposed.       |
-| `packages/app/src/i18n/locales/en.ts`            |     543 | Locale dictionary kept together; review on translation additions.        |
-| `packages/app/src/i18n/locales/es.ts`            |     552 | Locale dictionary kept together; review on translation additions.        |
+The shared `.oxlintrc.json` has no file-size exceptions. Grid orchestration,
+minimap geometry and controls, and canvas drawing have separate responsibilities.
+The profile board gallery is a separate view, and each locale composes its
+play-page dictionaries from a sibling module without changing translation keys.
+Do not add directory-wide exemptions or inline suppressions.
 
 The existing `packages/app/src/app/styles/App.css` (4,124 lines) is a deferred,
 review-enforced stylesheet exception. It is not covered by the Oxlint rule.
