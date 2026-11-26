@@ -1,5 +1,6 @@
 import { PatternGallerySection, PatternPreview } from '@game-of-life/ui-patterns';
 import { glider } from '@game-of-life/core';
+import { DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
 import { Star } from 'lucide-react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -20,7 +21,7 @@ const meta = {
     viewMode: 'cards',
     children: (
       <div className="explore-patterns-grid">
-        <PatternPreview grid={glider} size={88} />
+        <PatternPreview grid={glider} size={88} palette={getPaletteById(DEFAULT_PALETTE_ID)} />
       </div>
     ),
   },

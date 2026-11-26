@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { LifeGrid } from '@game-of-life/core';
-import type { ColorPalette } from '@game-of-life/ui';
+import { DEFAULT_PALETTE_ID, getPaletteById, type ColorPalette } from '@game-of-life/ui';
 import { useTranslation } from 'react-i18next';
 import PatternPreview from './PatternPreview';
 import { PatternLink, type PatternLinkRenderer } from './PatternLink';
@@ -29,7 +29,7 @@ export function BoardPopularityList({
   mode,
   starredByUsers,
   forks,
-  palette,
+  palette = getPaletteById(DEFAULT_PALETTE_ID),
   onOpenFork,
   renderLink: Link = PatternLink,
 }: BoardPopularityListProps): ReactElement {
