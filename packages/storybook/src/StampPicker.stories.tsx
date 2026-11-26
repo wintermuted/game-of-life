@@ -38,11 +38,11 @@ const meta = {
               : args.stampPreviewPattern
           }
           onSearchQueryChange={(searchQuery) => {
-            args.onSearchQueryChange(searchQuery);
+            args.onSearchQueryChange?.(searchQuery);
             updateArgs({ searchQuery });
           }}
           onCategoryChange={(selectedCategory) => {
-            args.onCategoryChange(selectedCategory);
+            args.onCategoryChange?.(selectedCategory);
             updateArgs({ selectedCategory });
           }}
           onStampPatternSelect={(stampPattern) => {
