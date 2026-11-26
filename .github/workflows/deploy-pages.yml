@@ -1,5 +1,5 @@
 name: Deploy to GitHub Pages
-# Deploys main to the Pages root while keeping PR previews under previews/pr-<number>/.
+# Deploys the demo at root and Storybook under storybook/, keeping isolated PR previews.
 # This allows production and preview deployments to coexist on gh-pages.
 #
 # Two-job design:
@@ -95,15 +95,16 @@ jobs:
           fi
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            preview_dir="gh-pages-out/previews/pr-${{ github.event.pull_request.number }}"
-            rm -rf "$preview_dir"
-            mkdir -p "$preview_dir"
-            cp -R packages/app/build/. "$preview_dir/"
+            deploy_dir="gh-pages-out/previews/pr-${{ github.event.pull_request.number }}"
+            rm -rf "$deploy_dir"
           else
             # Replace root content but preserve previews so PR preview links remain valid.
+            deploy_dir="gh-pages-out"
             find gh-pages-out -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'previews' -exec rm -rf {} +
-            cp -R packages/app/build/. gh-pages-out/
           fi
+
+          node .github/scripts/stage-pages.cjs "$deploy_dir"
+          touch gh-pages-out/.nojekyll
 
           cd gh-pages-out
           git add -A
@@ -119,9 +120,10 @@ jobs:
           script: |
             const base = 'https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}';
             const previewUrl = `${base}/previews/pr-${{ github.event.pull_request.number }}/`;
+            const storybookUrl = `${previewUrl}storybook/`;
             const sha = '${{ github.sha }}'.substring(0, 7);
 
-            const body = `🚀 **PR Preview deployed!**\n\n🎮 [Open Game of Life preview](${previewUrl})\n\n> ℹ️ Production remains at root Pages URL. This preview is isolated to PR #${{ github.event.pull_request.number }}.\n\n_Run \`${{ github.run_id }}\` — commit \`${sha}\`_`;
+            const body = `🚀 **PR Preview deployed!**\n\n🎮 [Open Game of Life preview](${previewUrl})\n\n📚 [Open Storybook preview](${storybookUrl})\n\n> ℹ️ Production remains at root Pages URL. This preview is isolated to PR #${{ github.event.pull_request.number }}.\n\n_Run \`${{ github.run_id }}\` — commit \`${sha}\`_`;
 
             await github.rest.issues.createComment({
               issue_number: context.issue.number,

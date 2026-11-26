@@ -225,9 +225,13 @@ lives in the app and is loaded by the preview rather than copied into the catalo
 `npm run build:storybook` produces `packages/storybook/build` for any static host.
 The existing `npm run build` CI gate includes the catalog and its TypeScript
 configuration on Node 22 and 24. The Node 24 job uploads a
-`product-component-library` artifact; this setup does not publish another website
-or change production/PR app deployments. Development resolves libraries from
-source and does not require prebuilding them.
+`product-component-library` artifact. The Pages workflow publishes the catalog
+alongside the demo at
+[game-of-life/storybook/](https://wintermuted.github.io/game-of-life/storybook/).
+PR catalogs live under the corresponding demo preview's `storybook/` subdirectory.
+Storybook uses relative asset URLs so both locations work without a separate build
+configuration. Development resolves libraries from source and does not require
+prebuilding them.
 
 Oxlint uses the shared `.oxlintrc.json` from every package/Nx lint entry point.
 It preserves the existing recommended JavaScript/TypeScript rule intent,
@@ -360,10 +364,16 @@ This project is automatically deployed to GitHub Pages using GitHub Actions:
 
 - **Production Deployment**: Automatically deployed to GitHub Pages when changes are merged to the `main` or `master` branch.
   - 🌐 **Live Site**: https://wintermuted.github.io/game-of-life/
+  - **Component Library**: https://wintermuted.github.io/game-of-life/storybook/
 - **PR Previews**: Each pull request receives a preview deployment which is automatically cleaned up when the PR is closed. The preview URL is posted as a comment on the PR.
+  - Demo: `previews/pr-<number>/`; Storybook: `previews/pr-<number>/storybook/`
+
+The same build and deployment stages both applications. App bundle and coverage
+badges are generated before staging, so Storybook assets do not affect demo size
+or production unit-coverage totals. Production replacement preserves other PR
+previews; preview deployment and cleanup affect only that PR's directory.
 
 The deployment workflows are located in `.github/workflows/`:
 
-- `deploy-pages.yml` - Main production deployment
-- `deploy-pr-preview.yml` - PR preview deployments
+- `deploy-pages.yml` - Combined demo/catalog production and PR preview deployments
 - `cleanup-pr-preview.yml` - PR preview cleanup
