@@ -1,5 +1,0 @@
-import{n as e}from"./rolldown-runtime-sJBDdmOt.js";import{d as t,h as n,l as r,m as i,n as a}from"./iframe-xebjfsxN.js";var o,s,c,l,u,d,f;function p(){return(p=e((()=>{a(),o=t(),{useArgs:s}=__STORYBOOK_MODULE_PREVIEW_API__,{fn:c}=__STORYBOOK_MODULE_TEST__,l={title:`Product/Primitives/ColorPaletteSelector`,component:r,args:{selectedPaletteId:n,disabled:!1,onPaletteChange:c()},argTypes:{selectedPaletteId:{control:`select`,options:i.map(e=>e.id)}},render:function(e){let[,t]=s();return(0,o.jsx)(r,{...e,onPaletteChange:n=>{e.onPaletteChange(n),t({selectedPaletteId:n})}})}},u={},d={args:{disabled:!0}},f=[`Default`,`Disabled`],u.parameters={...u.parameters,docs:{...u.parameters?.docs,source:{originalSource:`{}`,...u.parameters?.docs?.source}}},d.parameters={...d.parameters,docs:{...d.parameters?.docs,source:{originalSource:`{
-  args: {
-    disabled: true
-  }
-}`,...d.parameters?.docs?.source}}}})))()}p();export{u as Default,d as Disabled,f as __namedExportsOrder,l as default};
