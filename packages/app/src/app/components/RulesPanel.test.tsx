@@ -4,6 +4,20 @@ import { RulesPanel } from '@game-of-life/ui-controls';
 import { DAY_AND_NIGHT_RULESET, DEFAULT_RULES, HIGHLIFE_RULESET } from '@game-of-life/core';
 
 describe('RulesPanel', () => {
+  test('labels each preset select independently when multiple panels share a page', () => {
+    render(
+      <>
+        <RulesPanel rules={DEFAULT_RULES} onRulesChange={vi.fn()} />
+        <RulesPanel rules={DEFAULT_RULES} onRulesChange={vi.fn()} />
+      </>,
+    );
+
+    const selects = screen.getAllByRole('combobox', { name: 'Active ruleset' });
+    expect(selects).toHaveLength(2);
+    expect(selects[0].id).not.toBe(selects[1].id);
+    expect(screen.getAllByLabelText('Active ruleset')).toStrictEqual(selects);
+  });
+
   test('renders all rules', () => {
     const mockOnRulesChange = vi.fn();
     render(<RulesPanel rules={DEFAULT_RULES} onRulesChange={mockOnRulesChange} />);

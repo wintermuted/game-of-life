@@ -1,0 +1,32 @@
+{
+  "name": "@game-of-life/storybook",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/storybook/src",
+  "projectType": "application",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run dev",
+        "cwd": "packages/storybook"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/build"],
+      "options": {
+        "command": "npm run build",
+        "cwd": "packages/storybook"
+      },
+      "dependsOn": ["^build"]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run lint",
+        "cwd": "packages/storybook"
+      }
+    }
+  },
+  "tags": ["type:app", "scope:storybook"]
+}

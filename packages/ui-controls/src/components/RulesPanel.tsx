@@ -1,5 +1,5 @@
 import { GameRule, GameRuleKey, GameRules, RULESETS, STANDARD_RULESET } from '@game-of-life/core';
-import { ChangeEvent, MouseEvent, useState } from 'react';
+import { ChangeEvent, MouseEvent, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -25,6 +25,7 @@ function RulesPanel({
   activeRulesetClassification = STANDARD_RULESET.classification,
 }: Props) {
   const { t } = useTranslation();
+  const rulesetSelectId = useId();
   const [hoverPopover, setHoverPopover] = useState<null | {
     text: string;
     left: number;
@@ -112,11 +113,11 @@ function RulesPanel({
         }
       >
         <div className="rules-preset-block">
-          <label className="rules-preset-select-label" htmlFor="ruleset-select-in-panel">
+          <label className="rules-preset-select-label" htmlFor={rulesetSelectId}>
             {t('diagnostics.activeRulesetLabel')}
           </label>
           <select
-            id="ruleset-select-in-panel"
+            id={rulesetSelectId}
             className="wm-input rules-preset-select"
             value={selectedRulesetId}
             onChange={handleRulesetSelectChange}

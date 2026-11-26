@@ -65,6 +65,13 @@ jobs:
         run: npm run format:check
       - name: Build and typecheck all packages
         run: npm run build
+      - name: Upload product component catalog
+        if: matrix.node-version == '24.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-component-library
+          path: packages/storybook/build
+          if-no-files-found: error
       - name: Test all workspaces with combined coverage
         run: npm run test:coverage
       - name: Generate unit test coverage badge
