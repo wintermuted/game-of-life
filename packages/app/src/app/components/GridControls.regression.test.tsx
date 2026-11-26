@@ -73,19 +73,47 @@ describe('GridControls structural regressions', () => {
     openColors(container);
     fireEvent.click(screen.getByRole('button', { name: 'Custom colors 3 #000000' }));
     const native = screen.getByLabelText('Custom color');
-    expect(native).toHaveAttribute('id', 'custom-draw-color-play');
+    const firstId = native.id;
+    expect(firstId).not.toBe('');
     fireEvent.change(native, { target: { value: '#123456' } });
     fireEvent.change(screen.getByLabelText('Custom color hex'), { target: { value: 'draft' } });
     rerender(<ControlledColors props={{ ...props, isEditMode: false }} />);
     expect(container.querySelector('.wm-color-picker')).toBeNull();
     rerender(<ControlledColors props={{ ...props, variant: 'edit', isEditMode: false }} />);
     openColors(container);
-    expect(screen.getByLabelText('Custom color')).toHaveAttribute(
-      'id',
-      'custom-draw-color-sidebar',
-    );
+    expect(screen.getByLabelText('Custom color').id).not.toBe(firstId);
     expect(screen.getByLabelText('Custom color hex')).toHaveValue('draft');
     expect(screen.getByRole('button', { name: 'Custom colors 3 #123456' })).toBeInTheDocument();
+  });
+
+  it('keeps separate color input labels for multiple catalog instances', () => {
+    const props = { ...createProps(), variant: 'edit' as const };
+    render(
+      <>
+        <GridControls {...props} />
+        <GridControls {...props} />
+      </>,
+    );
+    const inputs = screen.getAllByLabelText('Custom color');
+    expect(new Set(inputs.map((input) => input.id)).size).toBe(2);
+  });
+
+  it('retains stamp search and category when leaving and returning to edit mode', () => {
+    const props = createProps();
+    const { container, rerender } = render(<GridControls {...props} isEditMode />);
+    const categoryMenu = container.querySelector<HTMLDetailsElement>(
+      '.grid-controls-stamp-category-filter',
+    )!;
+    categoryMenu.open = true;
+    fireEvent.click(within(categoryMenu).getByRole('menuitem', { name: patterns[0].category }));
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'glider' } });
+    rerender(<GridControls {...props} />);
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+    rerender(<GridControls {...props} isEditMode />);
+    expect(screen.getByRole('searchbox')).toHaveValue('glider');
+    expect(container.querySelector('.grid-controls-stamp-category-filter summary')).toHaveClass(
+      'is-active',
+    );
   });
 
   it.each(['play', 'edit'] as const)(

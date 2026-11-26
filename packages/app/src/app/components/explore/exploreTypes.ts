@@ -16,7 +16,18 @@ export const DEFAULT_SORT_DIRECTION = 'desc';
 export const DEFAULT_GROUP_MODE = 'none';
 export const DEFAULT_VIEW_MODE = 'cards';
 
-export type GroupMode = 'none' | 'category' | 'ruleset' | 'author';
+export type {
+  CatalogGroupMode as GroupMode,
+  CatalogSortField as SortField,
+  CatalogSortDirection as SortDirection,
+  CatalogViewMode as ViewMode,
+} from '@game-of-life/ui-patterns';
+import type {
+  CatalogGroupMode as GroupMode,
+  CatalogSortField as SortField,
+  CatalogSortDirection as SortDirection,
+  CatalogViewMode as ViewMode,
+} from '@game-of-life/ui-patterns';
 
 export const VALID_SORT_FIELDS = new Set(['favorites', 'forks', 'name', 'user', 'category']);
 export const VALID_SORT_DIRECTIONS = new Set(['asc', 'desc']);
@@ -24,9 +35,6 @@ export const VALID_SOURCES = new Set(['all', 'system', 'user']);
 export const VALID_VIEW_MODES = new Set(['cards', 'table']);
 export const VALID_GROUP_MODES = new Set<GroupMode>(['none', 'category', 'ruleset', 'author']);
 
-export type SortField = 'favorites' | 'forks' | 'name' | 'user' | 'category';
-export type SortDirection = 'asc' | 'desc';
-export type ViewMode = 'cards' | 'table';
 export type Source = 'all' | 'system' | 'user';
 export interface PatternMetrics {
   favorites: number;

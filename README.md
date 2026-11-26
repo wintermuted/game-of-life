@@ -71,16 +71,16 @@ This project is organized as an **NX monorepo** with npm workspaces:
   - Does not re-export feature components or a stylesheet
 
 - **`@game-of-life/ui-grid`** (`packages/ui-grid/`) - Grid rendering
-  - `Grid`, `CanvasGrid`, `GridSquares`, and cell-color rendering helpers
+  - `Grid`, `CanvasGrid`, `GridSquares`, `GridMinimap`, and cell-color rendering helpers
   - Owns grid CSS, exported as `@game-of-life/ui-grid/style.css`
   - Depends on UI primitives/theme, core, and util; no controls dependency
 
 - **`@game-of-life/ui-patterns`** (`packages/ui-patterns/`) - Pattern components
-  - Pattern preview, selector, standard/custom input components
+  - Pattern preview, selector, standard/custom input, cards, source/metadata badges, and information panels
   - Depends on UI primitives/theme and core, not grid or controls
 
 - **`@game-of-life/ui-controls`** (`packages/ui-controls/`) - Game controls
-  - `GridControls` and `RulesPanel`
+  - `GridControls`, `RulesPanel`, playback/edit tools, drawing colors, stamp selection, and simulation metrics
   - Depends on ui-patterns previews, UI primitives/theme, and core
   - Tested through app's translated-component integration tests
 
@@ -200,8 +200,11 @@ are not required for this workflow; CI owns those validation gates.
 
 Run `npm run storybook` to maintain and inspect reusable product UI independently
 of the game. Stories currently cover segmented controls, tabs, palette selection,
-pattern previews, the canvas grid, and the rules panel, including empty, disabled,
-locked, editable, and dark variants. The toolbar switches between light/dark themes
+pattern previews, the canvas grid, and the rules panel. Additional groups cover
+playback controls, edit tools, drawing colors, stamps, the minimap, pattern cards,
+source badges, metadata badges, pattern information, and simulation metrics.
+Variants include empty, disabled, locked, editable, speed/zoom limits, invalid
+color drafts, experimental births, and dark themes. The toolbar switches between light/dark themes
 and English/Spanish. The preview uses dedicated per-language i18next instances with
 the app's resources, so translated variants can coexist on a Docs page without
 changing other stories. It uses no browser language detection or persisted preferences.
@@ -221,6 +224,63 @@ The Accessibility panel runs automated checks for the selected story. Treat
 results as review evidence, not a replacement for keyboard and screen-reader
 checks, particularly for canvas components. Product-specific layout CSS still
 lives in the app and is loaded by the preview rather than copied into the catalog.
+
+#### Extracted components and deferred duplicates
+
+The ten additional components are exported by their owning packages:
+
+| Package                     | Components                                                                                    |
+| --------------------------- | --------------------------------------------------------------------------------------------- |
+| `@game-of-life/ui-controls` | `PlaybackControls`, `EditToolControls`, `DrawColorPicker`, `StampPicker`, `SimulationMetrics` |
+| `@game-of-life/ui-grid`     | `GridMinimap` (with `GridMinimapProps` and `ViewportMetrics`)                                 |
+| `@game-of-life/ui-patterns` | `PatternCard`, `PatternSourceBadge`, `PatternMetadataBadges`, `PatternInfoPanel`              |
+
+The next ten extractions are cataloged by responsibility, not presented as
+interchangeable primitives:
+
+| Storybook section                     | Components                                                                                   | Owning package |
+| ------------------------------------- | -------------------------------------------------------------------------------------------- | -------------- |
+| **Product / Forms**                   | `BoardNameForm`, `BoardDetailsForm`                                                          | `ui-patterns`  |
+| **Product / Compositions / Patterns** | `PatternCatalogToolbar`, `PatternGallerySection`, `CatalogEmptyState`, `BoardPopularityList` | `ui-patterns`  |
+| **Product / Compositions / Controls** | `BoardHeader`, `CellDataInspector`, `SimulationSettingsPanel`                                | `ui-controls`  |
+| **Product / Primitives**              | `DisclosureSection`                                                                          | `ui`           |
+
+Forms include their fields and submit/cancel actions; the host retains modal
+infrastructure, titles, save/edit mode, and persistence. Product compositions
+combine existing controls into feature-specific UI, with explicit controlled
+props rather than app hook objects. These are not replacements for upstream
+generic primitives. Gallery and disclosure shells now serve their existing
+Explore/Profile and diagnostics/info-panel uses. Other marked duplicates remain
+deferred. Routing, clipboard operations, copy-feedback timing, date formatting,
+popover positioning, URL state, and simulation state remain app-owned.
+All hosts must continue loading the existing theme and product layout styles.
+These extractions add 42 examples, bringing the catalog to 26 component groups
+and 99 stories.
+
+Each component has public props and independent Storybook examples.
+Drawing colors and edit tools receive controlled values/callbacks rather than
+requiring hook result objects. Stamp selection owns its menu geometry and key
+feedback; search/category values can be host-controlled so they survive mode
+changes. The app still owns route links, recent-board tracking, favorites/forks,
+diagnostic calculations, and information-panel persistence. Pattern links can
+be rendered by the host through `renderLink`; standalone stories use ordinary
+anchors. Simulation metrics receive core statistics and a presentation-only
+diagnostics shape, not app hook types.
+
+Deduplication is intentionally deferred. Search for `DEDUPLICATE-LATER` in source
+or read the affected components' Storybook descriptions:
+
+| Extracted component     | Remaining overlap                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PatternCard`           | The card view in `packages/app/src/app/components/ProfileBoardSection.tsx`                                                                       |
+| `PatternSourceBadge`    | Profile card/table source badges in `ProfileBoardSection.tsx`                                                                                    |
+| `PatternMetadataBadges` | Category/ruleset/tag cells in `packages/app/src/app/components/explore/ExplorePatternTable.tsx`                                                  |
+| `BoardPopularityList`   | The compact fork list in `packages/app/src/app/components/playground/PlaygroundPatternInfo.tsx` (full and compact presentations remain distinct) |
+
+These remaining card/badge and compact-fork presentations are unchanged apart from markers. Existing
+Explore adapters consume the extracted components without combining profile
+or table behavior. `DrawColorPicker` and `SimulationMetrics` continue composing
+the canonical Wintermuted primitives; they do not copy upstream implementations.
 
 `npm run build:storybook` produces `packages/storybook/build` for any static host.
 The existing `npm run build` CI gate includes the catalog and its TypeScript

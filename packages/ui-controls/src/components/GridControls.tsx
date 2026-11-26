@@ -1,9 +1,7 @@
-import type { ReactElement } from 'react';
+import { useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'lucide-react';
 import { useDrawColors } from '../hooks/useDrawColors';
-import { useStampPatterns } from '../hooks/useStampPatterns';
-import { useStampMenu } from '../hooks/useStampMenu';
 import type { GridControlsProps } from './GridControls.types';
 import { DrawColorPicker } from './DrawColorPicker';
 import { PlaybackControls } from './PlaybackControls';
@@ -48,12 +46,8 @@ function GridControls({
   const copyLabel = t('controls.copyUrl');
   const colorPaletteLabel = showPlayControls ? t('controls.drawColor') : t('colors.title');
   const colors = useDrawColors({ selectedDrawColor, onDrawColorChange, onPaletteChange });
-  const stamps = useStampPatterns({ stampPattern, onStampPatternSelect, onEditToolChange });
-  const menu = useStampMenu({
-    rotateStampKeyPressToken,
-    filteredPatternCount: stamps.filteredStampPatterns.length,
-    selectedPattern: stamps.selectedPattern,
-  });
+  const [stampSearchQuery, setStampSearchQuery] = useState('');
+  const [stampCategory, setStampCategory] = useState('all');
 
   return (
     <div className="GridControls">
@@ -98,9 +92,18 @@ function GridControls({
               />
               {isEditMode && (
                 <EditToolControls
-                  colors={colors}
-                  stamps={stamps}
-                  menu={menu}
+                  draftValue={colors.customHexValue}
+                  onDraftChange={colors.setCustomHexValue}
+                  customColors={colors.customColorSlots}
+                  onSelect={colors.selectColor}
+                  onChange={colors.changeColor}
+                  searchQuery={stampSearchQuery}
+                  onSearchQueryChange={setStampSearchQuery}
+                  selectedCategory={stampCategory}
+                  onCategoryChange={setStampCategory}
+                  stampPattern={stampPattern}
+                  onStampPatternSelect={onStampPatternSelect}
+                  rotateStampKeyPressToken={rotateStampKeyPressToken}
                   activeEditTool={activeEditTool}
                   onEditToolChange={onEditToolChange}
                   onFillSelectionColor={onFillSelectionColor}
@@ -140,7 +143,11 @@ function GridControls({
                 </label>
                 <DrawColorPicker
                   variant="edit"
-                  colors={colors}
+                  draftValue={colors.customHexValue}
+                  onDraftChange={colors.setCustomHexValue}
+                  customColors={colors.customColorSlots}
+                  onSelect={colors.selectColor}
+                  onChange={colors.changeColor}
                   selectedPaletteId={selectedPaletteId}
                   selectedDrawColor={selectedDrawColor}
                   isGameRunning={isGameRunning}

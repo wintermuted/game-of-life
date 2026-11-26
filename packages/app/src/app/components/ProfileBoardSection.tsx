@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Cpu, Star, User } from 'lucide-react';
 import { LifeGrid } from '@game-of-life/core';
 import { DEFAULT_PALETTE_ID, getPaletteById } from '@game-of-life/ui';
-import { PatternPreview } from '@game-of-life/ui-patterns';
+import { PatternPreview, PatternGallerySection } from '@game-of-life/ui-patterns';
 import { encodeGridToBase64 } from '@game-of-life/util';
 
 export interface BoardGalleryItem {
@@ -56,6 +56,7 @@ export default function ProfileBoardSection({
   handleToggleStar,
   handleOpenBoard,
 }: Props): React.JSX.Element {
+  // DEDUPLICATE-LATER: PatternCard and PatternSourceBadge now live in ui-patterns.
   const { t } = useTranslation();
   const previewPalette = getPaletteById(DEFAULT_PALETTE_ID);
   const emptyBoardHash = encodeGridToBase64({});
@@ -76,16 +77,7 @@ export default function ProfileBoardSection({
   const showCreateEmptyBoardAction = sectionId === 'myBoards' && isOwnProfile;
 
   return (
-    <section id={sectionId} className="profile-gallery-section">
-      <div className="profile-section-heading-row">
-        <h2>
-          <span className="profile-section-heading-label">
-            {icon}
-            <span>{title}</span>
-          </span>
-        </h2>
-        <span className="wm-badge wm-badge-neutral">{boards.length}</span>
-      </div>
+    <PatternGallerySection id={sectionId} title={title} count={boards.length} icon={icon}>
       {boards.length > 0 ? (
         sectionViewMode === 'cards' ? (
           <div className="profile-boards-grid">
@@ -244,6 +236,6 @@ export default function ProfileBoardSection({
           ) : null}
         </div>
       ) : null}
-    </section>
+    </PatternGallerySection>
   );
 }

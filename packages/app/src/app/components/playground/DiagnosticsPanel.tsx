@@ -1,5 +1,6 @@
 import { DiagnosticsMetrics } from './DiagnosticsMetrics';
-import { ThemeTabs } from '@game-of-life/ui';
+import { ThemeTabs, DisclosureSection } from '@game-of-life/ui';
+import { CellDataInspector } from '@game-of-life/ui-controls';
 import { PatternInput } from '@game-of-life/ui-patterns';
 import { useTranslation } from 'react-i18next';
 import type * as React from 'react';
@@ -70,64 +71,22 @@ export function DiagnosticsPanel(props: {
 
       {activeSidebarTab === 'diagnostics' && (
         <div className="diagnostics-panel">
-          <details className="diagnostics-section" open>
-            <summary className="diagnostics-section-summary">
-              <h4 className="diagnostics-section-heading">{t('diagnostics.statistics')}</h4>
-            </summary>
-            <div className="diagnostics-section-content">
-              <DiagnosticsMetrics
-                generation={generation}
-                stats={stats}
-                diagnostics={props.diagnostics}
-              />
-            </div>
-          </details>
+          <DisclosureSection title={t('diagnostics.statistics')}>
+            <DiagnosticsMetrics
+              generation={generation}
+              stats={stats}
+              diagnostics={props.diagnostics}
+            />
+          </DisclosureSection>
 
-          <details className="diagnostics-section" open>
-            <summary className="diagnostics-section-summary">
-              <h4 className="diagnostics-section-heading">{t('diagnostics.cellData')}</h4>
-            </summary>
-            <div className="diagnostics-section-content">
-              <div className="code-sample" data-lang="json">
-                <button
-                  className="code-copy-btn"
-                  type="button"
-                  onClick={() => copyCellData(gridJSON)}
-                >
-                  {cellDataCopied ? 'Copied!' : 'Copy'}
-                </button>
-                <pre className="code-block">
-                  <code className="language-json">
-                    {cellDataEntries.length === 0 ? (
-                      '{\n}'
-                    ) : (
-                      <>
-                        <span>{'{\n'}</span>
-                        {cellDataEntries.map(([coordinate, cellColor], index) => (
-                          <span className="code-block-line" key={coordinate}>
-                            <span>{'  '}</span>
-                            <button
-                              className="diagnostics-coordinate-button"
-                              type="button"
-                              onClick={() => handleCenterCoordinateRequest(coordinate)}
-                            >
-                              &quot;{coordinate}&quot;
-                            </button>
-                            <span>
-                              : {JSON.stringify(cellColor)}
-                              {index < cellDataEntries.length - 1 ? ',' : ''}
-                            </span>
-                            {'\n'}
-                          </span>
-                        ))}
-                        <span>{'}'}</span>
-                      </>
-                    )}
-                  </code>
-                </pre>
-              </div>
-            </div>
-          </details>
+          <DisclosureSection title={t('diagnostics.cellData')}>
+            <CellDataInspector
+              entries={cellDataEntries}
+              copied={cellDataCopied}
+              onCopy={() => copyCellData(gridJSON)}
+              onCoordinateSelect={handleCenterCoordinateRequest}
+            />
+          </DisclosureSection>
         </div>
       )}
     </div>
