@@ -8,24 +8,25 @@ vi.mock('react-i18next', () => ({
 afterEach(cleanup);
 
 describe('Catalog compositions', () => {
-  test('uses host fork links and callbacks and renders empty popularity states', () => {
+  test('preserves fork focus across host renderer changes and renders empty popularity states', () => {
     const onOpenFork = vi.fn();
+    const forks = [
+      {
+        id: 'fork',
+        name: 'My fork',
+        author: 'Pattern author',
+        href: '/play/fork',
+        grid: {},
+        forkedAt: 'Yesterday',
+        updatedAt: 'Today',
+        stars: 2,
+      },
+    ];
     const { rerender } = render(
       <BoardPopularityList
         mode="forks"
         starredByUsers={[]}
-        forks={[
-          {
-            id: 'fork',
-            name: 'My fork',
-            author: 'Pattern author',
-            href: '/play/fork',
-            grid: {},
-            forkedAt: 'Yesterday',
-            updatedAt: 'Today',
-            stars: 2,
-          },
-        ]}
+        forks={forks}
         onOpenFork={onOpenFork}
         renderLink={({ href, children, onClick }) => (
           <button data-href={href} onClick={onClick}>
@@ -38,6 +39,30 @@ describe('Catalog compositions', () => {
     expect(link).toHaveAttribute('data-href', '/play/fork');
     fireEvent.click(link);
     expect(onOpenFork).toHaveBeenCalledWith('fork');
+    link.focus();
+    const preview = link.querySelector('canvas');
+    expect(preview).not.toBeNull();
+    const onOpenUpdatedFork = vi.fn();
+    rerender(
+      <BoardPopularityList
+        mode="forks"
+        starredByUsers={[]}
+        forks={forks}
+        onOpenFork={onOpenUpdatedFork}
+        renderLink={({ href, children, onClick }) => (
+          <button data-href={href} onClick={onClick}>
+            {children}
+          </button>
+        )}
+      />,
+    );
+    const updatedLink = screen.getByRole('button', { name: /My fork/ });
+    expect(updatedLink).toBe(link);
+    expect(updatedLink).toHaveFocus();
+    expect(updatedLink.querySelector('canvas')).toBe(preview);
+    fireEvent.click(updatedLink);
+    expect(onOpenUpdatedFork).toHaveBeenCalledWith('fork');
+    expect(onOpenFork).toHaveBeenCalledOnce();
     rerender(<BoardPopularityList mode="forks" starredByUsers={[]} forks={[]} />);
     expect(screen.getByText('playground.noForksYet')).toBeInTheDocument();
     rerender(<BoardPopularityList mode="stars" starredByUsers={[]} forks={[]} />);

@@ -31,7 +31,7 @@ export function BoardPopularityList({
   forks,
   palette = getPaletteById(DEFAULT_PALETTE_ID),
   onOpenFork,
-  renderLink: Link = PatternLink,
+  renderLink = PatternLink,
 }: BoardPopularityListProps): ReactElement {
   // DEDUPLICATE-LATER: PlaygroundPatternInfo keeps its compact fork-list presentation.
   const { t } = useTranslation();
@@ -58,24 +58,25 @@ export function BoardPopularityList({
       <ul className="wm-list play-forks-list">
         {forks.map((entry) => (
           <li key={entry.id}>
-            <Link
-              className="play-forks-list-link"
-              href={entry.href}
-              onClick={() => onOpenFork?.(entry.id)}
-            >
-              <div className="play-forks-list-row">
-                <div className="play-forks-list-pattern-cell">
-                  <PatternPreview grid={entry.grid} size={52} palette={palette} />
-                  <div className="play-forks-list-pattern-copy">
-                    <span className="play-forks-list-pattern-name">{entry.name}</span>
-                    <span className="play-forks-list-pattern-meta">{entry.author}</span>
+            {renderLink({
+              className: 'play-forks-list-link',
+              href: entry.href,
+              onClick: () => onOpenFork?.(entry.id),
+              children: (
+                <div className="play-forks-list-row">
+                  <div className="play-forks-list-pattern-cell">
+                    <PatternPreview grid={entry.grid} size={52} palette={palette} />
+                    <div className="play-forks-list-pattern-copy">
+                      <span className="play-forks-list-pattern-name">{entry.name}</span>
+                      <span className="play-forks-list-pattern-meta">{entry.author}</span>
+                    </div>
                   </div>
+                  <span>{entry.forkedAt}</span>
+                  <span>{entry.updatedAt}</span>
+                  <span>{entry.stars}</span>
                 </div>
-                <span>{entry.forkedAt}</span>
-                <span>{entry.updatedAt}</span>
-                <span>{entry.stars}</span>
-              </div>
-            </Link>
+              ),
+            })}
           </li>
         ))}
       </ul>
