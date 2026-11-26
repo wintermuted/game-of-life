@@ -16,9 +16,9 @@ PR previews publish their own badges without changing these production totals.
 
 The coverage badge reports aggregate line coverage across all eight packages from
 the production revision's unit tests, including untested source files. Test files,
-test setup, and type declarations are excluded. CI runs the existing workspace
-test configurations together with V8 coverage and publishes the badge alongside
-the app only after tests pass. Run `npm run test:coverage` to reproduce the report.
+test setup, type declarations, and the Storybook catalog are excluded. CI runs
+the existing workspace test configurations together with V8 coverage and publishes
+the badge alongside the app only after tests pass. Run `npm run test:coverage` to reproduce the report.
 PR preview coverage badges remain isolated from the production badge.
 
 ## Goals
