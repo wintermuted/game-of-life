@@ -93,6 +93,10 @@
     {
       "files": ["**/*.cjs", "**/*.mts", "**/*config.ts"],
       "env": { "node": true }
+    },
+    {
+      "files": ["**/*.stories.tsx", "packages/storybook/.storybook/preview.tsx"],
+      "rules": { "react/only-export-components": "off" }
     }
   ]
 }

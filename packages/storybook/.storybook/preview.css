@@ -1,0 +1,13 @@
+body {
+  background: var(--wm-color-bg);
+  color: var(--wm-color-text);
+}
+
+.storybook-frame {
+  width: min(100%, 52rem);
+}
+
+.storybook-grid {
+  width: 100%;
+  height: 360px;
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@game-of-life/storybook",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "storybook dev --port 6006 --host 127.0.0.1 --no-open --disable-telemetry",
+    "build": "tsc --noEmit && storybook build --output-dir build --disable-telemetry",
+    "lint": "oxlint --config ../../.oxlintrc.json --max-warnings 0 ."
+  },
+  "dependencies": {
+    "@game-of-life/app": "*",
+    "@game-of-life/core": "*",
+    "@game-of-life/ui": "*",
+    "@game-of-life/ui-grid": "*",
+    "@game-of-life/ui-patterns": "*",
+    "@game-of-life/ui-controls": "*",
+    "@game-of-life/util": "*",
+    "@wintermuted/ui-react": "^1.1.0",
+    "@wintermuted/ui-theme": "^1.0.2",
+    "i18next": "^27.1.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-i18next": "^18.0.2"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "10.6.7",
+    "@storybook/addon-docs": "10.6.7",
+    "@storybook/react-vite": "10.6.7",
+    "storybook": "10.6.7"
+  }
+}

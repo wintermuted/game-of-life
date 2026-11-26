@@ -95,6 +95,12 @@ This project is organized as an **NX monorepo** with npm workspaces:
   - Coordinate/viewport translation, generation speed, and relative-time formatting
   - Depends only on `@game-of-life/core` and Lodash; no React or theme dependencies
 
+- **`@game-of-life/storybook`** (`packages/storybook/`) - Product component catalog
+  - Storybook with React/Vite, generated component documentation, controls, and accessibility inspection
+  - Imports product components through their owning UI package exports; does not duplicate upstream primitives
+  - Hosts the existing theme, grid CSS, and app styles/translations without mounting the app or its persistence
+  - Standalone development server and static output; no changes to the app entry point
+
 App, base ui, and ui-controls consume the nine generic components from the published
 `@wintermuted/ui-react` package (1.1.0 or later), styled by `@wintermuted/ui-theme`
 (1.0.2 or later). Toggle groups, facets, sortable headers, stat cards, ranked bars,
@@ -162,11 +168,13 @@ npm ci
 # Development
 npm run dev          # Start development server
 npm start            # Alias for dev
+npm run storybook    # Product component library at http://127.0.0.1:6006
 
 # Building
 npm run build        # Build all packages
 npm run build:ui     # Build all five UI libraries and their dependencies
 npm run build:app    # Build the app and its library dependencies
+npm run build:storybook # Build the static component catalog
 
 # Testing
 npm test             # Run tests for all packages
@@ -187,6 +195,39 @@ npm run preview      # Preview production build
 CI runs clean installation, Oxlint, Oxfmt checks, package builds/typechecks,
 and all workspace tests on Node 22 and 24. Local lint, typecheck, and build runs
 are not required for this workflow; CI owns those validation gates.
+
+### Product component library
+
+Run `npm run storybook` to maintain and inspect reusable product UI independently
+of the game. Stories currently cover segmented controls, tabs, palette selection,
+pattern previews, the canvas grid, and the rules panel, including empty, disabled,
+locked, editable, and dark variants. The toolbar switches between light/dark themes
+and English/Spanish. The preview uses dedicated per-language i18next instances with
+the app's resources, so translated variants can coexist on a Docs page without
+changing other stories. It uses no browser language detection or persisted preferences.
+
+Stories live in `packages/storybook/src/*.stories.tsx`. Import components from
+their owning `@game-of-life/ui*` public entry points and use real engine fixtures
+from `@game-of-life/core`. Keep production components in their existing libraries;
+Storybook is a host, not a new component implementation or UI umbrella.
+Add a typed `Meta` with `satisfies Meta<typeof Component>` and `StoryObj<typeof meta>`,
+provide representative args, and describe meaningful states. Controlled components
+use `useArgs` so interactions also update the Controls panel. Global `autodocs`
+creates API documentation; `play` functions demonstrate interaction assertions
+using `storybook/test`. Those assertions run when their stories open in Storybook;
+CI currently validates the static build, not browser interaction tests.
+
+The Accessibility panel runs automated checks for the selected story. Treat
+results as review evidence, not a replacement for keyboard and screen-reader
+checks, particularly for canvas components. Product-specific layout CSS still
+lives in the app and is loaded by the preview rather than copied into the catalog.
+
+`npm run build:storybook` produces `packages/storybook/build` for any static host.
+The existing `npm run build` CI gate includes the catalog and its TypeScript
+configuration on Node 22 and 24. The Node 24 job uploads a
+`product-component-library` artifact; this setup does not publish another website
+or change production/PR app deployments. Development resolves libraries from
+source and does not require prebuilding them.
 
 Oxlint uses the shared `.oxlintrc.json` from every package/Nx lint entry point.
 It preserves the existing recommended JavaScript/TypeScript rule intent,
