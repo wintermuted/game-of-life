@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react';
+import { CatalogEmptyState, PatternGallerySection } from '@game-of-life/ui-patterns';
 import { useTranslation } from 'react-i18next';
 import { ExplorePatternCard } from './ExplorePatternCard';
 import { ExplorePatternTable, type TableSortProps } from './ExplorePatternTable';
@@ -24,26 +24,20 @@ export function ExploreResults({
   return (
     <>
       {groupedPatterns.length === 0 ? (
-        <div className="explore-empty-state">
-          <Search size={24} aria-hidden="true" />
-          <div>
-            <h2>{t('explore.noResultsTitle')}</h2>
-            <p>{t('explore.noResults')}</p>
-          </div>
-          <button className="btn btn-sm btn-secondary-neutral" type="button" onClick={onClear}>
-            {t('explore.clearFilters')}
-          </button>
-        </div>
+        <CatalogEmptyState
+          title={t('explore.noResultsTitle')}
+          description={t('explore.noResults')}
+          actionLabel={t('explore.clearFilters')}
+          onReset={onClear}
+        />
       ) : null}
       {groupedPatterns.map(([category, categoryPatterns]) => (
-        <section
+        <PatternGallerySection
           key={category}
-          className={`profile-gallery-section${viewMode === 'cards' ? ' explore-gallery-section-cards' : ''}`}
+          title={category}
+          count={categoryPatterns.length}
+          viewMode={viewMode}
         >
-          <div className="profile-section-heading-row">
-            <h2>{category}</h2>
-            <span className="wm-badge wm-badge-neutral">{categoryPatterns.length}</span>
-          </div>
           {viewMode === 'cards' ? (
             <div className="explore-patterns-grid">
               {categoryPatterns.map((pattern) => (
@@ -61,7 +55,7 @@ export function ExploreResults({
               {...patternProps}
             />
           )}
-        </section>
+        </PatternGallerySection>
       ))}
     </>
   );

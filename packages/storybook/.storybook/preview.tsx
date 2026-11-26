@@ -55,7 +55,22 @@ const preview: Preview = {
     layout: 'padded',
     backgrounds: { disable: true },
     controls: { expanded: true },
-    options: { storySort: { order: ['Product', ['Primitives', 'Patterns', 'Grid', 'Controls']] } },
+    options: {
+      storySort: {
+        order: [
+          'Product',
+          [
+            'Primitives',
+            'Patterns',
+            'Grid',
+            'Controls',
+            'Forms',
+            'Compositions',
+            ['Patterns', 'Controls'],
+          ],
+        ],
+      },
+    },
   },
 };
 

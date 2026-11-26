@@ -9,7 +9,7 @@ import useMinimapGeometry, {
   ViewportMetrics,
 } from './useMinimapGeometry';
 
-interface Props {
+export interface GridMinimapProps {
   gameStatus: LifeGrid;
   viewportMetrics: ViewportMetrics | null;
   cellSize: number;
@@ -86,7 +86,7 @@ export default function GridMinimap({
   panViewportToWorldCoordinate,
   isBoardMaximized,
   toggleBoardMaximized,
-}: Props): React.JSX.Element | null {
+}: GridMinimapProps): React.JSX.Element | null {
   const miniMapGeometry = useMinimapGeometry(gameStatus, viewportMetrics);
   const [isMiniMapPanning, setIsMiniMapPanning] = useState(false);
   const isMiniMapPanningRef = useRef(false);

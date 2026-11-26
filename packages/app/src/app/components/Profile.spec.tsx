@@ -11,7 +11,8 @@ import {
 import { encodeGridToBase64 } from '@game-of-life/util';
 import Profile from './Profile';
 
-vi.mock('@game-of-life/ui-patterns', () => ({
+vi.mock('@game-of-life/ui-patterns', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@game-of-life/ui-patterns')>()),
   PatternPreview: (): React.JSX.Element => <div data-testid="preview" />,
 }));
 

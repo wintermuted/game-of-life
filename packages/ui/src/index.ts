@@ -8,3 +8,5 @@ export { ThemeModeProvider, useThemeMode } from './ThemeContext';
 export type { ThemeMode, ThemeContextType, ThemeModeProviderProps } from './ThemeContext';
 export { COLOR_PALETTES, DEFAULT_PALETTE_ID, getPaletteById } from './constants/colors';
 export type { ColorPalette } from './constants/colors';
+export { DisclosureSection } from './components/ui/DisclosureSection';
+export type { DisclosureSectionProps } from './components/ui/DisclosureSection';

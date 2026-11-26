@@ -16,7 +16,8 @@ import Explore from './Explore';
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: translate }),
 }));
-vi.mock('@game-of-life/ui-patterns', () => ({
+vi.mock('@game-of-life/ui-patterns', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@game-of-life/ui-patterns')>()),
   PatternPreview: (): React.JSX.Element => <div data-testid="preview" />,
 }));
 

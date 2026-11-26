@@ -30,6 +30,7 @@ export function ExplorePatternTable({
 }: PatternViewProps &
   TableSortProps & { patterns: ExplorePattern[]; groupMode: GroupMode }): React.JSX.Element {
   const { t } = useTranslation();
+  // DEDUPLICATE-LATER: Category/ruleset/tag cells overlap PatternMetadataBadges.
   const previewPalette = getPaletteById(DEFAULT_PALETTE_ID);
   const { getPatternTags, getRulesetLabel } = labels;
   const { setSelectedCategories, setSelectedRulesets, setSelectedTags } = filters;

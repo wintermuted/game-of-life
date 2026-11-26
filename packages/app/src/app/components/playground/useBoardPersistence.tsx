@@ -10,7 +10,6 @@ import {
 import { PatternSource, NameModalMode, DraftSaveModalMode } from './playgroundTypes';
 import { getDescriptiveTags } from '../../util/patternMetadata';
 import type { Dispatch, SetStateAction } from 'react';
-import type * as React from 'react';
 import type { PlaygroundBoardState } from './usePlaygroundBoard';
 import type { PlaygroundMetadata } from './usePlaygroundMetadata';
 import type { BoardSocial } from './useBoardSocial';
@@ -29,7 +28,6 @@ export interface BoardPersistence {
   ) => void;
   openDraftSaveConfirmModal: (mode: DraftSaveModalMode) => void;
   openEditNameModal: () => void;
-  runSaveMenuAction: (event: React.MouseEvent<HTMLButtonElement>, action: () => void) => void;
   isEditNameModalOpen: boolean;
   patternNameDraft: string;
   setPatternNameDraft: Dispatch<SetStateAction<string>>;
@@ -257,14 +255,6 @@ export function useBoardPersistence(input: {
     setIsEditNameModalOpen(true);
   }
 
-  function runSaveMenuAction(event: React.MouseEvent<HTMLButtonElement>, action: () => void): void {
-    const menu = event.currentTarget.closest('details') as HTMLDetailsElement | null;
-    if (menu) {
-      menu.open = false;
-    }
-    action();
-  }
-
   function openForkNameModal(): void {
     setNameModalMode('fork');
     setPatternNameDraft(`${headerTitle} (${t('playground.forkSuffix')})`);
@@ -352,7 +342,6 @@ export function useBoardPersistence(input: {
     saveTemplate,
     openDraftSaveConfirmModal,
     openEditNameModal,
-    runSaveMenuAction,
     isEditNameModalOpen,
     patternNameDraft,
     setPatternNameDraft,

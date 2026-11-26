@@ -1,33 +1,42 @@
-import type { ReactElement } from 'react';
+import { useId, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ColorPicker } from '@wintermuted/ui-react';
 import { SYSTEM_DRAW_COLORS, type DrawColors } from '../hooks/useDrawColors';
 import type { GridControlsProps } from './GridControls.types';
 
-interface Props extends Pick<
+export interface DrawColorPickerProps extends Pick<
   GridControlsProps,
   'selectedPaletteId' | 'selectedDrawColor' | 'isGameRunning' | 'onCustomColorCommitted'
 > {
   variant: 'play' | 'edit';
-  colors: DrawColors;
+  draftValue: DrawColors['customHexValue'];
+  onDraftChange: DrawColors['setCustomHexValue'];
+  customColors: DrawColors['customColorSlots'];
+  onSelect: DrawColors['selectColor'];
+  onChange: DrawColors['changeColor'];
 }
 
 export function DrawColorPicker({
   variant,
-  colors,
+  draftValue,
+  onDraftChange,
+  customColors,
+  onSelect,
+  onChange,
   selectedDrawColor,
   isGameRunning,
   onCustomColorCommitted,
-}: Props): ReactElement {
+}: DrawColorPickerProps): ReactElement {
   const { t } = useTranslation();
+  const inputId = useId();
   const systemLabel = t('controls.systemColors');
   const customLabel = t('controls.customColors');
   return (
     <ColorPicker
       value={selectedDrawColor}
-      inputId={variant === 'play' ? 'custom-draw-color-play' : 'custom-draw-color-sidebar'}
-      draftValue={colors.customHexValue}
-      onDraftChange={colors.setCustomHexValue}
+      inputId={inputId}
+      draftValue={draftValue}
+      onDraftChange={onDraftChange}
       label={variant === 'play' ? t('controls.drawColor') : t('colors.title')}
       inputLabel={t('controls.customColor')}
       hexLabel={t('controls.customColorHex')}
@@ -41,14 +50,14 @@ export function DrawColorPicker({
         {
           id: 'custom',
           label: customLabel,
-          choices: colors.customColorSlots.map((value, index) => ({
+          choices: customColors.map((value, index) => ({
             value,
             label: `${customLabel} ${index + 1} ${value}`,
           })),
         },
       ]}
-      onSelect={colors.selectColor}
-      onChange={colors.changeColor}
+      onSelect={onSelect}
+      onChange={onChange}
       onCommit={onCustomColorCommitted}
       disabled={isGameRunning}
       placement={variant === 'play' ? 'right' : 'above'}

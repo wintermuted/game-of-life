@@ -17,7 +17,7 @@ import type { GridControlsProps } from './GridControls.types';
 const GENERATION_SPEED_MIN = 1;
 const GENERATION_SPEED_MAX = 10;
 
-type Props = Pick<
+export type PlaybackControlsProps = Pick<
   GridControlsProps,
   | 'isEditMode'
   | 'isSystemPattern'
@@ -46,7 +46,7 @@ export function PlaybackControls({
   onResetRequested,
   generationSpeed,
   updateGenerationSpeed,
-}: Props): ReactElement {
+}: PlaybackControlsProps): ReactElement {
   const { t } = useTranslation();
   const toggleLabel = isGameRunning ? t('controls.pause') : t('controls.start');
   const nextLabel = t('controls.next');

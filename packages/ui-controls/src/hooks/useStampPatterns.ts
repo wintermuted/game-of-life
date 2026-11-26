@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { patterns, type Pattern } from '@game-of-life/core';
 import type { GridControlsProps } from '../components/GridControls.types';
 import { getGridSignature } from '../components/stampSearch';
+import type { StampSearchProps } from '../components/StampPicker';
 
-type Props = Pick<GridControlsProps, 'stampPattern' | 'onStampPatternSelect' | 'onEditToolChange'>;
+type Props = Pick<GridControlsProps, 'stampPattern' | 'onStampPatternSelect' | 'onEditToolChange'> &
+  StampSearchProps;
 
 export interface StampPatterns {
   stampSearchQuery: string;
@@ -22,9 +24,23 @@ export function useStampPatterns({
   stampPattern,
   onStampPatternSelect,
   onEditToolChange,
+  searchQuery,
+  onSearchQueryChange,
+  selectedCategory,
+  onCategoryChange,
 }: Props): StampPatterns {
-  const [stampSearchQuery, setStampSearchQuery] = useState('');
-  const [selectedStampCategory, setSelectedStampCategory] = useState<string>('all');
+  const [localQuery, setLocalQuery] = useState('');
+  const [localCategory, setLocalCategory] = useState('all');
+  const stampSearchQuery = searchQuery ?? localQuery;
+  const selectedStampCategory = selectedCategory ?? localCategory;
+  function setStampSearchQuery(query: string): void {
+    setLocalQuery(query);
+    onSearchQueryChange?.(query);
+  }
+  function setSelectedStampCategory(category: string): void {
+    setLocalCategory(category);
+    onCategoryChange?.(category);
+  }
   const activeStampSignature = stampPattern ? getGridSignature(stampPattern) : null;
   const selectedPattern = activeStampSignature
     ? (patterns.find((pattern) => getGridSignature(pattern.grid) === activeStampSignature) ?? null)

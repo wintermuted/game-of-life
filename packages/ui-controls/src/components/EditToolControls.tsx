@@ -1,14 +1,11 @@
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eraser, Hand, PaintBucket, Pencil, RotateCcw, Square } from 'lucide-react';
-import type { DrawColors } from '../hooks/useDrawColors';
-import type { StampPatterns } from '../hooks/useStampPatterns';
-import type { StampMenu } from '../hooks/useStampMenu';
 import type { GridControlsProps } from './GridControls.types';
-import { DrawColorPicker } from './DrawColorPicker';
-import { StampPicker } from './StampPicker';
+import { DrawColorPicker, type DrawColorPickerProps } from './DrawColorPicker';
+import { StampPicker, type StampSearchProps } from './StampPicker';
 
-interface Props extends Pick<
+export type EditToolControlsProps = Pick<
   GridControlsProps,
   | 'activeEditTool'
   | 'onEditToolChange'
@@ -23,16 +20,17 @@ interface Props extends Pick<
   | 'stampPatternName'
   | 'stampRotation'
   | 'onRotateStamp'
-> {
-  colors: DrawColors;
-  stamps: StampPatterns;
-  menu: StampMenu;
-}
+  | 'stampPattern'
+  | 'onStampPatternSelect'
+  | 'rotateStampKeyPressToken'
+> &
+  Pick<
+    DrawColorPickerProps,
+    'draftValue' | 'onDraftChange' | 'customColors' | 'onSelect' | 'onChange'
+  > &
+  StampSearchProps;
 
 export function EditToolControls({
-  colors,
-  stamps,
-  menu,
   activeEditTool,
   onEditToolChange,
   onFillSelectionColor,
@@ -46,7 +44,19 @@ export function EditToolControls({
   stampPatternName,
   stampRotation,
   onRotateStamp,
-}: Props): ReactElement {
+  draftValue,
+  onDraftChange,
+  customColors,
+  onSelect,
+  onChange,
+  stampPattern,
+  onStampPatternSelect,
+  rotateStampKeyPressToken,
+  searchQuery,
+  onSearchQueryChange,
+  selectedCategory,
+  onCategoryChange,
+}: EditToolControlsProps): ReactElement {
   const { t } = useTranslation();
   const pencilLabel = t('controls.pencil');
   const eraserLabel = t('controls.eraser');
@@ -91,7 +101,11 @@ export function EditToolControls({
           </span>
           <DrawColorPicker
             variant="play"
-            colors={colors}
+            draftValue={draftValue}
+            onDraftChange={onDraftChange}
+            customColors={customColors}
+            onSelect={onSelect}
+            onChange={onChange}
             selectedPaletteId={selectedPaletteId}
             selectedDrawColor={selectedDrawColor}
             isGameRunning={isGameRunning}
@@ -99,8 +113,13 @@ export function EditToolControls({
           />
         </div>
         <StampPicker
-          stamps={stamps}
-          menu={menu}
+          stampPattern={stampPattern}
+          onStampPatternSelect={onStampPatternSelect}
+          rotateStampKeyPressToken={rotateStampKeyPressToken}
+          searchQuery={searchQuery}
+          onSearchQueryChange={onSearchQueryChange}
+          selectedCategory={selectedCategory}
+          onCategoryChange={onCategoryChange}
           selectedPaletteId={selectedPaletteId}
           activeEditTool={activeEditTool}
           onEditToolChange={onEditToolChange}

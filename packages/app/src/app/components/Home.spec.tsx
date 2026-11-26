@@ -33,7 +33,8 @@ vi.mock('@game-of-life/ui-grid', () => ({
     return <div>{props.playOverlayContent}</div>;
   },
 }));
-vi.mock('@game-of-life/ui-controls', () => ({
+vi.mock('@game-of-life/ui-controls', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@game-of-life/ui-controls')>()),
   GridControls: (props: NonNullable<typeof captures.controls>) => {
     captures.controls = props;
     return <button onClick={props.toggleGame}>toggle</button>;
@@ -43,7 +44,8 @@ vi.mock('@game-of-life/ui-controls', () => ({
     return null;
   },
 }));
-vi.mock('@game-of-life/ui-patterns', () => ({
+vi.mock('@game-of-life/ui-patterns', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@game-of-life/ui-patterns')>()),
   PatternInput: (props: NonNullable<typeof captures.patternInput>) => {
     captures.patternInput = props;
     return null;
