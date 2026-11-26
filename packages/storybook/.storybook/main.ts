@@ -14,6 +14,7 @@ const config: StorybookConfig = {
   core: { disableTelemetry: true },
   async viteFinal(viteConfig): Promise<UserConfig> {
     return mergeConfig(viteConfig, {
+      base: './',
       resolve: {
         alias: {
           '@game-of-life/core': path.resolve(import.meta.dirname, '../../core/src/index.ts'),
