@@ -25,6 +25,11 @@ const meta = {
     return (
       <RulesPanel
         {...args}
+        activeRulesetClassification={
+          args.selectedRulesetId === 'custom'
+            ? t('diagnostics.rulesetCustomClassification')
+            : args.activeRulesetClassification
+        }
         onRulesChange={(rules) => {
           args.onRulesChange(rules);
           updateArgs({
@@ -58,6 +63,13 @@ export const Locked: Story = { args: { rulesLocked: true } };
 export const Embedded: Story = { args: { embedded: true } };
 export const Spanish: Story = { globals: { locale: 'es' } };
 export const Custom: Story = {
+  args: {
+    selectedRulesetId: 'custom',
+    rules: {
+      ...DEFAULT_RULES,
+      survival2: { ...DEFAULT_RULES.survival2, enabled: false },
+    },
+  },
   play: async ({ canvasElement }): Promise<void> => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole('checkbox', { name: /Underpopulation/ }));

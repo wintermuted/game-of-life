@@ -77,7 +77,7 @@ export const Editable: Story = {
     fireEvent.mouseDown(canvas, firstCell);
     fireEvent.mouseMove(canvas, secondCell);
     fireEvent.mouseUp(canvas, secondCell);
-    fireEvent.mouseLeave(canvas);
+    fireEvent.mouseOut(canvas, { relatedTarget: canvas.ownerDocument.body });
     await waitFor(async (): Promise<void> => {
       await expect(Array.from(context.getImageData(inset, inset, 1, 1).data)).toStrictEqual(
         expected,
