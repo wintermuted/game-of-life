@@ -694,15 +694,6 @@ body.gol-board-maximized .wm-toast {
   margin-bottom: 1rem;
 }
 
-.left-sidebar-tabs-nav .tab-bar {
-  width: 100%;
-}
-
-.left-sidebar-tabs-nav .tab-btn {
-  flex: 1;
-  justify-content: center;
-}
-
 .board-state-overlay {
   position: absolute;
   inset: 0;
@@ -1727,7 +1718,7 @@ body.gol-board-maximized .wm-toast {
   min-height: 0;
 }
 
-.pattern-input-tabs {
+.pattern-input-section > .wm-tab-bar {
   margin-bottom: 0.75rem;
   flex-shrink: 0;
 }
@@ -1788,7 +1779,7 @@ body.gol-board-maximized .wm-toast {
   margin-top: 0.25rem;
 }
 
-.tab-bar {
+.playground-tabs > .wm-tab-bar {
   gap: 0.15rem;
   padding: 0.2rem;
   border: 1px solid var(--wm-color-border-strong);
@@ -1796,7 +1787,7 @@ body.gol-board-maximized .wm-toast {
   background: color-mix(in srgb, var(--wm-color-surface) 88%, #000 12%);
 }
 
-.tab-btn {
+.playground-tabs > .wm-tab-bar > .wm-tab-btn {
   border-right: none;
   border-radius: 0.72rem;
   background: transparent;
@@ -1805,26 +1796,26 @@ body.gol-board-maximized .wm-toast {
   padding: 0.5rem 0.9rem;
 }
 
-.tab-btn:hover {
+.playground-tabs > .wm-tab-bar > .wm-tab-btn:hover {
   background: color-mix(in srgb, var(--wm-color-surface-raised) 70%, transparent);
   color: var(--wm-color-text-primary);
 }
 
-.tab-btn-active {
+.playground-tabs > .wm-tab-bar > .wm-tab-btn-active {
   background: color-mix(in srgb, var(--wm-color-surface-raised) 92%, #fff 8%);
   color: var(--wm-color-text-primary);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wm-color-border-strong) 75%, transparent);
 }
 
-.tab-btn-active:hover {
+.playground-tabs > .wm-tab-bar > .wm-tab-btn-active:hover {
   background: color-mix(in srgb, var(--wm-color-surface-raised) 92%, #fff 8%);
 }
 
-.pattern-input-tabs .tab-bar {
+.playground-tabs > .wm-tab-bar {
   width: 100%;
 }
 
-.pattern-input-tabs .tab-btn {
+.playground-tabs > .wm-tab-bar > .wm-tab-btn {
   flex: 1;
   justify-content: center;
 }
@@ -1863,8 +1854,20 @@ body.gol-board-maximized .wm-toast {
   overflow-y: auto;
 }
 
-.right-column-card-spaced {
+.sidebar-panel-tabs > .wm-tab-bar {
   margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.playground-tabs > .wm-tab-panel {
+  padding: 0;
+}
+
+.playground-tabs > .wm-tab-panel:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .right-column-card-fill {
@@ -1873,15 +1876,6 @@ body.gol-board-maximized .wm-toast {
   display: flex;
   flex-direction: column;
   margin-bottom: 0;
-}
-
-.sidebar-tabs-nav .tab-bar {
-  width: 100%;
-}
-
-.sidebar-tabs-nav .tab-btn {
-  flex: 1;
-  justify-content: center;
 }
 
 .rules-description {
@@ -2141,10 +2135,15 @@ body.gol-board-maximized .wm-toast {
 }
 
 .diagnostics-section {
+  position: relative;
   margin: 0;
 }
 
-.diagnostics-section-summary {
+.diagnostics-disclosure.wm-accordion {
+  border: 0;
+}
+
+.diagnostics-disclosure > summary {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -2154,11 +2153,11 @@ body.gol-board-maximized .wm-toast {
   list-style: none;
 }
 
-.diagnostics-section-summary::-webkit-details-marker {
+.diagnostics-disclosure > summary::-webkit-details-marker {
   display: none;
 }
 
-.diagnostics-section-summary::after {
+.diagnostics-disclosure > summary::after {
   content: '▾';
   color: var(--wm-color-text-muted);
   font-size: 1rem;
@@ -2167,28 +2166,29 @@ body.gol-board-maximized .wm-toast {
   align-self: center;
 }
 
-.diagnostics-section:not([open]) .diagnostics-section-summary::after {
+.diagnostics-disclosure:not([open]) > summary::after {
   transform: rotate(-90deg);
 }
 
-.diagnostics-section-rules .diagnostics-section-summary {
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  column-gap: 0.2rem;
+.diagnostics-section-with-action .diagnostics-section-heading {
+  padding-inline-end: 1.65rem;
 }
 
-.diagnostics-section-rules .diagnostics-section-summary::after {
-  grid-column: 3;
+.diagnostics-section-with-action .diagnostics-disclosure > summary {
+  min-height: 1.3rem;
 }
 
-.diagnostics-section-rules .diagnostics-rules-lock-icon-btn {
-  grid-column: 2;
+.diagnostics-section-action {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 1rem;
 }
 
-.diagnostics-section-content {
+.diagnostics-disclosure > .wm-accordion-body {
   padding: 0;
 }
 
-.diagnostics-section[open] .diagnostics-section-summary {
+.diagnostics-disclosure[open] > summary {
   margin-bottom: 0.65rem;
 }
 

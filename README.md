@@ -64,7 +64,7 @@ This project is organized as an **NX monorepo** with npm workspaces:
   - Imports UI libraries directly and composes them with API/util/core
 
 - **`@game-of-life/ui`** (`packages/ui/`) - Shared primitives and theme support
-  - Tabs, segmented controls, language/palette selectors, and palette types/constants
+  - Disclosure composition, segmented controls, language/palette selectors, and palette types/constants
   - Controlled `ThemeModeProvider` and its shared context
   - Receives theme state and translation initialization from the host app; no startup, routes, assets, API calls, or preference persistence
   - No game-engine or feature-package dependencies; React/translation frameworks are peers
@@ -108,7 +108,13 @@ toasts, color pickers, number steppers, and language selectors are owned upstrea
 their translations, palette/default mapping, color drafts, routing, persistence,
 and notification timing stay in local adapters. App loads the theme stylesheet
 once; there is no separate staging package or stylesheet. Diagnostics explicitly
-use compact stat cards. Existing local Tabs, Dialog, Menu, and Tooltip are unchanged.
+use compact stat cards. Playground and pattern panels use upstream Tabs with
+conditionally mounted content, preserving draft/help/disclosure resets on tab
+changes. `DisclosureSection` is a product layout adapter around upstream Accordion;
+its optional Rules lock action is a separate sibling button, so locking (including
+the disabled unsaved-board state) never opens or closes the disclosure. Product
+workflow stories remain local; generic Tabs documentation belongs upstream.
+Existing local Dialog, Menu, and Tooltip are unchanged.
 
 Import components, shared functions, and types through their owning package's
 public entry point, not through a UI umbrella. App imports all four UI libraries;

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, type ReactElement } from 'react';
+import { Tabs } from '@wintermuted/ui-react';
 import CustomPatternInput from './CustomPatternInput';
 import PatternSelector from './PatternSelector';
 import { LifeGrid } from '@game-of-life/core';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_PALETTE_ID, ThemeTabs } from '@game-of-life/ui';
+import { DEFAULT_PALETTE_ID } from '@game-of-life/ui';
 
 interface Props {
   onLoadPattern: (grid: LifeGrid, rulesetId?: string) => void;
@@ -15,38 +16,42 @@ function PatternInput({
   onLoadPattern,
   disabled = false,
   selectedPaletteId = DEFAULT_PALETTE_ID,
-}: Props) {
+}: Props): ReactElement {
   const [activeTab, setActiveTab] = useState<'starter' | 'custom'>('starter');
   const { t } = useTranslation();
 
   return (
-    <div className="pattern-input-section">
-      <div className="pattern-input-tabs">
-        <ThemeTabs
-          options={[
-            { value: 'starter', label: t('patterns.title') },
-            { value: 'custom', label: t('patterns.custom') },
-          ]}
-          activeValue={activeTab}
-          onChange={(value) => setActiveTab(value as 'starter' | 'custom')}
-          ariaLabel={t('patterns.title')}
-        />
-      </div>
-
-      {activeTab === 'starter' && (
-        <PatternSelector
-          onSelectPattern={onLoadPattern}
-          disabled={disabled}
-          selectedPaletteId={selectedPaletteId}
-        />
-      )}
-
-      {activeTab === 'custom' && (
-        <div className="card card-body">
-          <CustomPatternInput onLoadPattern={onLoadPattern} disabled={disabled} />
-        </div>
-      )}
-    </div>
+    <Tabs
+      className="pattern-input-section playground-tabs"
+      label={t('patterns.title')}
+      value={activeTab}
+      onValueChange={(value) => {
+        if (value === 'starter' || value === 'custom') setActiveTab(value);
+      }}
+      items={[
+        {
+          id: 'starter',
+          label: t('patterns.title'),
+          content: activeTab === 'starter' && (
+            <PatternSelector
+              onSelectPattern={onLoadPattern}
+              disabled={disabled}
+              selectedPaletteId={selectedPaletteId}
+            />
+          ),
+        },
+        {
+          id: 'custom',
+          label: t('patterns.custom'),
+          // Tabs keeps hidden panels mounted; inactive product forms must reset.
+          content: activeTab === 'custom' && (
+            <div className="card card-body">
+              <CustomPatternInput onLoadPattern={onLoadPattern} disabled={disabled} />
+            </div>
+          ),
+        },
+      ]}
+    />
   );
 }
 

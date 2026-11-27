@@ -4,13 +4,13 @@ import { expect, userEvent, within } from 'storybook/test';
 import type { ReactElement } from 'react';
 
 const meta = {
-  title: 'Product/Primitives/DisclosureSection',
+  title: 'Product/Compositions/Playground/DisclosureSection',
   component: DisclosureSection,
   parameters: {
     docs: {
       description: {
         component:
-          'Native disclosure shell extracted from the diagnostics and information panels. Content and optional header actions are supplied by the host. No dialog, menu, or persistence infrastructure is introduced.',
+          'Playground layout around the central Accordion. The sibling Rules lock action preserves native disabled and keyboard behavior without toggling or expanding the disclosure. Generic Accordion documentation lives in Wintermuted UI.',
       },
     },
   },
@@ -30,20 +30,45 @@ export const HeaderAction: Story = {
   args: {
     title: 'Rules',
     headerAction: (
-      <button
-        className="btn btn-sm btn-secondary-neutral"
-        type="button"
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-        }}
-      >
+      <button className="btn btn-sm btn-secondary-neutral" type="button">
         Lock rules
       </button>
     ),
   },
   play: async ({ canvasElement }): Promise<void> => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Lock rules' }));
+    const canvas = within(canvasElement);
+    const action = canvas.getByRole('button', { name: 'Lock rules' });
+    const disclosure = canvasElement.querySelector('details');
+    action.focus();
+    await userEvent.keyboard('{Enter}');
+    await expect(action).toHaveFocus();
+    await expect(disclosure).toHaveAttribute('open');
+    await userEvent.click(canvas.getByRole('heading', { name: 'Rules' }));
+    await expect(disclosure).not.toHaveAttribute('open');
+    await userEvent.click(action);
+    await expect(disclosure).not.toHaveAttribute('open');
+    canvasElement.querySelector('summary')?.focus();
+    await expect(canvasElement.querySelector('summary')).toHaveFocus();
+    await userEvent.click(canvas.getByRole('heading', { name: 'Rules' }));
+    await expect(disclosure).toHaveAttribute('open');
+  },
+};
+export const UnsavedBoard: Story = {
+  args: {
+    title: 'Rules',
+    defaultOpen: false,
+    headerAction: (
+      <button type="button" disabled>
+        Lock rules
+      </button>
+    ),
+  },
+  play: async ({ canvasElement }): Promise<void> => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByRole('button', { name: 'Lock rules' })).toBeDisabled();
+    canvasElement.querySelector('summary')?.focus();
+    await expect(canvasElement.querySelector('summary')).toHaveFocus();
+    await userEvent.click(canvas.getByRole('heading', { name: 'Rules' }));
     await expect(canvasElement.querySelector('details')).toHaveAttribute('open');
   },
 };

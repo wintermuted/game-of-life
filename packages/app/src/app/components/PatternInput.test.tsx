@@ -69,4 +69,46 @@ describe('PatternInput', () => {
     });
     expect(firstPatternButton).toBeDisabled();
   });
+
+  test('unmounts custom drafts, validation errors and help when switching panels', () => {
+    render(<PatternInput onLoadPattern={vi.fn()} />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Custom Pattern' }));
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'invalid' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Load Custom Pattern' }));
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    const help = screen.getByRole('button', { name: /show examples/i });
+    fireEvent.click(help);
+    expect(help).toHaveAttribute('aria-expanded', 'true');
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Starter Patterns' }));
+    expect(screen.queryByRole('textbox', { hidden: true })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Custom Pattern' }));
+    expect(screen.getByRole('textbox')).toHaveValue('');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /show examples/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+  });
+
+  test('links translated panels and supports arrow, Home and End focus navigation', () => {
+    render(<PatternInput onLoadPattern={vi.fn()} disabled />);
+    const starter = screen.getByRole('tab', { name: 'Starter Patterns' });
+    const custom = screen.getByRole('tab', { name: 'Custom Pattern' });
+    starter.focus();
+    fireEvent.keyDown(starter, { key: 'ArrowRight' });
+    expect(custom).toHaveFocus();
+    expect(custom).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tabpanel', { name: 'Custom Pattern' })).toHaveAttribute(
+      'id',
+      custom.getAttribute('aria-controls'),
+    );
+    expect(screen.getByRole('textbox')).toBeDisabled();
+    fireEvent.keyDown(custom, { key: 'Home' });
+    expect(starter).toHaveFocus();
+    fireEvent.keyDown(starter, { key: 'End' });
+    expect(custom).toHaveFocus();
+    fireEvent.keyDown(custom, { key: 'ArrowRight' });
+    expect(starter).toHaveFocus();
+  });
 });

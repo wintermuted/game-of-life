@@ -101,9 +101,7 @@ export function PlaygroundInfoPanel(props: {
                     disabled={isUnsavedEditableBoard}
                     aria-label={isRulesLocked ? t('rules.unlockButton') : t('rules.lockButton')}
                     title={isRulesLocked ? t('rules.unlockButton') : t('rules.lockButton')}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
+                    onClick={() => {
                       if (isRulesLocked) {
                         requestUnlockRules();
                         return;

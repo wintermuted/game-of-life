@@ -4,7 +4,10 @@ export function isInteractiveKeyboardTarget(target: EventTarget | null): boolean
   if (!(target instanceof HTMLElement)) return false;
 
   const tagName = target.tagName.toLowerCase();
-  return target.isContentEditable || ['input', 'textarea', 'select', 'button'].includes(tagName);
+  return (
+    target.isContentEditable ||
+    ['input', 'textarea', 'select', 'button', 'summary'].includes(tagName)
+  );
 }
 
 export function clampGenerationSpeed(value: number): number {
