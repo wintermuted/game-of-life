@@ -41,16 +41,16 @@ describe('Simulation panel lifecycle', () => {
     expect(statistics).toHaveClass('wm-accordion');
     expect(statistics).toHaveAttribute('open');
     statistics?.removeAttribute('open');
-    fireEvent.click(screen.getByRole('tab', { name: 'Patterns', exact: true }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Patterns' }));
     expect(statistics).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('tab', { name: 'Custom Pattern' }));
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '0 0' } });
-    fireEvent.click(screen.getByRole('tab', { name: 'State', exact: true }));
+    fireEvent.click(screen.getByRole('tab', { name: 'State' }));
     expect(screen.queryByRole('textbox', { hidden: true })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Statistics' }).closest('details')).toHaveAttribute(
       'open',
     );
-    fireEvent.click(screen.getByRole('tab', { name: 'Patterns', exact: true }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Patterns' }));
     expect(screen.getByRole('tab', { name: 'Starter Patterns' })).toHaveAttribute(
       'aria-selected',
       'true',
