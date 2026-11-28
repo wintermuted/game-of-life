@@ -1,5 +1,6 @@
 import { DiagnosticsMetrics } from './DiagnosticsMetrics';
-import { ThemeTabs, DisclosureSection } from '@game-of-life/ui';
+import { DisclosureSection } from '@game-of-life/ui';
+import { Tabs } from '@wintermuted/ui-react';
 import { CellDataInspector } from '@game-of-life/ui-controls';
 import { PatternInput } from '@game-of-life/ui-patterns';
 import { useTranslation } from 'react-i18next';
@@ -46,49 +47,52 @@ export function DiagnosticsPanel(props: {
   const { gridJSON, cellDataEntries } = props.diagnostics;
   const { t } = useTranslation();
   return (
-    <div className="right-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider">
-      <div className="sidebar-tabs-nav right-column-card-spaced">
-        <ThemeTabs
-          options={[
-            { value: 'diagnostics', label: 'State' },
-            { value: 'patterns', label: 'Patterns' },
-          ]}
-          activeValue={activeSidebarTab}
-          onChange={(value) => setActiveSidebarTab(value as 'patterns' | 'diagnostics')}
-          ariaLabel="Simulation panels"
-        />
-      </div>
+    <Tabs
+      className="right-column wm-sidebar-layout-aside wm-sidebar-layout-aside-no-divider playground-tabs sidebar-panel-tabs"
+      label="Simulation panels"
+      value={activeSidebarTab}
+      onValueChange={(value) => {
+        if (value === 'patterns' || value === 'diagnostics') setActiveSidebarTab(value);
+      }}
+      items={[
+        {
+          id: 'diagnostics',
+          label: 'State',
+          content: activeSidebarTab === 'diagnostics' && (
+            <div className="diagnostics-panel">
+              <DisclosureSection title={t('diagnostics.statistics')}>
+                <DiagnosticsMetrics
+                  generation={generation}
+                  stats={stats}
+                  diagnostics={props.diagnostics}
+                />
+              </DisclosureSection>
 
-      {activeSidebarTab === 'patterns' && (
-        <div className="right-column-card-fill">
-          <PatternInput
-            onLoadPattern={handlePatternInputLoad}
-            disabled={isGameRunning}
-            selectedPaletteId={selectedPaletteId}
-          />
-        </div>
-      )}
-
-      {activeSidebarTab === 'diagnostics' && (
-        <div className="diagnostics-panel">
-          <DisclosureSection title={t('diagnostics.statistics')}>
-            <DiagnosticsMetrics
-              generation={generation}
-              stats={stats}
-              diagnostics={props.diagnostics}
-            />
-          </DisclosureSection>
-
-          <DisclosureSection title={t('diagnostics.cellData')}>
-            <CellDataInspector
-              entries={cellDataEntries}
-              copied={cellDataCopied}
-              onCopy={() => copyCellData(gridJSON)}
-              onCoordinateSelect={handleCenterCoordinateRequest}
-            />
-          </DisclosureSection>
-        </div>
-      )}
-    </div>
+              <DisclosureSection title={t('diagnostics.cellData')}>
+                <CellDataInspector
+                  entries={cellDataEntries}
+                  copied={cellDataCopied}
+                  onCopy={() => copyCellData(gridJSON)}
+                  onCoordinateSelect={handleCenterCoordinateRequest}
+                />
+              </DisclosureSection>
+            </div>
+          ),
+        },
+        {
+          id: 'patterns',
+          label: 'Patterns',
+          content: activeSidebarTab === 'patterns' && (
+            <div className="right-column-card-fill">
+              <PatternInput
+                onLoadPattern={handlePatternInputLoad}
+                disabled={isGameRunning}
+                selectedPaletteId={selectedPaletteId}
+              />
+            </div>
+          ),
+        },
+      ]}
+    />
   );
 }

@@ -1,4 +1,5 @@
-import type { ReactElement, ReactNode } from 'react';
+import { useId, useState, type ReactElement, type ReactNode } from 'react';
+import { Accordion } from '@wintermuted/ui-react';
 
 export interface DisclosureSectionProps {
   title: string;
@@ -15,16 +16,30 @@ export function DisclosureSection({
   defaultOpen = true,
   className = '',
 }: DisclosureSectionProps): ReactElement {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const headingId = useId();
   return (
-    <details
-      className={`diagnostics-section${className ? ` ${className}` : ''}`}
-      open={defaultOpen}
+    <div
+      className={`diagnostics-section${headerAction ? ' diagnostics-section-with-action' : ''}${className ? ` ${className}` : ''}`}
     >
-      <summary className="diagnostics-section-summary">
-        <h4 className="diagnostics-section-heading">{title}</h4>
-        {headerAction}
-      </summary>
-      <div className="diagnostics-section-content">{children}</div>
-    </details>
+      <Accordion
+        className="diagnostics-disclosure"
+        open={defaultOpen}
+        onToggle={(event) => setIsOpen(event.currentTarget.open)}
+        title={
+          <h4 id={headingId} className="diagnostics-section-heading">
+            {title}
+          </h4>
+        }
+      >
+        {headerAction ? null : children}
+      </Accordion>
+      {headerAction && <div className="diagnostics-section-action">{headerAction}</div>}
+      {headerAction && (
+        <div hidden={!isOpen} role="group" aria-labelledby={headingId}>
+          {children}
+        </div>
+      )}
+    </div>
   );
 }

@@ -296,7 +296,10 @@ describe('Home board transitions', () => {
     };
     act(() => captures.rules?.onRulesChange(modified));
     expect(captures.rules?.rules.survival2.enabled).toBe(true);
+    const disclosure = screen.getByRole('heading', { name: 'rules.title' }).closest('details');
+    disclosure?.removeAttribute('open');
     fireEvent.click(screen.getByRole('button', { name: 'rules.unlockButton' }));
+    expect(disclosure).not.toHaveAttribute('open');
     expect(captures.rules?.rulesLocked).toBe(true);
     fireEvent.click(screen.getByText('rules.unlockConfirmAction'));
     expect(captures.rules?.rulesLocked).toBe(false);
@@ -305,6 +308,20 @@ describe('Home board transitions', () => {
       false,
     );
     expect(captures.rules?.rules.survival2.enabled).toBe(false);
+  });
+  test('unsaved board lock actions stay disabled without toggling the rules disclosure', () => {
+    mount(oscillator, '&mode=edit');
+    const disclosure = screen.getByRole('heading', { name: 'rules.title' }).closest('details');
+    const action = screen.getByRole('button', { name: 'rules.lockButton' });
+    expect(action).toBeDisabled();
+    disclosure?.removeAttribute('open');
+    fireEvent.click(action);
+    expect(disclosure).not.toHaveAttribute('open');
+    expect(captures.rules?.rulesLocked).toBe(false);
+    const summary = disclosure?.querySelector('summary');
+    expect(summary).not.toBeNull();
+    expect(fireEvent.keyDown(summary!, { key: ' ', code: 'Space', bubbles: true })).toBe(true);
+    expect(controls().isEditMode).toBe(true);
   });
   test('saving a draft locks its rules and favorites require confirmation before removal', () => {
     mount(oscillator);
