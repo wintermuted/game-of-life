@@ -2178,6 +2178,10 @@ body.gol-board-maximized .wm-toast {
   min-height: 1.3rem;
 }
 
+.diagnostics-section-with-action .diagnostics-disclosure > .wm-accordion-body {
+  display: none;
+}
+
 .diagnostics-section-action {
   position: absolute;
   inset-block-start: 0;

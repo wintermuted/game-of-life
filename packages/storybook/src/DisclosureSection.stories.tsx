@@ -72,3 +72,25 @@ export const UnsavedBoard: Story = {
     await expect(canvasElement.querySelector('details')).toHaveAttribute('open');
   },
 };
+export const HeaderFocusOrder: Story = {
+  args: {
+    title: 'Rules',
+    headerAction: <button type="button">Lock rules</button>,
+    children: <input aria-label="Rule draft" defaultValue="draft" />,
+  },
+  play: async ({ canvasElement }): Promise<void> => {
+    const canvas = within(canvasElement);
+    canvasElement.querySelector('summary')?.focus();
+    await userEvent.tab();
+    await expect(canvas.getByRole('button', { name: 'Lock rules' })).toHaveFocus();
+    await userEvent.tab();
+    await expect(canvas.getByRole('textbox', { name: 'Rule draft' })).toHaveFocus();
+    await userEvent.tab({ shift: true });
+    await expect(canvas.getByRole('button', { name: 'Lock rules' })).toHaveFocus();
+    await userEvent.click(canvas.getByRole('heading', { name: 'Rules' }));
+    await expect(canvas.queryByRole('textbox')).not.toBeInTheDocument();
+    canvasElement.querySelector('summary')?.focus();
+    await userEvent.tab();
+    await expect(canvas.getByRole('button', { name: 'Lock rules' })).toHaveFocus();
+  },
+};

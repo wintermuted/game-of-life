@@ -111,7 +111,8 @@ once; there is no separate staging package or stylesheet. Diagnostics explicitly
 use compact stat cards. Playground and pattern panels use upstream Tabs with
 conditionally mounted content, preserving draft/help/disclosure resets on tab
 changes. `DisclosureSection` is a product layout adapter around upstream Accordion;
-its optional Rules lock action is a separate sibling button, so locking (including
+its optional Rules lock action is a separate sibling button before the content in
+keyboard order, so locking (including
 the disabled unsaved-board state) never opens or closes the disclosure. Product
 workflow stories remain local; generic Tabs documentation belongs upstream.
 Existing local Dialog, Menu, and Tooltip are unchanged.
